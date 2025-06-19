@@ -12,8 +12,8 @@ export default defineConfig({
     assetsDir: 'assets',
     // Generate manifest for better caching
     manifest: true,
-    // Optimize for production
-    minify: 'terser',
+    // Use esbuild for minification (default, faster than terser)
+    minify: 'esbuild',
     // Source maps for debugging (optional)
     sourcemap: false,
     // Rollup options
