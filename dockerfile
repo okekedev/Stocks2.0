@@ -7,17 +7,20 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install dependencies (including devDependencies for build)
 RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the React application
 RUN npm run build
 
-# Expose port 3000 (Vite preview default)
+# Remove dev dependencies to reduce image size
+RUN npm ci --only=production && npm cache clean --force
+
+# Expose port 3000
 EXPOSE 3000
 
-# Start the preview server
-CMD ["npm", "run", "preview"]
+# Start the Express server
+CMD ["npm", "start"]

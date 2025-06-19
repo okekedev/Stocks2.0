@@ -1,8 +1,10 @@
+// utils/templateUtils.js - Simplified Version
+
 import fs from 'fs';
 import path from 'path';
 
 export async function createTemplateFiles(payload, workflowType = 'public', azureConfig = null) {
-  // Base template files
+  // Base template files (unchanged)
   const templateFiles = [
     {
       path: 'package.json',
@@ -54,52 +56,96 @@ export async function createTemplateFiles(payload, workflowType = 'public', azur
     }
   ];
 
-  // Add the appropriate workflow file
-  const workflowFile = await getWorkflowFile(workflowType, payload, azureConfig);
-  if (workflowFile) {
-    templateFiles.push(workflowFile);
-  }
+  // ALWAYS include the public workflow by default
+  // Users will have this immediately when they clone/download
+  templateFiles.push({
+    path: '.github/workflows/build.yml',
+    content: generatePublicWorkflow(payload)
+  });
 
   return templateFiles;
 }
 
-async function getWorkflowFile(workflowType, payload, azureConfig = null) {
-  const workflowTemplates = {
-    'public': 'templates/workflows/build-public.yml',
-    'azure': 'templates/workflows/build-deploy-azure.yml', 
-    'private': 'templates/workflows/build-deploy-private.yml'
-  };
+// Default public workflow - no placeholders, ready to use
+function generatePublicWorkflow(payload = {}) {
+  const repoName = payload.repoName || '{{REPO_NAME}}'; // Fallback to placeholder
+  
+  return `name: Build and Push Container Image
 
-  const templatePath = workflowTemplates[workflowType];
-  if (!templatePath) {
-    throw new Error(`Unknown workflow type: ${workflowType}`);
-  }
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
-  try {
-    // Read the template file
-    let workflowContent = fs.readFileSync(templatePath, 'utf8');
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     
-    // Replace placeholders
-    workflowContent = workflowContent.replace(/{{REPO_NAME}}/g, payload.repoName);
-    
-    if (azureConfig) {
-      workflowContent = workflowContent.replace(/{{AZURE_APP_NAME}}/g, azureConfig.appName);
-      workflowContent = workflowContent.replace(/{{AZURE_RESOURCE_GROUP}}/g, azureConfig.resourceGroup);
-    }
-
-    return {
-      path: '.github/workflows/build.yml',
-      content: workflowContent
-    };
-  } catch (error) {
-    console.error(`Error reading workflow template: ${templatePath}`, error);
-    return null;
-  }
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: \${{ github.actor }}
+        password: \${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Create short SHA
+      id: short_sha
+      run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      
+    - name: Extract metadata for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/\${{ github.repository_owner }}/${repoName}
+        tags: |
+          type=raw,value=latest,enable=\${{ github.ref == format('refs/heads/{0}', 'main') }}
+          type=raw,value=v\${{ github.run_number }},enable=\${{ github.ref == format('refs/heads/{0}', 'main') }}
+          type=raw,value=\${{ steps.short_sha.outputs.sha }},enable=\${{ github.ref == format('refs/heads/{0}', 'main') }}
+          type=ref,event=pr
+          
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: \${{ steps.meta.outputs.tags }}
+        labels: \${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        
+    - name: Display image information
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "🎉 Docker image built and pushed successfully!"
+        echo ""
+        echo "📦 Image Details:"
+        echo "- Repository: ghcr.io/\${{ github.repository_owner }}/${repoName}"
+        echo "- Tags: latest, v\${{ github.run_number }}, \${{ steps.short_sha.outputs.sha }}"
+        echo "- Build Number: \${{ github.run_number }}"
+        echo "- Commit: \${{ steps.short_sha.outputs.sha }}"
+        echo ""
+        echo "🚀 Ready for Azure deployment!"
+        echo "Use this image: ghcr.io/\${{ github.repository_owner }}/${repoName}:latest"`;
 }
 
-function generatePackageJson(payload) {
+// Update existing functions to remove GitHub-specific logic
+function generatePackageJson(payload = {}) {
+  const repoName = payload.repoName || 'azure-container-template';
+  
   return JSON.stringify({
-    "name": payload.repoName,
+    "name": repoName,
     "private": true,
     "version": "1.0.0",
     "type": "module",
@@ -131,6 +177,65 @@ function generatePackageJson(payload) {
   }, null, 2);
 }
 
+function generateReadme(payload = {}) {
+  const repoName = payload.repoName || 'azure-container-template';
+  
+  return `# ${repoName}
+
+Azure Container Template - A modern React application ready for Azure Container Apps deployment.
+
+## 🚀 Quick Start
+
+### Development
+\`\`\`bash
+npm install
+npm run dev
+\`\`\`
+
+### Production Build
+\`\`\`bash
+npm run build
+npm run preview
+\`\`\`
+
+## 🐳 Docker Deployment
+
+### Build and run locally
+\`\`\`bash
+docker build -t ${repoName} .
+docker run -p 3000:3000 ${repoName}
+\`\`\`
+
+## ☁️ Azure Deployment
+
+This template is optimized for Azure Container Apps with automatic GitHub Actions deployment.
+
+### Setup Instructions
+
+1. **GitHub Setup**: Push this code to your GitHub repository
+2. **GitHub Actions**: The workflow will automatically build and push to GHCR
+3. **Azure Setup**: Use the web interface to configure Azure resources
+4. **Deploy**: Update your Azure Container App with the built image
+
+### Container Image
+- **Registry**: ghcr.io/[your-username]/${repoName}
+- **Latest**: ghcr.io/[your-username]/${repoName}:latest
+
+## 🛠️ Features
+
+- ⚡ Vite + React for fast development
+- 🐳 Docker-ready configuration
+- ☁️ Azure Container Apps optimized
+- 🔄 GitHub Actions CI/CD
+- 📱 Responsive design
+- 🎨 Tailwind CSS styling
+
+## 📄 License
+
+MIT License - feel free to use this template for your projects!`;
+}
+
+// Keep all other generation functions unchanged...
 function generateDockerfile() {
   return `# Use Node.js LTS version
 FROM node:18-alpine
@@ -187,6 +292,47 @@ export default defineConfig({
     strictPort: true,
   }
 })`;
+}
+
+function generateTailwindConfig() {
+  return `/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./*.{js,jsx}"
+  ],
+  theme: {
+    extend: {
+      animation: {
+        'gradient': 'gradient 6s ease infinite',
+        'float': 'float 3s ease-in-out infinite',
+        'glow': 'glow 2s ease-in-out infinite alternate',
+      },
+      keyframes: {
+        gradient: {
+          '0%, 100%': {
+            'background-size': '200% 200%',
+            'background-position': 'left center'
+          },
+          '50%': {
+            'background-size': '200% 200%',
+            'background-position': 'right center'
+          },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+        glow: {
+          '0%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.5)' },
+          '100%': { boxShadow: '0 0 30px rgba(59, 130, 246, 0.8)' },
+        }
+      }
+    },
+  },
+  plugins: [],
+}`;
 }
 
 function generatePostcssConfig() {
@@ -268,256 +414,88 @@ body {
 }`;
 }
 
-function generateWorkflow(payload) {
-  return `name: Build and Push Container Image
+function generateGitignore() {
+  return `# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+# Build outputs
+dist/
+build/
 
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: \${{ github.actor }}
-        password: \${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Create short SHA
-      id: short_sha
-      run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-      
-    - name: Extract metadata for Docker
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ghcr.io/\${{ github.repository_owner }}/${payload.repoName}
-        tags: |
-          type=raw,value=latest,enable=\${{ github.ref == format('refs/heads/{0}', 'main') }}
-          type=raw,value=v\${{ github.run_number }},enable=\${{ github.ref == format('refs/heads/{0}', 'main') }}
-          type=raw,value=\${{ steps.short_sha.outputs.sha }},enable=\${{ github.ref == format('refs/heads/{0}', 'main') }}
-          type=ref,event=pr
-          
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: \${{ steps.meta.outputs.tags }}
-        labels: \${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        
-    - name: Display image information
-      if: github.ref == 'refs/heads/main'
-      run: |
-        echo "🎉 Docker image built and pushed successfully!"
-        echo ""
-        echo "📦 Image Details:"
-        echo "- Repository: ghcr.io/\${{ github.repository_owner }}/${payload.repoName}"
-        echo "- Tags: latest, v\${{ github.run_number }}, \${{ steps.short_sha.outputs.sha }}"
-        echo "- Build Number: \${{ github.run_number }}"
-        echo "- Commit: \${{ steps.short_sha.outputs.sha }}"
-        echo ""
-        echo "🚀 Ready for Azure deployment!"
-        echo "Use this image: ghcr.io/\${{ github.repository_owner }}/${payload.repoName}:latest"`;
-}
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-function generateAzureIntegratedWorkflow(payload, azureConfig) {
-  return `name: Build and Deploy to Azure Container Apps
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      id-token: write  # Required for Azure OIDC
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: \${{ github.actor }}
-        password: \${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Create short SHA
-      id: short_sha
-      run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-      
-    - name: Extract metadata for Docker
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ghcr.io/\${{ github.repository_owner }}/${payload.repoName}
-        tags: |
-          type=raw,value=latest,enable=\${{ github.ref == format('refs/heads/{0}', 'main') }}
-          type=raw,value=v\${{ github.run_number }},enable=\${{ github.ref == format('refs/heads/{0}', 'main') }}
-          type=raw,value=\${{ steps.short_sha.outputs.sha }},enable=\${{ github.ref == format('refs/heads/{0}', 'main') }}
-          
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: \${{ steps.meta.outputs.tags }}
-        labels: \${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+# Logs
+logs
+*.log
 
-    # Deploy only on main branch
-    - name: Azure Login with OIDC
-      if: github.ref == 'refs/heads/main'
-      uses: azure/login@v2
-      with:
-        client-id: \${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: \${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: \${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        
-    - name: Deploy to Azure Container Apps
-      if: github.ref == 'refs/heads/main'
-      run: |
-        echo "🚀 Deploying to Azure Container Apps..."
-        
-        az containerapp update \\
-          --name ${azureConfig.appName} \\
-          --resource-group ${azureConfig.resourceGroup} \\
-          --image ghcr.io/\${{ github.repository_owner }}/${payload.repoName}:latest
-        
-        echo "✅ Deployment completed successfully!"
-        
-    - name: Get App URL
-      if: github.ref == 'refs/heads/main'
-      run: |
-        APP_URL=$(az containerapp show \\
-          --name ${azureConfig.appName} \\
-          --resource-group ${azureConfig.resourceGroup} \\
-          --query 'properties.configuration.ingress.fqdn' \\
-          --output tsv)
-        
-        echo "🌐 Application URL: https://$APP_URL"
-        echo "📦 Image: ghcr.io/\${{ github.repository_owner }}/${payload.repoName}:latest"
-        echo "🏷️ Build: v\${{ github.run_number }}"`;
-}
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-function generatePrivateWorkflow(payload) {
-  return `name: Build and Deploy to Azure (Private)
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+# nyc test coverage
+.nyc_output
 
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      
-    - name: Login to GitHub Container Registry (Private)
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: \${{ github.actor }}
-        password: \${{ secrets.GHCR_TOKEN }}  # Uses PAT instead of GITHUB_TOKEN
-        
-    - name: Create short SHA
-      id: short_sha
-      run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-      
-    - name: Extract metadata for Docker
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ghcr.io/\${{ github.repository_owner }}/${payload.repoName}
-        tags: |
-          type=raw,value=latest,enable=\${{ github.ref == format('refs/heads/{0}', 'main') }}
-          type=raw,value=v\${{ github.run_number }},enable=\${{ github.ref == format('refs/heads/{0}', 'main') }}
-          type=raw,value=\${{ steps.short_sha.outputs.sha }},enable=\${{ github.ref == format('refs/heads/{0}', 'main') }}
-          
-    - name: Build and push Docker image (Private)
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: \${{ steps.meta.outputs.tags }}
-        labels: \${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+# Dependency directories
+jspm_packages/
 
-    # Deploy only on main branch
-    - name: Azure Login with OIDC
-      if: github.ref == 'refs/heads/main'
-      uses: azure/login@v2
-      with:
-        client-id: \${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: \${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: \${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        
-    - name: Configure private registry access
-      if: github.ref == 'refs/heads/main'
-      run: |
-        echo "🔐 Configuring private registry access..."
-        
-        az containerapp registry set \\
-          --name \${{ secrets.AZURE_APP_NAME }} \\
-          --resource-group \${{ secrets.AZURE_RESOURCE_GROUP }} \\
-          --server ghcr.io \\
-          --username \${{ github.actor }} \\
-          --password \${{ secrets.GHCR_TOKEN }}
-        
-    - name: Deploy to Azure Container Apps (Private)
-      if: github.ref == 'refs/heads/main'
-      run: |
-        echo "🚀 Deploying private image to Azure..."
-        
-        az containerapp update \\
-          --name \${{ secrets.AZURE_APP_NAME }} \\
-          --resource-group \${{ secrets.AZURE_RESOURCE_GROUP }} \\
-          --image ghcr.io/\${{ github.repository_owner }}/${payload.repoName}:latest
-        
-        echo "✅ Private deployment completed!"`;
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# Temporary folders
+tmp/
+temp/`;
 }
 
 function generateDockerignore() {
@@ -535,53 +513,4 @@ Dockerfile*
 docker-compose*
 .vscode
 .idea`;
-}
-
-function generateReadme(payload) {
-  return `# ${payload.repoName}
-
-Azure Container Template - A modern React application ready for Azure Container Apps deployment.
-
-## 🚀 Quick Start
-
-### Development
-\`\`\`bash
-npm install
-npm run dev
-\`\`\`
-
-### Production Build
-\`\`\`bash
-npm run build
-npm run preview
-\`\`\`
-
-## 🐳 Docker Deployment
-
-### Build and run locally
-\`\`\`bash
-docker build -t ${payload.repoName} .
-docker run -p 3000:3000 ${payload.repoName}
-\`\`\`
-
-## ☁️ Azure Deployment
-
-This template is optimized for Azure Container Apps with automatic GitHub Actions deployment.
-
-### Container Image
-- **Registry**: ghcr.io/${payload.githubOwner}/${payload.repoName}
-- **Latest**: ghcr.io/${payload.githubOwner}/${payload.repoName}:latest
-
-## 🛠️ Features
-
-- ⚡ Vite + React for fast development
-- 🐳 Docker-ready configuration
-- ☁️ Azure Container Apps optimized
-- 🔄 GitHub Actions CI/CD
-- 📱 Responsive design
-- 🎨 Tailwind CSS styling
-
-## 📄 License
-
-MIT License - feel free to use this template for your projects!`;
 }

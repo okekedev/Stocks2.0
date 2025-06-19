@@ -3,9 +3,15 @@ import cors from 'cors';
 import { WebSocketServer } from 'ws';
 import http from 'http';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 import { handleAzureSetup } from './handlers/dockerHandler.js';
 import { handleAzureDeploy } from './handlers/azureHandler.js';
-import { handleGitHubPush, handleMakePrivate } from './handlers/githubHandler.js';
+
+
+// ES module compatibility
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
@@ -13,15 +19,27 @@ const wss = new WebSocketServer({ server });
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('dist'));
+
+// Simple production detection: check if dist folder exists and has files
+const distPath = path.join(__dirname, 'dist');
+const isProduction = fs.existsSync(distPath) && fs.existsSync(path.join(distPath, 'index.html'));
+
+if (isProduction) {
+  // Production: serve built React app
+  app.use(express.static(distPath));
+  console.log('📦 Production mode - serving built React app from dist/');
+} else {
+  // Development: don't serve static files (Vite dev server handles this)
+  console.log('🔥 Development mode - Vite dev server handles frontend');
+}
 
 // Global process tracking
 global.activeProcesses = new Map();
 
-// GitHub OAuth configuration
-const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || 'your_github_client_id';
-const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || 'your_github_client_secret';
-const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:3001/auth/github/callback';
+// GitHub OAuth configuration (simplified - no env vars needed for basic setup)
+const GITHUB_CLIENT_ID = 'your_github_client_id';
+const GITHUB_CLIENT_SECRET = 'your_github_client_secret';
+const REDIRECT_URI = `http://localhost:${isProduction ? '3000' : '3001'}/auth/github/callback`;
 
 // GitHub OAuth routes
 app.get('/auth/github', (req, res) => {
@@ -58,7 +76,7 @@ app.get('/auth/github/callback', async (req, res) => {
       return res.status(400).send(`GitHub OAuth error: ${tokenData.error_description}`);
     }
 
-    // Return success page with token (in production, use secure storage)
+    // Return success page with token
     res.send(`
       <html>
         <head>
@@ -100,9 +118,6 @@ app.get('/auth/github/callback', async (req, res) => {
     res.status(500).send('Internal server error during GitHub authentication');
   }
 });
-
-// Global process tracking
-global.activeProcesses = new Map();
 
 // WebSocket connection handler
 wss.on('connection', (ws) => {
@@ -150,14 +165,33 @@ function cancelProcess(sessionId) {
   }
 }
 
-// Serve React app for all routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'dist', 'index.html'));
+// API health check
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    mode: isProduction ? 'production' : 'development',
+    timestamp: new Date().toISOString()
+  });
 });
 
-const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
+// Serve React app for all non-API routes (only in production)
+if (isProduction) {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+}
+
+// Simple port configuration
+const PORT = isProduction ? 3000 : 3001;
+
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Azure Container Template Server running on port ${PORT}`);
-  console.log(`📱 Frontend: http://localhost:3000`);
+  
+  if (isProduction) {
+    console.log(`📱 Application: http://localhost:${PORT}`);
+  } else {
+    console.log(`📱 Frontend (Vite): http://localhost:3000`);
+    console.log(`🔌 Backend API: http://localhost:${PORT}`);
+  }
   console.log(`🔌 WebSocket: ws://localhost:${PORT}`);
 });
