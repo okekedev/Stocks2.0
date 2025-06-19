@@ -37,10 +37,47 @@ function App() {
     resourceGroup: '',
     environmentName: '',
     appName: '',
-    location: 'Central US',
+    location: 'eastus',
+    githubContainerUrl: '',
     githubRepo: '',
     githubOwner: ''
   })
+
+  // Azure regions that support Container Apps
+  const azureRegions = [
+    { value: 'eastus', label: 'East US' },
+    { value: 'eastus2', label: 'East US 2' },
+    { value: 'westus', label: 'West US' },
+    { value: 'westus2', label: 'West US 2' },
+    { value: 'westus3', label: 'West US 3' },
+    { value: 'centralus', label: 'Central US' },
+    { value: 'southcentralus', label: 'South Central US' },
+    { value: 'northcentralus', label: 'North Central US' },
+    { value: 'canadacentral', label: 'Canada Central' },
+    { value: 'canadaeast', label: 'Canada East' },
+    { value: 'brazilsouth', label: 'Brazil South' },
+    { value: 'northeurope', label: 'North Europe' },
+    { value: 'westeurope', label: 'West Europe' },
+    { value: 'uksouth', label: 'UK South' },
+    { value: 'ukwest', label: 'UK West' },
+    { value: 'francecentral', label: 'France Central' },
+    { value: 'germanywestcentral', label: 'Germany West Central' },
+    { value: 'switzerlandnorth', label: 'Switzerland North' },
+    { value: 'norwayeast', label: 'Norway East' },
+    { value: 'swedencentral', label: 'Sweden Central' },
+    { value: 'eastasia', label: 'East Asia' },
+    { value: 'southeastasia', label: 'Southeast Asia' },
+    { value: 'japaneast', label: 'Japan East' },
+    { value: 'japanwest', label: 'Japan West' },
+    { value: 'koreacentral', label: 'Korea Central' },
+    { value: 'australiaeast', label: 'Australia East' },
+    { value: 'australiasoutheast', label: 'Australia Southeast' },
+    { value: 'centralindia', label: 'Central India' },
+    { value: 'southindia', label: 'South India' },
+    { value: 'westindia', label: 'West India' },
+    { value: 'uaenorth', label: 'UAE North' },
+    { value: 'southafricanorth', label: 'South Africa North' }
+  ]
   
   const logsEndRef = useRef(null)
   const sessionIdRef = useRef(null)
@@ -121,7 +158,7 @@ function App() {
     }
   }, [])
 
-  // Step 1: GitHub Sync - Simple checkbox to trigger build
+  // Step 1: GitHub Sync - Simple checkbox to view instructions
   const handleStep1GitHubSync = () => {
     setCompletedSteps(prev => ({ ...prev, github: true }))
     
@@ -130,7 +167,7 @@ function App() {
     setLogs([
       {
         id: Date.now(),
-        message: '📋 Next Steps: Sync Repository with VS Code',
+        message: '📋 Steps: Sync Repository with VS Code',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'github'
@@ -158,6 +195,13 @@ function App() {
       },
       {
         id: Date.now() + 4,
+        message: '📋 Copy your container package URL for Step 2',
+        level: 'info',
+        timestamp: new Date().toISOString(),
+        logType: 'github'
+      },
+      {
+        id: Date.now() + 5,
         message: '✅ Ready for Step 2: Azure Setup',
         level: 'info',
         timestamp: new Date().toISOString(),
@@ -166,19 +210,60 @@ function App() {
     ])
   }
 
-  // Step 2: Azure Setup
+  // Function to parse GitHub container URL
+  const parseGitHubContainerUrl = (url) => {
+    // Expected format: https://github.com/username/repo/pkgs/container/container-name
+    const regex = /https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/pkgs\/container\/([^\/]+)/
+    const match = url.match(regex)
+    
+    if (match) {
+      const [, owner, repo, containerName] = match
+      return {
+        githubOwner: owner,
+        githubRepo: repo,
+        containerName: containerName
+      }
+    }
+    return null
+  }
+
+  // Handle container URL change and auto-populate fields
+  const handleContainerUrlChange = (url) => {
+    setAzureConfig(prev => ({ ...prev, githubContainerUrl: url }))
+    
+    const parsed = parseGitHubContainerUrl(url)
+    if (parsed) {
+      setAzureConfig(prev => ({
+        ...prev,
+        githubOwner: parsed.githubOwner,
+        githubRepo: parsed.githubRepo,
+        // Auto-suggest names based on repo
+        appName: prev.appName || `${parsed.containerName}-app`,
+        environmentName: prev.environmentName || `${parsed.containerName}-env`,
+        resourceGroup: prev.resourceGroup || `${parsed.containerName}-rg`
+      }))
+    }
+  }
   const handleStep2AzureSetup = () => {
     setShowAzureForm(true)
   }
 
+
   const submitAzureSetup = () => {
     if (!ws || isProcessing) return
     
-    const required = ['resourceGroup', 'environmentName', 'appName', 'githubRepo', 'githubOwner']
+    const required = ['resourceGroup', 'environmentName', 'appName', 'githubContainerUrl']
     const missing = required.filter(field => !azureConfig[field])
     
     if (missing.length > 0) {
       alert(`Please fill in: ${missing.join(', ')}`)
+      return
+    }
+
+    // Validate GitHub container URL
+    const parsed = parseGitHubContainerUrl(azureConfig.githubContainerUrl)
+    if (!parsed) {
+      alert('Please enter a valid GitHub container package URL')
       return
     }
     
@@ -425,20 +510,40 @@ jobs:
               </div>
               
               <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="GitHub Repository Name"
-                  value={azureConfig.githubRepo}
-                  onChange={(e) => setAzureConfig(prev => ({ ...prev, githubRepo: e.target.value }))}
-                  className="w-full px-4 py-3 glass-retro rounded-xl text-retro-primary placeholder-retro-muted focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300"
-                />
-                <input
-                  type="text"
-                  placeholder="GitHub Username/Organization"
-                  value={azureConfig.githubOwner}
-                  onChange={(e) => setAzureConfig(prev => ({ ...prev, githubOwner: e.target.value }))}
-                  className="w-full px-4 py-3 glass-retro rounded-xl text-retro-primary placeholder-retro-muted focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-retro-secondary mb-2">
+                    GitHub Container Package URL
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="https://github.com/username/repo/pkgs/container/container-name"
+                    value={azureConfig.githubContainerUrl}
+                    onChange={(e) => handleContainerUrlChange(e.target.value)}
+                    className="w-full px-4 py-3 glass-retro rounded-xl text-retro-primary placeholder-retro-muted focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300"
+                  />
+                  <p className="text-xs text-retro-muted mt-1">
+                    Paste the URL from your GitHub package page (auto-fills other fields)
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    placeholder="GitHub Owner"
+                    value={azureConfig.githubOwner}
+                    onChange={(e) => setAzureConfig(prev => ({ ...prev, githubOwner: e.target.value }))}
+                    className="px-4 py-3 glass-retro rounded-xl text-retro-primary placeholder-retro-muted focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300"
+                    readOnly={!!parseGitHubContainerUrl(azureConfig.githubContainerUrl)}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Repository Name"
+                    value={azureConfig.githubRepo}
+                    onChange={(e) => setAzureConfig(prev => ({ ...prev, githubRepo: e.target.value }))}
+                    className="px-4 py-3 glass-retro rounded-xl text-retro-primary placeholder-retro-muted focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300"
+                    readOnly={!!parseGitHubContainerUrl(azureConfig.githubContainerUrl)}
+                  />
+                </div>
                 <input
                   type="text"
                   placeholder="Azure Resource Group"
@@ -460,13 +565,25 @@ jobs:
                   onChange={(e) => setAzureConfig(prev => ({ ...prev, appName: e.target.value }))}
                   className="w-full px-4 py-3 glass-retro rounded-xl text-retro-primary placeholder-retro-muted focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300"
                 />
-                <input
-                  type="text"
-                  placeholder="Azure Region"
-                  value={azureConfig.location}
-                  onChange={(e) => setAzureConfig(prev => ({ ...prev, location: e.target.value }))}
-                  className="w-full px-4 py-3 glass-retro rounded-xl text-retro-primary placeholder-retro-muted focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-retro-secondary mb-2">
+                    Azure Region
+                  </label>
+                  <select
+                    value={azureConfig.location}
+                    onChange={(e) => setAzureConfig(prev => ({ ...prev, location: e.target.value }))}
+                    className="w-full px-4 py-3 glass-retro rounded-xl text-retro-primary focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300 bg-slate-800/50"
+                  >
+                    {azureRegions.map(region => (
+                      <option key={region.value} value={region.value} className="bg-slate-800 text-retro-primary">
+                        {region.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-retro-muted mt-1">
+                    Choose the Azure region closest to your users
+                  </p>
+                </div>
               </div>
               
               <div className="flex space-x-3 mt-6">
@@ -646,7 +763,7 @@ jobs:
                   <div className="text-center">
                     <div className="font-semibold text-lg">Step 1</div>
                     <div className="text-sm opacity-90">GitHub Sync</div>
-                    <div className="text-xs opacity-70 mt-1">Trigger build</div>
+                    <div className="text-xs opacity-70 mt-1">View instructions</div>
                   </div>
                 </div>
               </motion.button>
@@ -778,8 +895,8 @@ jobs:
             >
               <div className="info-card-retro rounded-2xl p-6">
                 <Play className="w-8 h-8 text-purple-400 mb-4" />
-                <h3 className="text-xl font-semibold text-retro-primary mb-2">1. Trigger Build</h3>
-                <p className="text-retro-secondary">Click GitHub Sync to trigger your container image build process</p>
+                <h3 className="text-xl font-semibold text-retro-primary mb-2">1. View Instructions</h3>
+                <p className="text-retro-secondary">Click GitHub Sync to view repository setup instructions</p>
               </div>
               <div className="info-card-retro rounded-2xl p-6">
                 <Cloud className="w-8 h-8 text-blue-400 mb-4" />

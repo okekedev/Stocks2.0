@@ -5,8 +5,7 @@ import http from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import { handleAzureSetup } from './handlers/dockerHandler.js';
-import { handleAzureDeploy } from './handlers/azureHandler.js';
+import { handleAzureSetup, handleAzureDeploy } from './handlers/azureHandler.js';
 
 
 // ES module compatibility
