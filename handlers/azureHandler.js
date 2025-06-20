@@ -198,16 +198,20 @@ class RestAPIAzureService {
   async createContainerAppViaRestAPI(ws, resourceGroupName, appName, environmentName, location, payload) {
     sendLog(ws, 'azure-setup', `🚀 Creating container app: ${appName}`);
     
-    // Require GitHub container details - no fallback
-    if (!payload.githubOwner || !payload.githubRepo) {
-      throw new Error('GitHub owner and repository are required. Please provide your GitHub container details.');
+    // Use a temporary working image first, will be updated later via workflow
+    const temporaryImage = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest';
+    const userImage = payload.githubOwner && payload.githubRepo 
+      ? `ghcr.io/${payload.githubOwner}/${payload.githubRepo}:latest` 
+      : null;
+    
+    if (userImage) {
+      sendLog(ws, 'azure-setup', `📦 Will be configured for: ${userImage}`);
+      sendLog(ws, 'azure-setup', `⚠️  Starting with demo image first - will update via workflow`);
+    } else {
+      sendLog(ws, 'azure-setup', `📦 Using demo image: ${temporaryImage}`);
     }
     
-    const containerImage = `ghcr.io/${payload.githubOwner}/${payload.githubRepo}:latest`;
-    const targetPort = 3000; // React app runs on port 3000
-    
-    sendLog(ws, 'azure-setup', `📦 Using your container image: ${containerImage}`);
-    sendLog(ws, 'azure-setup', `🔧 Configured for port: ${targetPort}`);
+    const targetPort = 80; // Start with port 80 for demo image
     
     try {
       // Get the environment resource ID
@@ -228,7 +232,10 @@ class RestAPIAzureService {
       const environment = await envResponse.json();
       const environmentId = environment.id;
 
-      // Create the container app
+      // Create timestamp for revision suffix
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '').slice(0, 14);
+      
+      // Create the container app following your working template pattern
       const response = await fetch(
         `https://management.azure.com/subscriptions/${this.subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.App/containerApps/${appName}?api-version=2023-05-01`,
         {
@@ -253,9 +260,10 @@ class RestAPIAzureService {
                 }
               },
               template: {
+                revisionSuffix: `${appName}-${timestamp}`, // Add revision suffix like your template
                 containers: [{
-                  name: appName,
-                  image: containerImage,
+                  name: appName, // Use same name as app name like your template
+                  image: temporaryImage, // Start with working demo image
                   resources: {
                     cpu: 0.25,
                     memory: '0.5Gi'
@@ -268,7 +276,8 @@ class RestAPIAzureService {
               }
             },
             tags: {
-              createdBy: 'azure-container-template'
+              createdBy: 'azure-container-template',
+              targetImage: userImage || 'demo-image'
             }
           })
         }
@@ -282,8 +291,11 @@ class RestAPIAzureService {
         if (containerApp.properties?.configuration?.ingress?.fqdn) {
           const url = `https://${containerApp.properties.configuration.ingress.fqdn}`;
           sendLog(ws, 'azure-setup', `🌍 Application URL: ${url}`);
-          sendLog(ws, 'azure-setup', '✅ Your React app should be live at this URL!');
-          sendLog(ws, 'azure-setup', '⏳ It may take 1-2 minutes for the container to start up');
+          sendLog(ws, 'azure-setup', '💡 Currently shows demo page - will update when you deploy your image');
+          if (userImage) {
+            sendLog(ws, 'azure-setup', `🚀 Ready to deploy: ${userImage}`);
+            sendLog(ws, 'azure-setup', '📋 Use the downloaded workflow to deploy your actual app');
+          }
         }
         
       } else if (response.status === 409) {
