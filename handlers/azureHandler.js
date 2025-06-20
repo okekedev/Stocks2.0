@@ -109,7 +109,33 @@ class RestAPIAzureService {
     }
   }
 
+  // NEW: Check if resource group exists
+  async checkResourceGroupExists(ws, resourceGroupName) {
+    try {
+      const response = await fetch(
+        `https://management.azure.com/subscriptions/${this.subscriptionId}/resourcegroups/${resourceGroupName}?api-version=2021-04-01`,
+        {
+          headers: {
+            'Authorization': `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      return response.ok;
+    } catch (error) {
+      return false;
+    }
+  }
+
   async createResourceGroupViaRestAPI(ws, resourceGroupName, location) {
+    // Check if resource group already exists
+    const exists = await this.checkResourceGroupExists(ws, resourceGroupName);
+    if (exists) {
+      sendLog(ws, 'azure-setup', `✅ Resource group '${resourceGroupName}' already exists - continuing...`);
+      return;
+    }
+
     sendLog(ws, 'azure-setup', `📁 Creating resource group: ${resourceGroupName}`);
     sendLog(ws, 'azure-setup', `📍 Location: ${location}`);
     
@@ -147,7 +173,33 @@ class RestAPIAzureService {
     }
   }
 
+  // NEW: Check if container environment exists
+  async checkContainerEnvironmentExists(ws, resourceGroupName, environmentName) {
+    try {
+      const response = await fetch(
+        `https://management.azure.com/subscriptions/${this.subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.App/managedEnvironments/${environmentName}?api-version=2023-05-01`,
+        {
+          headers: {
+            'Authorization': `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      return response.ok;
+    } catch (error) {
+      return false;
+    }
+  }
+
   async createContainerEnvironmentViaRestAPI(ws, resourceGroupName, environmentName, location) {
+    // Check if container environment already exists
+    const exists = await this.checkContainerEnvironmentExists(ws, resourceGroupName, environmentName);
+    if (exists) {
+      sendLog(ws, 'azure-setup', `✅ Container environment '${environmentName}' already exists - continuing...`);
+      return;
+    }
+
     sendLog(ws, 'azure-setup', `🌍 Creating container app environment: ${environmentName}`);
     sendLog(ws, 'azure-setup', '⏳ This may take a few minutes...');
     
@@ -241,7 +293,51 @@ class RestAPIAzureService {
     return null;
   }
 
+  // NEW: Check if container app exists
+  async checkContainerAppExists(ws, resourceGroupName, appName) {
+    try {
+      const response = await fetch(
+        `https://management.azure.com/subscriptions/${this.subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.App/containerApps/${appName}?api-version=2023-05-01`,
+        {
+          headers: {
+            'Authorization': `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.ok) {
+        const existingApp = await response.json();
+        if (existingApp.properties?.configuration?.ingress?.fqdn) {
+          const url = `https://${existingApp.properties.configuration.ingress.fqdn}`;
+          sendLog(ws, 'azure-setup', `🌍 Existing application URL: ${url}`);
+        }
+        return { exists: true, app: existingApp };
+      }
+      return { exists: false, app: null };
+    } catch (error) {
+      return { exists: false, app: null };
+    }
+  }
+
   async createContainerAppViaRestAPI(ws, resourceGroupName, appName, environmentName, location, payload) {
+    // Check if container app already exists
+    const { exists, app: existingApp } = await this.checkContainerAppExists(ws, resourceGroupName, appName);
+    if (exists) {
+      sendLog(ws, 'azure-setup', `✅ Container app '${appName}' already exists - continuing with workflow...`);
+      
+      // Still check revision status for existing app
+      setTimeout(async () => {
+        try {
+          await this.checkRevisionStatus(ws, resourceGroupName, appName);
+        } catch (error) {
+          // Silent fail for existing apps
+        }
+      }, 3000);
+      
+      return;
+    }
+
     sendLog(ws, 'azure-setup', `🚀 Creating container app: ${appName}`);
     
     let userImage = null;
@@ -387,8 +483,6 @@ class RestAPIAzureService {
         if (containerApp.properties?.configuration?.ingress?.fqdn) {
           const url = `https://${containerApp.properties.configuration.ingress.fqdn}`;
           sendLog(ws, 'azure-setup', `🌍 Application URL: ${url}`);
-        } else {
-          sendLog(ws, 'azure-setup', '⚠️ No FQDN found in response - container app may not be properly configured', 'warning');
         }
         
         // Wait a moment then check revision status
@@ -471,6 +565,7 @@ class RestAPIAzureService {
             sendLog(ws, 'azure-setup', '⏳ Revision is still starting up...', 'info');
           } else if (status === 'Provisioned') {
             sendLog(ws, 'azure-setup', '✅ Revision is running successfully!', 'info');
+            sendLog(ws, 'azure-setup', '📋 Ready for Step 3: Download deployment workflow');
           }
         } else {
           sendLog(ws, 'azure-setup', '⚠️ No revisions found - this indicates a problem', 'warning');
@@ -497,14 +592,165 @@ class RestAPIAzureService {
       
       sendLog(ws, 'azure-setup', '✅ SDK approach working, using SDK for remaining operations');
       
-      // Use SDK for remaining operations
-      // ... (implement SDK calls here if needed)
-      
       return true;
     } catch (error) {
       sendLog(ws, 'azure-setup', `⚠️ SDK fallback failed: ${error.message}`, 'warning');
       sendLog(ws, 'azure-setup', '✅ Continuing with REST API approach', 'info');
       return false;
+    }
+  }
+
+  // CI/CD Methods
+  async createManagedIdentity(ws, resourceGroupName, identityName, location) {
+    sendLog(ws, 'cicd-setup', `🆔 Creating managed identity: ${identityName}`);
+    
+    try {
+      const response = await fetch(
+        `https://management.azure.com/subscriptions/${this.subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${identityName}?api-version=2023-01-31`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            location: location,
+            tags: {
+              createdBy: 'azure-container-template',
+              purpose: 'github-actions-oidc'
+            }
+          })
+        }
+      );
+
+      if (response.ok || response.status === 201) {
+        sendLog(ws, 'cicd-setup', '✅ Managed identity created successfully');
+      } else if (response.status === 409) {
+        sendLog(ws, 'cicd-setup', '✅ Managed identity already exists');
+      } else {
+        const errorText = await response.text();
+        throw new Error(`Failed to create managed identity: ${response.status} - ${errorText}`);
+      }
+    } catch (error) {
+      throw new Error(`Managed identity creation failed: ${error.message}`);
+    }
+  }
+
+  async getManagedIdentityDetails(ws, resourceGroupName, identityName) {
+    sendLog(ws, 'cicd-setup', '🔍 Getting managed identity details...');
+    
+    try {
+      const response = await fetch(
+        `https://management.azure.com/subscriptions/${this.subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${identityName}?api-version=2023-01-31`,
+        {
+          headers: {
+            'Authorization': `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to get managed identity: ${response.status}`);
+      }
+
+      const identity = await response.json();
+      
+      // Get tenant ID from the access token (decode JWT)
+      const tokenParts = this.accessToken.split('.');
+      const payload = JSON.parse(atob(tokenParts[1]));
+      const tenantId = payload.tid;
+
+      return {
+        clientId: identity.properties.clientId,
+        principalId: identity.properties.principalId,
+        tenantId: tenantId
+      };
+    } catch (error) {
+      throw new Error(`Failed to get identity details: ${error.message}`);
+    }
+  }
+
+  async assignIdentityPermissions(ws, subscriptionId, resourceGroupName, principalId) {
+    sendLog(ws, 'cicd-setup', '🔐 Assigning Contributor permissions...');
+    
+    try {
+      // Generate a UUID for the role assignment
+      const roleAssignmentId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+
+      // Contributor role definition ID
+      const contributorRoleId = 'b24988ac-6180-42a0-ab88-20f7382dd24c';
+      const scope = `/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}`;
+
+      const response = await fetch(
+        `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Authorization/roleAssignments/${roleAssignmentId}?api-version=2022-04-01`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            properties: {
+              roleDefinitionId: `/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/${contributorRoleId}`,
+              principalId: principalId,
+              principalType: 'ServicePrincipal'
+            }
+          })
+        }
+      );
+
+      if (response.ok || response.status === 201) {
+        sendLog(ws, 'cicd-setup', '✅ Contributor permissions assigned');
+      } else if (response.status === 409) {
+        sendLog(ws, 'cicd-setup', '✅ Permissions already exist');
+      } else {
+        const errorText = await response.text();
+        throw new Error(`Failed to assign permissions: ${response.status} - ${errorText}`);
+      }
+    } catch (error) {
+      throw new Error(`Permission assignment failed: ${error.message}`);
+    }
+  }
+
+  async createFederatedCredential(ws, resourceGroupName, identityName, githubOwner, githubRepo) {
+    sendLog(ws, 'cicd-setup', '🔗 Creating federated identity credential...');
+    
+    try {
+      const credentialName = 'github-actions-federated-credential';
+      
+      const response = await fetch(
+        `https://management.azure.com/subscriptions/${this.subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${identityName}/federatedIdentityCredentials/${credentialName}?api-version=2023-01-31`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            properties: {
+              issuer: 'https://token.actions.githubusercontent.com',
+              subject: `repo:${githubOwner}/${githubRepo}:ref:refs/heads/main`,
+              audiences: ['api://AzureADTokenExchange']
+            }
+          })
+        }
+      );
+
+      if (response.ok || response.status === 201) {
+        sendLog(ws, 'cicd-setup', '✅ Federated credential created successfully');
+      } else if (response.status === 409) {
+        sendLog(ws, 'cicd-setup', '✅ Federated credential already exists');
+      } else {
+        const errorText = await response.text();
+        throw new Error(`Failed to create federated credential: ${response.status} - ${errorText}`);
+      }
+    } catch (error) {
+      throw new Error(`Federated credential creation failed: ${error.message}`);
     }
   }
 }
@@ -538,7 +784,38 @@ export async function handleAzureSetup(ws, payload) {
     sendLog(ws, 'azure-setup', `🏗️ Resource Group: ${payload.resourceGroup}`);
     sendLog(ws, 'azure-setup', `🌍 Container Environment: ${payload.environmentName}`);
     sendLog(ws, 'azure-setup', `🚀 Container App: ${payload.appName}`);
-    sendLog(ws, 'azure-setup', '📋 Ready for Step 3: Download deployment workflow');
+
+    // Get the live application URL
+    try {
+      sendLog(ws, 'azure-setup', '🔍 Getting application URL...');
+      const appResponse = await fetch(
+        `https://management.azure.com/subscriptions/${azureService.subscriptionId}/resourceGroups/${payload.resourceGroup}/providers/Microsoft.App/containerApps/${payload.appName}?api-version=2023-05-01`,
+        {
+          headers: {
+            'Authorization': `Bearer ${azureService.accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (appResponse.ok) {
+        const app = await appResponse.json();
+        if (app.properties?.configuration?.ingress?.fqdn) {
+          const liveUrl = `https://${app.properties.configuration.ingress.fqdn}`;
+          sendLog(ws, 'azure-setup', '');
+          sendLog(ws, 'azure-setup', '🌐 ═══════════════════════════════════════');
+          sendLog(ws, 'azure-setup', `🚀 Live Application URL: ${liveUrl}`);
+          sendLog(ws, 'azure-setup', '🌐 ═══════════════════════════════════════');
+          sendLog(ws, 'azure-setup', '');
+          sendLog(ws, 'azure-setup', '✅ Your application is now live and accessible!');
+          sendLog(ws, 'azure-setup', '📋 Next: Configure CI/CD for automatic deployments');
+        } else {
+          sendLog(ws, 'azure-setup', '⚠️ Application URL not yet available - container may still be starting', 'warning');
+        }
+      }
+    } catch (urlError) {
+      sendLog(ws, 'azure-setup', '⚠️ Could not retrieve application URL', 'warning');
+    }
 
     sendStatus(ws, 'azure-setup', 'completed', {
       message: 'Azure infrastructure ready!',
@@ -564,6 +841,65 @@ export async function handleAzureSetup(ws, payload) {
     }
     
     sendStatus(ws, 'azure-setup', 'failed', { error: error.message });
+  }
+}
+
+// CI/CD Setup Handler
+export async function handleCICDSetup(ws, payload) {
+  const azureService = new RestAPIAzureService();
+  
+  try {
+    sendStatus(ws, 'cicd-setup', 'starting');
+    sendLog(ws, 'cicd-setup', '🔄 Setting up continuous deployment with GitHub Actions...');
+
+    // Authenticate
+    await azureService.authenticateWithBrowser(ws);
+    await azureService.getSubscriptionViaRestAPI(ws, payload.subscriptionId);
+
+    // Step 1: Create User-Assigned Managed Identity
+    const identityName = `${payload.appName}-github-identity`;
+    await azureService.createManagedIdentity(ws, payload.resourceGroup, identityName, payload.location);
+
+    // Step 2: Get identity details for OIDC setup
+    const identityDetails = await azureService.getManagedIdentityDetails(ws, payload.resourceGroup, identityName);
+
+    // Step 3: Assign permissions to the identity
+    await azureService.assignIdentityPermissions(ws, payload.subscriptionId, payload.resourceGroup, identityDetails.principalId);
+
+    // Step 4: Create federated identity credential
+    await azureService.createFederatedCredential(ws, payload.resourceGroup, identityName, payload.githubOwner, payload.githubRepo);
+
+    // Step 5: Display the secrets for GitHub
+    sendLog(ws, 'cicd-setup', '🔑 GitHub Secrets Configuration:', 'info');
+    sendLog(ws, 'cicd-setup', '📋 Add these secrets to your GitHub repository:', 'info');
+    sendLog(ws, 'cicd-setup', '', 'info');
+    sendLog(ws, 'cicd-setup', '🗝️ Required GitHub Repository Secrets:', 'info');
+    sendLog(ws, 'cicd-setup', `AZURE_CLIENT_ID: ${identityDetails.clientId}`, 'info');
+    sendLog(ws, 'cicd-setup', `AZURE_TENANT_ID: ${identityDetails.tenantId}`, 'info');
+    sendLog(ws, 'cicd-setup', `AZURE_SUBSCRIPTION_ID: ${payload.subscriptionId}`, 'info');
+    sendLog(ws, 'cicd-setup', '', 'info');
+    sendLog(ws, 'cicd-setup', '🔐 For Private Repository Access:', 'info');
+    sendLog(ws, 'cicd-setup', 'GHCR_TOKEN: [Create a GitHub Personal Access Token]', 'info');
+    sendLog(ws, 'cicd-setup', '📦 Token needs: write:packages, read:packages permissions', 'info');
+    sendLog(ws, 'cicd-setup', '', 'info');
+    sendLog(ws, 'cicd-setup', '📍 To add secrets: Go to your repository → Settings → Secrets and variables → Actions', 'info');
+
+    sendLog(ws, 'cicd-setup', '✅ OIDC configuration completed!', 'info');
+    sendLog(ws, 'cicd-setup', '📋 Ready to download enhanced workflow file', 'info');
+
+    sendStatus(ws, 'cicd-setup', 'completed', {
+      message: 'CI/CD setup completed!',
+      secrets: {
+        AZURE_CLIENT_ID: identityDetails.clientId,
+        AZURE_TENANT_ID: identityDetails.tenantId,
+        AZURE_SUBSCRIPTION_ID: payload.subscriptionId
+      },
+      identityName: identityName
+    });
+
+  } catch (error) {
+    sendLog(ws, 'cicd-setup', `❌ CI/CD setup failed: ${error.message}`, 'error');
+    sendStatus(ws, 'cicd-setup', 'failed', { error: error.message });
   }
 }
 

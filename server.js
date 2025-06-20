@@ -5,7 +5,7 @@ import http from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import { handleAzureSetup, handleAzureDeploy } from './handlers/azureHandler.js';
+import { handleAzureSetup, handleCICDSetup, handleAzureDeploy } from './handlers/azureHandler.js';
 
 
 // ES module compatibility
@@ -129,6 +129,9 @@ wss.on('connection', (ws) => {
       switch (data.type) {
         case 'azure-setup':
           await handleAzureSetup(ws, data.payload);
+          break;
+        case 'cicd-setup':  // 👈 ADDED THIS CASE!
+          await handleCICDSetup(ws, data.payload);
           break;
         case 'github-push':
           await handleGitHubPush(ws, data.payload);
