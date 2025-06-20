@@ -195,9 +195,19 @@ class RestAPIAzureService {
     }
   }
 
-  async createContainerAppViaRestAPI(ws, resourceGroupName, appName, environmentName, location) {
+  async createContainerAppViaRestAPI(ws, resourceGroupName, appName, environmentName, location, payload) {
     sendLog(ws, 'azure-setup', `🚀 Creating container app: ${appName}`);
-    sendLog(ws, 'azure-setup', '📦 Using temporary image for initial setup...');
+    
+    // Require GitHub container details - no fallback
+    if (!payload.githubOwner || !payload.githubRepo) {
+      throw new Error('GitHub owner and repository are required. Please provide your GitHub container details.');
+    }
+    
+    const containerImage = `ghcr.io/${payload.githubOwner}/${payload.githubRepo}:latest`;
+    const targetPort = 3000; // React app runs on port 3000
+    
+    sendLog(ws, 'azure-setup', `📦 Using your container image: ${containerImage}`);
+    sendLog(ws, 'azure-setup', `🔧 Configured for port: ${targetPort}`);
     
     try {
       // Get the environment resource ID
@@ -234,7 +244,7 @@ class RestAPIAzureService {
               configuration: {
                 ingress: {
                   external: true,
-                  targetPort: 80,
+                  targetPort: targetPort,
                   allowInsecure: false,
                   traffic: [{
                     weight: 100,
@@ -245,7 +255,7 @@ class RestAPIAzureService {
               template: {
                 containers: [{
                   name: appName,
-                  image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest',
+                  image: containerImage,
                   resources: {
                     cpu: 0.25,
                     memory: '0.5Gi'
@@ -268,11 +278,12 @@ class RestAPIAzureService {
         const containerApp = await response.json();
         sendLog(ws, 'azure-setup', '✅ Container app created successfully');
         
-        // Get the app URL
+        // Get the app URL and provide clear feedback
         if (containerApp.properties?.configuration?.ingress?.fqdn) {
           const url = `https://${containerApp.properties.configuration.ingress.fqdn}`;
           sendLog(ws, 'azure-setup', `🌍 Application URL: ${url}`);
-          sendLog(ws, 'azure-setup', '💡 This shows a demo page - will be updated with your app when deployed');
+          sendLog(ws, 'azure-setup', '✅ Your React app should be live at this URL!');
+          sendLog(ws, 'azure-setup', '⏳ It may take 1-2 minutes for the container to start up');
         }
         
       } else if (response.status === 409) {
@@ -359,7 +370,7 @@ export async function handleAzureSetup(ws, payload) {
     sendLog(ws, 'azure-setup', '🏗️ Step 3: Creating Azure resources');
     await azureService.createResourceGroupViaRestAPI(ws, payload.resourceGroup, payload.location);
     await azureService.createContainerEnvironmentViaRestAPI(ws, payload.resourceGroup, payload.environmentName, payload.location);
-    await azureService.createContainerAppViaRestAPI(ws, payload.resourceGroup, payload.appName, payload.environmentName, payload.location);
+    await azureService.createContainerAppViaRestAPI(ws, payload.resourceGroup, payload.appName, payload.environmentName, payload.location, payload);
 
     // Optional: Try SDK fallback for future operations
     await azureService.trySDKFallback(ws, payload);
@@ -438,7 +449,7 @@ export async function handleAzureDeploy(ws, payload) {
           ...currentApp.properties.configuration,
           ingress: {
             ...currentApp.properties.configuration.ingress,
-            targetPort: 3000
+            targetPort: 3000 // Ensure correct port for React app
           }
         },
         template: {
