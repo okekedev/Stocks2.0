@@ -41,7 +41,8 @@ function App() {
     location: 'eastus',
     githubContainerUrl: '',
     githubRepo: '',
-    githubOwner: ''
+    githubOwner: '',
+    containerImageName: ''     // Added to store the actual container name
   })
 
   // Azure regions that support Container Apps
@@ -189,7 +190,7 @@ function App() {
       },
       {
         id: Date.now() + 3,
-        message: '📦 Your image will be: ghcr.io/[username]/[repo]:latest',
+        message: '📦 Your image will be: ghcr.io/[username]/[container-name]:latest',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'github'
@@ -211,7 +212,7 @@ function App() {
     ])
   }
 
-  // Function to parse GitHub container URL
+  // Fixed function to parse GitHub container URL correctly
   const parseGitHubContainerUrl = (url) => {
     // Expected format: https://github.com/username/repo/pkgs/container/container-name
     const regex = /https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/pkgs\/container\/([^\/]+)/
@@ -222,13 +223,15 @@ function App() {
       return {
         githubOwner: owner,
         githubRepo: repo,
-        containerName: containerName
+        containerName: containerName,  // This is the actual container image name
+        // Use containerName for the image, not repo
+        imageUrl: `ghcr.io/${owner}/${containerName}:latest`
       }
     }
     return null
   }
 
-  // Handle container URL change and auto-populate fields
+  // Updated handleContainerUrlChange function
   const handleContainerUrlChange = (url) => {
     setAzureConfig(prev => ({ ...prev, githubContainerUrl: url }))
     
@@ -238,7 +241,9 @@ function App() {
         ...prev,
         githubOwner: parsed.githubOwner,
         githubRepo: parsed.githubRepo,
-        // Auto-suggest names based on repo
+        // Use the actual container name from the URL
+        containerImageName: parsed.containerName,
+        // Auto-suggest names based on container name (not repo name)
         appName: prev.appName || `${parsed.containerName}-app`,
         environmentName: prev.environmentName || `${parsed.containerName}-env`,
         resourceGroup: prev.resourceGroup || `${parsed.containerName}-rg`
@@ -338,7 +343,12 @@ function App() {
     ])
   }
 
+  // Updated generateAzureWorkflow function to use correct image name
   const generateAzureWorkflow = (config) => {
+    // Parse the container URL to get the correct container name
+    const parsed = parseGitHubContainerUrl(config.githubContainerUrl)
+    const containerName = parsed ? parsed.containerName : config.githubRepo
+    
     return `name: Build and Deploy to Azure Container Apps
 
 on:
@@ -378,7 +388,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${config.githubOwner}/${config.githubRepo}
+        images: ghcr.io/${config.githubOwner}/${containerName}
         tags: |
           type=raw,value=latest,enable=\${{ github.ref == format('refs/heads/{0}', 'main') }}
           type=raw,value=v\${{ github.run_number }},enable=\${{ github.ref == format('refs/heads/{0}', 'main') }}
@@ -411,7 +421,7 @@ jobs:
         az containerapp update \\
           --name ${config.appName} \\
           --resource-group ${config.resourceGroup} \\
-          --image ghcr.io/${config.githubOwner}/${config.githubRepo}:latest
+          --image ghcr.io/${config.githubOwner}/${containerName}:latest
         
         echo "✅ Deployment completed successfully!"
         
@@ -425,7 +435,7 @@ jobs:
           --output tsv)
         
         echo "🌐 Application URL: https://$APP_URL"
-        echo "📦 Image: ghcr.io/${config.githubOwner}/${config.githubRepo}:latest"
+        echo "📦 Image: ghcr.io/${config.githubOwner}/${containerName}:latest"
         echo "🏷️ Build: v\${{ github.run_number }}"`
   }
 
@@ -612,6 +622,19 @@ jobs:
                     Choose the Azure region closest to your users
                   </p>
                 </div>
+
+                {/* Show parsed container info if URL is valid */}
+                {parseGitHubContainerUrl(azureConfig.githubContainerUrl) && (
+                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
+                    <h4 className="text-sm font-semibold text-blue-400 mb-2">📦 Parsed Container Info:</h4>
+                    <div className="text-xs text-blue-300 space-y-1">
+                      <div>Owner: {parseGitHubContainerUrl(azureConfig.githubContainerUrl).githubOwner}</div>
+                      <div>Repository: {parseGitHubContainerUrl(azureConfig.githubContainerUrl).githubRepo}</div>
+                      <div>Container: {parseGitHubContainerUrl(azureConfig.githubContainerUrl).containerName}</div>
+                      <div>Image: {parseGitHubContainerUrl(azureConfig.githubContainerUrl).imageUrl}</div>
+                    </div>
+                  </div>
+                )}
               </div>
               
               <div className="flex space-x-3 mt-6">

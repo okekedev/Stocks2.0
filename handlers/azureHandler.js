@@ -225,45 +225,69 @@ class RestAPIAzureService {
     return '2025-01-01'; // fallback
   }
 
+  // Fixed function to parse GitHub container URL correctly
+  parseGitHubContainerUrl(url) {
+    if (!url) return null;
+    
+    // Expected format: https://github.com/username/repo/pkgs/container/container-name
+    const regex = /https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/pkgs\/container\/([^\/\?]+)/;
+    const match = url.match(regex);
+    
+    if (match) {
+      const [, owner, repo, containerName] = match;
+      return {
+        githubOwner: owner,
+        githubRepo: repo,
+        containerName: containerName,  // This is the actual container image name
+        imageUrl: `ghcr.io/${owner}/${containerName}:latest`
+      };
+    }
+    return null;
+  }
+
   async createContainerAppViaRestAPI(ws, resourceGroupName, appName, environmentName, location, payload) {
     sendLog(ws, 'azure-setup', `🚀 Creating container app: ${appName}`);
     
     // Debug: Log the payload to see what we're receiving
     sendLog(ws, 'azure-setup', `🔍 Debug - Received payload keys: ${Object.keys(payload).join(', ')}`);
+    sendLog(ws, 'azure-setup', `🔍 Debug - Payload values:`, 'info');
+    sendLog(ws, 'azure-setup', `  - githubOwner: "${payload.githubOwner || 'not set'}"`, 'info');
+    sendLog(ws, 'azure-setup', `  - githubRepo: "${payload.githubRepo || 'not set'}"`, 'info');
+    sendLog(ws, 'azure-setup', `  - containerImageName: "${payload.containerImageName || 'not set'}"`, 'info');
+    sendLog(ws, 'azure-setup', `  - githubContainerUrl: "${payload.githubContainerUrl || 'not set'}"`, 'info');
     
-    // Use the GitHub image if available, otherwise fall back to demo image
     let userImage = null;
     let githubOwner = '';
-    let githubRepo = '';
+    let containerName = '';
     
-    // Check multiple ways the GitHub info might be provided
-    if (payload.githubOwner && payload.githubRepo) {
+    // Priority 1: Use containerImageName if provided by frontend
+    if (payload.githubOwner && payload.containerImageName) {
       githubOwner = payload.githubOwner;
-      githubRepo = payload.githubRepo;
-      userImage = `ghcr.io/${githubOwner}/${githubRepo}:latest`;
-      sendLog(ws, 'azure-setup', `🔍 Using direct owner/repo: ${githubOwner}/${githubRepo}`);
-    } else if (payload.githubContainerUrl) {
-      // Try to parse the container URL - handle both package and repo URLs
+      containerName = payload.containerImageName;
+      userImage = `ghcr.io/${githubOwner}/${containerName}:latest`;
+      sendLog(ws, 'azure-setup', `🔍 ✅ Using containerImageName from frontend: ${githubOwner}/${containerName}`);
+    }
+    // Priority 2: Parse the GitHub container URL
+    else if (payload.githubContainerUrl) {
       sendLog(ws, 'azure-setup', `🔍 Parsing container URL: ${payload.githubContainerUrl}`);
       
-      // Match GitHub package URLs: https://github.com/user/repo/pkgs/container/package-name
-      let urlMatch = payload.githubContainerUrl.match(/github\.com\/([^\/]+)\/([^\/]+)\/pkgs\/container\/([^\/\?]+)/);
-      if (urlMatch) {
-        githubOwner = urlMatch[1];
-        githubRepo = urlMatch[2];
-        const packageName = urlMatch[3];
-        userImage = `ghcr.io/${githubOwner}/${packageName.toLowerCase()}:latest`;
-        sendLog(ws, 'azure-setup', `🔍 Parsed package URL - Owner: ${githubOwner}, Repo: ${githubRepo}, Package: ${packageName.toLowerCase()}`);
+      const parsed = this.parseGitHubContainerUrl(payload.githubContainerUrl);
+      if (parsed) {
+        githubOwner = parsed.githubOwner;
+        containerName = parsed.containerName;
+        userImage = parsed.imageUrl;
+        sendLog(ws, 'azure-setup', `🔍 ✅ Parsed package URL - Owner: ${githubOwner}, Container: ${containerName}`);
+        sendLog(ws, 'azure-setup', `🔍 ✅ Image URL: ${userImage}`);
       } else {
-        // Try standard repo URL: https://github.com/user/repo
-        urlMatch = payload.githubContainerUrl.match(/github\.com\/([^\/]+)\/([^\/\?]+)/);
-        if (urlMatch) {
-          githubOwner = urlMatch[1];
-          githubRepo = urlMatch[2];
-          userImage = `ghcr.io/${githubOwner}/${githubRepo.toLowerCase()}:latest`;
-          sendLog(ws, 'azure-setup', `🔍 Parsed repo URL - Owner: ${githubOwner}, Repo: ${githubRepo}`);
-        }
+        sendLog(ws, 'azure-setup', `⚠️ Could not parse GitHub container URL`, 'warning');
       }
+    }
+    // Priority 3: Fall back to direct owner/repo (legacy)
+    else if (payload.githubOwner && payload.githubRepo) {
+      githubOwner = payload.githubOwner;
+      containerName = payload.githubRepo.toLowerCase(); // Convert to lowercase for container registry
+      userImage = `ghcr.io/${githubOwner}/${containerName}:latest`;
+      sendLog(ws, 'azure-setup', `🔍 ⚠️ Using legacy owner/repo (converted to lowercase): ${githubOwner}/${containerName}`);
     }
     
     const deploymentImage = userImage || 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest';
@@ -272,15 +296,15 @@ class RestAPIAzureService {
     if (userImage) {
       sendLog(ws, 'azure-setup', `📦 ✅ Using GitHub image: ${userImage}`);
       sendLog(ws, 'azure-setup', `🌐 Port configured: ${targetPort}`);
-      sendLog(ws, 'azure-setup', `👤 Owner: ${githubOwner}, 📦 Repo: ${githubRepo}`);
+      sendLog(ws, 'azure-setup', `👤 Owner: ${githubOwner}, 📦 Container: ${containerName}`);
       sendLog(ws, 'azure-setup', `⚠️  Note: Ensure your GitHub package is publicly accessible`);
       sendLog(ws, 'azure-setup', `💡 If private, you'll need to add registry credentials to Azure`);
     } else {
       sendLog(ws, 'azure-setup', `📦 ❌ No GitHub image found - using demo image: ${deploymentImage}`, 'warning');
-      sendLog(ws, 'azure-setup', `🔍 Debug info:`, 'warning');
-      sendLog(ws, 'azure-setup', `  - githubOwner: "${payload.githubOwner}"`, 'warning');
-      sendLog(ws, 'azure-setup', `  - githubRepo: "${payload.githubRepo}"`, 'warning');
-      sendLog(ws, 'azure-setup', `  - githubContainerUrl: "${payload.githubContainerUrl}"`, 'warning');
+      sendLog(ws, 'azure-setup', `🔍 Debug info - No valid image source found:`, 'warning');
+      sendLog(ws, 'azure-setup', `  - githubOwner: "${payload.githubOwner || 'missing'}"`, 'warning');
+      sendLog(ws, 'azure-setup', `  - containerImageName: "${payload.containerImageName || 'missing'}"`, 'warning');
+      sendLog(ws, 'azure-setup', `  - githubContainerUrl: "${payload.githubContainerUrl || 'missing'}"`, 'warning');
     }
     
     try {
@@ -351,12 +375,15 @@ class RestAPIAzureService {
         },
         tags: {
           createdBy: 'azure-container-template',
-          targetImage: userImage || 'demo-image'
+          targetImage: userImage || 'demo-image',
+          parsedContainer: containerName || 'none',
+          githubOwner: githubOwner || 'none'
         }
       };
 
       sendLog(ws, 'azure-setup', '🔍 Using configuration that matches working template...');
       sendLog(ws, 'azure-setup', `📦 Request body size: ${JSON.stringify(containerAppConfig).length} chars`);
+      sendLog(ws, 'azure-setup', `📦 Final image being deployed: ${deploymentImage}`);
       
       // Log the exact configuration being sent for debugging
       sendLog(ws, 'azure-setup', '🔍 Debug - Full request body:');
@@ -383,9 +410,16 @@ class RestAPIAzureService {
         sendLog(ws, 'azure-setup', `📋 Container app ID: ${containerApp.id || 'Unknown'}`);
         sendLog(ws, 'azure-setup', `📊 Provisioning state: ${containerApp.properties?.provisioningState || 'Unknown'}`);
         
-        // Log the full response to see what we're actually getting
-        sendLog(ws, 'azure-setup', '🔍 Debug - Full Azure response:');
-        sendLog(ws, 'azure-setup', JSON.stringify(containerApp, null, 2));
+        // Log the actual image that was deployed
+        const deployedImage = containerApp.properties?.template?.containers?.[0]?.image;
+        sendLog(ws, 'azure-setup', `📦 Deployed image: ${deployedImage}`);
+        
+        // Check if the image matches what we intended
+        if (deployedImage === deploymentImage) {
+          sendLog(ws, 'azure-setup', '✅ Image deployment matches expected image');
+        } else {
+          sendLog(ws, 'azure-setup', `⚠️ Image mismatch! Expected: ${deploymentImage}, Got: ${deployedImage}`, 'warning');
+        }
         
         // Get the app URL and provide clear feedback
         if (containerApp.properties?.configuration?.ingress?.fqdn) {
@@ -474,16 +508,39 @@ class RestAPIAzureService {
           const latestRevision = revisions.value[0];
           const status = latestRevision.properties?.provisioningState || 'Unknown';
           const trafficWeight = latestRevision.properties?.trafficWeight || 0;
+          const revisionImage = latestRevision.properties?.template?.containers?.[0]?.image || 'Unknown';
           
           sendLog(ws, 'azure-setup', `🔍 Latest revision: ${latestRevision.name}`);
           sendLog(ws, 'azure-setup', `📊 Status: ${status}, Traffic: ${trafficWeight}%`);
+          sendLog(ws, 'azure-setup', `📦 Revision image: ${revisionImage}`);
           
           if (status === 'Failed') {
             sendLog(ws, 'azure-setup', '❌ Revision failed to start!', 'error');
             sendLog(ws, 'azure-setup', '💡 This usually means:', 'info');
-            sendLog(ws, 'azure-setup', '  - Image failed to pull', 'info');
+            sendLog(ws, 'azure-setup', '  - Image failed to pull (check if image exists and is public)', 'info');
             sendLog(ws, 'azure-setup', '  - App crashed on startup', 'info');
             sendLog(ws, 'azure-setup', '  - Wrong port configuration', 'info');
+            
+            // Get more detailed error info
+            try {
+              const revisionDetailResponse = await fetch(
+                `https://management.azure.com/subscriptions/${this.subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.App/containerApps/${appName}/revisions/${latestRevision.name}?api-version=2025-01-01`,
+                {
+                  headers: {
+                    'Authorization': `Bearer ${this.accessToken}`,
+                    'Content-Type': 'application/json'
+                  }
+                }
+              );
+              
+              if (revisionDetailResponse.ok) {
+                const revisionDetail = await revisionDetailResponse.json();
+                sendLog(ws, 'azure-setup', '🔍 Revision failure details:', 'error');
+                sendLog(ws, 'azure-setup', JSON.stringify(revisionDetail.properties?.template || 'No details available', null, 2), 'error');
+              }
+            } catch (detailError) {
+              sendLog(ws, 'azure-setup', '⚠️ Could not get revision failure details', 'warning');
+            }
           } else if (status === 'Provisioning') {
             sendLog(ws, 'azure-setup', '⏳ Revision is still starting up...', 'info');
           } else if (status === 'Provisioned') {
@@ -491,6 +548,10 @@ class RestAPIAzureService {
           }
         } else {
           sendLog(ws, 'azure-setup', '⚠️ No revisions found - this indicates a problem', 'warning');
+          sendLog(ws, 'azure-setup', '💡 Possible causes:', 'warning');
+          sendLog(ws, 'azure-setup', '  - Container App is still being created', 'warning');
+          sendLog(ws, 'azure-setup', '  - Image validation failed before revision creation', 'warning');
+          sendLog(ws, 'azure-setup', '  - Infrastructure provisioning issues', 'warning');
         }
       }
     } catch (error) {
@@ -595,8 +656,22 @@ export async function handleAzureDeploy(ws, payload) {
     await azureService.authenticateWithBrowser(ws);
     await azureService.getSubscriptionViaRestAPI(ws, payload.subscriptionId);
 
-    // Update container app with new image
-    const imageUrl = `ghcr.io/${payload.githubOwner}/${payload.githubRepo}:latest`;
+    // Parse the container URL to get the correct image name
+    const parsed = azureService.parseGitHubContainerUrl(payload.githubContainerUrl);
+    let imageUrl;
+    
+    if (parsed) {
+      imageUrl = parsed.imageUrl;
+      sendLog(ws, 'azure-deploy', `🔍 Parsed container URL: ${imageUrl}`);
+    } else if (payload.containerImageName && payload.githubOwner) {
+      imageUrl = `ghcr.io/${payload.githubOwner}/${payload.containerImageName}:latest`;
+      sendLog(ws, 'azure-deploy', `🔍 Using containerImageName: ${imageUrl}`);
+    } else {
+      // Fallback to legacy format
+      imageUrl = `ghcr.io/${payload.githubOwner}/${payload.githubRepo}:latest`;
+      sendLog(ws, 'azure-deploy', `🔍 Using legacy format: ${imageUrl}`);
+    }
+    
     sendLog(ws, 'azure-deploy', `🚀 Updating container app with image: ${imageUrl}`);
     
     // Get current app
