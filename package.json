@@ -30,6 +30,11 @@
     "cors": "^2.8.5",
     "ws": "^8.14.0",
     "@octokit/rest": "^20.0.0",
-    "simple-git": "^3.20.0"
+    "simple-git": "^3.20.0",
+    "@azure/arm-resources": "^5.2.0",
+    "@azure/arm-containerregistry": "^10.1.0",
+    "@azure/arm-appcontainers": "^2.0.0",
+    "@azure/identity": "^4.0.0",
+    "@azure/core-auth": "^1.7.0"
   }
 }

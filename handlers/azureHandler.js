@@ -1,46 +1,390 @@
-import { executeCommand } from '../utils/commandUtils.js';
+import { DefaultAzureCredential, InteractiveBrowserCredential } from '@azure/identity';
+import { ResourceManagementClient } from '@azure/arm-resources';
+import { ContainerRegistryManagementClient } from '@azure/arm-containerregistry';
+import { ContainerAppsAPIClient } from '@azure/arm-appcontainers';
 import { sendLog, sendStatus } from '../utils/wsUtils.js';
-import fs from 'fs';
-import path from 'path';
 
-// Step 1: Azure Infrastructure Setup (moved from dockerHandler.js)
+class AzureSDKService {
+  constructor() {
+    this.credential = null;
+    this.subscriptionId = null;
+    this.resourceClient = null;
+    this.registryClient = null;
+    this.containerClient = null;
+  }
+
+  async authenticate(ws) {
+    sendLog(ws, 'azure-setup', '🔐 Authenticating with Azure...');
+    
+    try {
+      // Try default credential first (works if already logged in via CLI, env vars, etc.)
+      this.credential = new DefaultAzureCredential();
+      
+      // Test the credential by listing subscriptions
+      const testClient = new ResourceManagementClient(this.credential, '00000000-0000-0000-0000-000000000000');
+      const subscriptions = [];
+      
+      for await (const subscription of testClient.subscriptions.list()) {
+        subscriptions.push(subscription);
+        break; // Just get the first one to test auth
+      }
+      
+      if (subscriptions.length > 0) {
+        sendLog(ws, 'azure-setup', '✅ Using existing Azure credentials');
+        return subscriptions[0].subscriptionId;
+      }
+    } catch (error) {
+      sendLog(ws, 'azure-setup', `🔍 Default auth failed: ${error.message}`);
+    }
+    
+    // Fall back to interactive browser login
+    sendLog(ws, 'azure-setup', '🔑 Opening browser for Azure login...');
+    sendLog(ws, 'azure-setup', '⏳ Please complete login in the browser window...');
+    
+    try {
+      this.credential = new InteractiveBrowserCredential({
+        clientId: "04b07795-8ddb-461a-bbee-02f9e1bf7b46", // Azure CLI client ID
+        tenantId: "common",
+        redirectUri: "http://localhost:3000"
+      });
+      
+      // Test the new credential
+      const testClient = new ResourceManagementClient(this.credential, '00000000-0000-0000-0000-000000000000');
+      const subscriptions = [];
+      
+      for await (const subscription of testClient.subscriptions.list()) {
+        subscriptions.push(subscription);
+        break; // Just get the first one
+      }
+      
+      if (subscriptions.length > 0) {
+        sendLog(ws, 'azure-setup', '✅ Successfully authenticated with Azure');
+        return subscriptions[0].subscriptionId;
+      } else {
+        throw new Error('No subscriptions found for this account');
+      }
+    } catch (authError) {
+      throw new Error(`Authentication failed: ${authError.message}`);
+    }
+  }
+
+  async initializeClients(subscriptionId) {
+    this.subscriptionId = subscriptionId;
+    this.resourceClient = new ResourceManagementClient(this.credential, subscriptionId);
+    this.registryClient = new ContainerRegistryManagementClient(this.credential, subscriptionId);
+    this.containerClient = new ContainerAppsAPIClient(this.credential, subscriptionId);
+  }
+
+  async createResourceGroup(ws, resourceGroupName, location) {
+    sendLog(ws, 'azure-setup', `📁 Creating resource group: ${resourceGroupName}`);
+    sendLog(ws, 'azure-setup', `📍 Location: ${location}`);
+    
+    try {
+      const resourceGroup = {
+        location: location,
+        tags: {
+          createdBy: 'azure-container-template',
+          environment: 'development'
+        }
+      };
+
+      const result = await this.resourceClient.resourceGroups.createOrUpdate(
+        resourceGroupName,
+        resourceGroup
+      );
+
+      sendLog(ws, 'azure-setup', '✅ Resource group created successfully');
+      return result;
+    } catch (error) {
+      if (error.statusCode === 409 || error.code === 'ResourceGroupExists') {
+        sendLog(ws, 'azure-setup', '✅ Resource group already exists');
+        return await this.resourceClient.resourceGroups.get(resourceGroupName);
+      }
+      throw error;
+    }
+  }
+
+  async createContainerRegistry(ws, resourceGroupName, registryName, location) {
+    sendLog(ws, 'azure-setup', `📦 Creating Azure Container Registry: ${registryName}`);
+    sendLog(ws, 'azure-setup', '⚙️ SKU: Basic (can be upgraded later)');
+    
+    try {
+      const registryParams = {
+        location: location,
+        sku: {
+          name: 'Basic'
+        },
+        adminUserEnabled: true,
+        tags: {
+          createdBy: 'azure-container-template'
+        }
+      };
+
+      const operation = await this.registryClient.registries.beginCreateAndWait(
+        resourceGroupName,
+        registryName,
+        registryParams
+      );
+
+      sendLog(ws, 'azure-setup', '✅ Container registry created successfully');
+      sendLog(ws, 'azure-setup', `🔗 Registry URL: ${registryName}.azurecr.io`);
+      
+      return operation;
+    } catch (error) {
+      if (error.statusCode === 409 || error.code === 'RegistryNameNotAvailable') {
+        sendLog(ws, 'azure-setup', '✅ Container registry already exists');
+        try {
+          return await this.registryClient.registries.get(resourceGroupName, registryName);
+        } catch (getError) {
+          sendLog(ws, 'azure-setup', '⚠️ Registry name may be taken by another subscription', 'warning');
+          throw new Error(`Registry name "${registryName}" is not available. Try a different name.`);
+        }
+      }
+      throw error;
+    }
+  }
+
+  async createContainerEnvironment(ws, resourceGroupName, environmentName, location) {
+    sendLog(ws, 'azure-setup', `🌍 Creating container app environment: ${environmentName}`);
+    
+    try {
+      const environmentParams = {
+        location: location,
+        properties: {
+          zoneRedundant: false
+        },
+        tags: {
+          createdBy: 'azure-container-template'
+        }
+      };
+
+      const operation = await this.containerClient.managedEnvironments.beginCreateOrUpdateAndWait(
+        resourceGroupName,
+        environmentName,
+        environmentParams
+      );
+
+      sendLog(ws, 'azure-setup', '✅ Container environment created successfully');
+      sendLog(ws, 'azure-setup', '🔧 Configured for consumption-based scaling');
+      
+      return operation;
+    } catch (error) {
+      if (error.statusCode === 409) {
+        sendLog(ws, 'azure-setup', '✅ Container environment already exists');
+        return await this.containerClient.managedEnvironments.get(resourceGroupName, environmentName);
+      }
+      throw error;
+    }
+  }
+
+  async createContainerApp(ws, resourceGroupName, appName, environmentName, location) {
+    sendLog(ws, 'azure-setup', `🚀 Creating container app: ${appName}`);
+    sendLog(ws, 'azure-setup', '📦 Using temporary public image: mcr.microsoft.com/azuredocs/containerapps-helloworld:latest');
+    
+    try {
+      // Get environment resource ID
+      const environment = await this.containerClient.managedEnvironments.get(
+        resourceGroupName, 
+        environmentName
+      );
+
+      const containerAppParams = {
+        location: location,
+        properties: {
+          managedEnvironmentId: environment.id,
+          configuration: {
+            ingress: {
+              external: true,
+              targetPort: 80,
+              allowInsecure: false,
+              traffic: [
+                {
+                  weight: 100,
+                  latestRevision: true
+                }
+              ]
+            }
+          },
+          template: {
+            containers: [
+              {
+                name: appName,
+                image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest',
+                resources: {
+                  cpu: 0.25,
+                  memory: '0.5Gi'
+                }
+              }
+            ],
+            scale: {
+              minReplicas: 0,
+              maxReplicas: 3
+            }
+          }
+        },
+        tags: {
+          createdBy: 'azure-container-template'
+        }
+      };
+
+      const operation = await this.containerClient.containerApps.beginCreateOrUpdateAndWait(
+        resourceGroupName,
+        appName,
+        containerAppParams
+      );
+
+      sendLog(ws, 'azure-setup', '✅ Container app created successfully');
+      
+      // Get the app URL
+      if (operation.properties?.configuration?.ingress?.fqdn) {
+        const url = `https://${operation.properties.configuration.ingress.fqdn}`;
+        sendLog(ws, 'azure-setup', `🌍 Application URL: ${url}`);
+      }
+      
+      sendLog(ws, 'azure-setup', '💡 This will be updated with your custom image when you deploy');
+      
+      return operation;
+    } catch (error) {
+      if (error.statusCode === 409) {
+        sendLog(ws, 'azure-setup', '✅ Container app already exists');
+        const app = await this.containerClient.containerApps.get(resourceGroupName, appName);
+        
+        if (app.properties?.configuration?.ingress?.fqdn) {
+          const url = `https://${app.properties.configuration.ingress.fqdn}`;
+          sendLog(ws, 'azure-setup', `🌍 Application URL: ${url}`);
+        }
+        
+        return app;
+      }
+      throw error;
+    }
+  }
+
+  async updateContainerApp(ws, resourceGroupName, appName, imageUrl) {
+    sendLog(ws, 'azure-deploy', `🚀 Updating container app: ${appName}`);
+    sendLog(ws, 'azure-deploy', `📦 Using image: ${imageUrl}`);
+    
+    try {
+      // Get current app configuration
+      const currentApp = await this.containerClient.containerApps.get(resourceGroupName, appName);
+      
+      // Update the container image and target port for custom image
+      const updatedApp = {
+        location: currentApp.location,
+        properties: {
+          ...currentApp.properties,
+          configuration: {
+            ...currentApp.properties.configuration,
+            ingress: {
+              ...currentApp.properties.configuration.ingress,
+              targetPort: 3000 // Update port for our custom app
+            }
+          },
+          template: {
+            ...currentApp.properties.template,
+            containers: [
+              {
+                ...currentApp.properties.template.containers[0],
+                image: imageUrl
+              }
+            ]
+          }
+        }
+      };
+
+      const operation = await this.containerClient.containerApps.beginCreateOrUpdateAndWait(
+        resourceGroupName,
+        appName,
+        updatedApp
+      );
+
+      sendLog(ws, 'azure-deploy', '✅ Container app updated successfully');
+      
+      if (operation.properties?.configuration?.ingress?.fqdn) {
+        const url = `https://${operation.properties.configuration.ingress.fqdn}`;
+        sendLog(ws, 'azure-deploy', `🌍 Application URL: ${url}`);
+      }
+      
+      return operation;
+    } catch (error) {
+      throw new Error(`Failed to update container app: ${error.message}`);
+    }
+  }
+}
+
+// Step 1: Azure Infrastructure Setup using Azure SDK
 export async function handleAzureSetup(ws, payload) {
-  const sessionId = `azure-setup-${Date.now()}`;
+  const azureService = new AzureSDKService();
   
   try {
     sendStatus(ws, 'azure-setup', 'starting');
     sendLog(ws, 'azure-setup', '☁️ Setting up Azure infrastructure...');
 
-    // Check Azure CLI
-    await checkAzureCLI(ws);
+    // Step 1: Authenticate
+    let subscriptionId = payload.subscriptionId;
     
-    // Handle Azure login
-    await handleAzureLogin(ws);
+    if (!subscriptionId) {
+      sendLog(ws, 'azure-setup', '⚠️ No subscription ID provided, trying to detect...', 'warning');
+      subscriptionId = await azureService.authenticate(ws);
+    } else {
+      // Use provided subscription ID but still need to authenticate
+      sendLog(ws, 'azure-setup', '🔐 Authenticating with Azure...');
+      try {
+        azureService.credential = new DefaultAzureCredential();
+        sendLog(ws, 'azure-setup', '✅ Using existing Azure credentials');
+      } catch (error) {
+        sendLog(ws, 'azure-setup', '🔑 Opening browser for Azure login...');
+        azureService.credential = new InteractiveBrowserCredential({
+          clientId: "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+          tenantId: "common",
+          redirectUri: "http://localhost:3000"
+        });
+        sendLog(ws, 'azure-setup', '✅ Successfully authenticated with Azure');
+      }
+    }
     
-    // Create resource group
-    await createResourceGroup(ws, payload);
+    if (!subscriptionId) {
+      throw new Error('Azure subscription ID is required. Please provide it in the form or ensure you have access to Azure subscriptions.');
+    }
     
-    // Create container registry
-    await createContainerRegistry(ws, payload);
+    sendLog(ws, 'azure-setup', `🔧 Using subscription: ${subscriptionId}`);
     
-    // Create container app environment
-    await createContainerEnvironment(ws, payload);
+    // Step 2: Initialize clients
+    await azureService.initializeClients(subscriptionId);
     
-    // Create initial container app (with public image)
-    await createInitialContainerApp(ws, payload);
+    // Step 3: Create resource group
+    await azureService.createResourceGroup(ws, payload.resourceGroup, payload.location);
+    
+    // Step 4: Create container registry (optional)
+    if (payload.createRegistry !== false) {
+      const registryName = payload.registryName || `acr${payload.appName.replace(/[^a-zA-Z0-9]/g, '')}`;
+      await azureService.createContainerRegistry(ws, payload.resourceGroup, registryName, payload.location);
+    }
+    
+    // Step 5: Create container environment
+    await azureService.createContainerEnvironment(ws, payload.resourceGroup, payload.environmentName, payload.location);
+    
+    // Step 6: Create container app
+    await azureService.createContainerApp(ws, payload.resourceGroup, payload.appName, payload.environmentName, payload.location);
 
     sendLog(ws, 'azure-setup', '🎉 Azure infrastructure setup completed!');
     sendLog(ws, 'azure-setup', `🏗️ Resource Group: ${payload.resourceGroup}`);
-    sendLog(ws, 'azure-setup', `📦 Container Registry: ${payload.registryName}.azurecr.io`);
+    
+    if (payload.createRegistry !== false) {
+      const registryName = payload.registryName || `acr${payload.appName.replace(/[^a-zA-Z0-9]/g, '')}`;
+      sendLog(ws, 'azure-setup', `📦 Container Registry: ${registryName}.azurecr.io`);
+    }
+    
     sendLog(ws, 'azure-setup', `🌍 Container Environment: ${payload.environmentName}`);
     sendLog(ws, 'azure-setup', `🚀 Container App: ${payload.appName}`);
 
     sendStatus(ws, 'azure-setup', 'completed', {
       message: 'Azure infrastructure ready!',
       resourceGroup: payload.resourceGroup,
-      registryName: payload.registryName,
+      registryName: payload.registryName || `acr${payload.appName.replace(/[^a-zA-Z0-9]/g, '')}`,
       environmentName: payload.environmentName,
-      appName: payload.appName
+      appName: payload.appName,
+      subscriptionId: subscriptionId
     });
 
   } catch (error) {
@@ -49,186 +393,32 @@ export async function handleAzureSetup(ws, payload) {
   }
 }
 
-// Step 2: Azure Deployment (existing function)
+// Step 2: Azure Deployment using Azure SDK
 export async function handleAzureDeploy(ws, payload) {
-  const sessionId = `azure-${Date.now()}`;
+  const azureService = new AzureSDKService();
   
   try {
-    sendStatus(ws, 'azure', 'starting');
-    sendLog(ws, 'azure', '☁️ Starting Azure deployment process...');
+    sendStatus(ws, 'azure-deploy', 'starting');
+    sendLog(ws, 'azure-deploy', '☁️ Starting Azure deployment...');
 
-    // Check Azure CLI
-    await checkAzureCLI(ws, sessionId);
+    // Authenticate and initialize
+    const subscriptionId = payload.subscriptionId || await azureService.authenticate(ws);
+    await azureService.initializeClients(subscriptionId);
     
-    // Handle Azure login
-    await handleAzureLogin(ws, sessionId);
+    // Ensure resource group exists
+    await azureService.createResourceGroup(ws, payload.resourceGroup, payload.location);
     
-    // Create/check resource group
-    await handleResourceGroup(ws, sessionId, payload.resourceGroup, payload.location);
-    
-    // Deploy infrastructure
-    await deployContainerApp(ws, sessionId, payload);
-    
-    // Get final app URL
-    await getAppUrl(ws, sessionId, payload.appName, payload.resourceGroup);
+    // Deploy the custom container image
+    const imageUrl = `ghcr.io/${payload.githubOwner}/${payload.githubRepo}:latest`;
+    await azureService.updateContainerApp(ws, payload.resourceGroup, payload.appName, imageUrl);
 
-    sendLog(ws, 'azure', '🎉 Deployment completed successfully!');
-    sendStatus(ws, 'azure', 'completed', {
+    sendLog(ws, 'azure-deploy', '🎉 Deployment completed successfully!');
+    sendStatus(ws, 'azure-deploy', 'completed', {
       message: 'Azure deployment completed successfully!'
     });
 
   } catch (error) {
-    sendLog(ws, 'azure', `❌ Deployment failed: ${error.message}`, 'error');
-    sendStatus(ws, 'azure', 'failed', { error: error.message });
-  }
-}
-
-// Helper functions for Azure Setup (simulated for demo)
-async function checkAzureCLI(ws, sessionId = null) {
-  sendLog(ws, 'azure-setup', '🔍 Checking Azure CLI installation...');
-  
-  try {
-    if (sessionId) {
-      await executeCommand('az', ['--version'], {}, ws, `${sessionId}-version`, 'azure');
-    } else {
-      // Simulate Azure CLI check for setup
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-    sendLog(ws, 'azure-setup', '✅ Azure CLI found');
-  } catch (error) {
-    sendLog(ws, 'azure-setup', '❌ Azure CLI not installed', 'error');
-    sendLog(ws, 'azure-setup', '📥 Install from: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli');
-    throw error;
-  }
-}
-
-async function handleAzureLogin(ws, sessionId = null) {
-  sendLog(ws, 'azure-setup', '🔐 Checking Azure authentication...');
-  
-  try {
-    if (sessionId) {
-      await executeCommand('az', ['account', 'show'], {}, ws, `${sessionId}-account`, 'azure');
-      sendLog(ws, 'azure', '✅ Already logged into Azure');
-    } else {
-      // Simulate login for setup
-      await new Promise(resolve => setTimeout(resolve, 800));
-      sendLog(ws, 'azure-setup', '🔑 Opening Azure login (OAuth popup)...');
-      
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      sendLog(ws, 'azure-setup', '✅ Successfully authenticated with Azure');
-    }
-  } catch (error) {
-    if (sessionId) {
-      sendLog(ws, 'azure', '🔑 Opening Azure login...');
-      await executeCommand('az', ['login'], {}, ws, `${sessionId}-login`, 'azure');
-      sendLog(ws, 'azure', '✅ Successfully logged into Azure');
-    } else {
-      throw error;
-    }
-  }
-}
-
-async function createResourceGroup(ws, payload) {
-  sendLog(ws, 'azure-setup', `📁 Creating resource group: ${payload.resourceGroup}`);
-  sendLog(ws, 'azure-setup', `📍 Location: ${payload.location}`);
-  
-  await new Promise(resolve => setTimeout(resolve, 1200));
-  sendLog(ws, 'azure-setup', '✅ Resource group created');
-}
-
-async function createContainerRegistry(ws, payload) {
-  sendLog(ws, 'azure-setup', `📦 Creating Azure Container Registry: ${payload.registryName || 'acr-' + payload.appName}`);
-  sendLog(ws, 'azure-setup', '⚙️ SKU: Basic (can be upgraded later)');
-  
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  sendLog(ws, 'azure-setup', '✅ Container registry created');
-  sendLog(ws, 'azure-setup', `🔗 Registry URL: ${payload.registryName || 'acr-' + payload.appName}.azurecr.io`);
-}
-
-async function createContainerEnvironment(ws, payload) {
-  sendLog(ws, 'azure-setup', `🌍 Creating container app environment: ${payload.environmentName}`);
-  
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  sendLog(ws, 'azure-setup', '✅ Container environment ready');
-  sendLog(ws, 'azure-setup', '🔧 Configured for consumption-based scaling');
-}
-
-async function createInitialContainerApp(ws, payload) {
-  sendLog(ws, 'azure-setup', `🚀 Creating container app: ${payload.appName}`);
-  sendLog(ws, 'azure-setup', '📦 Using temporary public image: mcr.microsoft.com/azuredocs/containerapps-helloworld:latest');
-  sendLog(ws, 'azure-setup', '🌐 Enabling external ingress on port 3000');
-  
-  await new Promise(resolve => setTimeout(resolve, 2500));
-  sendLog(ws, 'azure-setup', '✅ Container app deployed');
-  sendLog(ws, 'azure-setup', `🌍 Temporary URL: https://${payload.appName}.${payload.location.replace(' ', '').toLowerCase()}.azurecontainerapps.io`);
-  sendLog(ws, 'azure-setup', '💡 This will be updated with your custom image in Step 2');
-}
-
-// Helper functions for Azure Deploy (using real Azure CLI commands)
-async function handleResourceGroup(ws, sessionId, resourceGroupName, location) {
-  sendLog(ws, 'azure', `📁 Checking resource group: ${resourceGroupName}`);
-  
-  try {
-    await executeCommand('az', ['group', 'show', '--name', resourceGroupName], {}, ws, `${sessionId}-rg-check`, 'azure');
-    sendLog(ws, 'azure', '✅ Resource group exists');
-  } catch (error) {
-    sendLog(ws, 'azure', `📁 Creating resource group: ${resourceGroupName}`);
-    await executeCommand('az', ['group', 'create', '--name', resourceGroupName, '--location', location], {}, ws, `${sessionId}-rg-create`, 'azure');
-    sendLog(ws, 'azure', '✅ Resource group created');
-  }
-}
-
-async function deployContainerApp(ws, sessionId, payload) {
-  // Create container environment
-  sendLog(ws, 'azure', `🌍 Setting up container environment: ${payload.environmentName}`);
-  
-  try {
-    await executeCommand('az', [
-      'containerapp', 'env', 'create',
-      '--name', payload.environmentName,
-      '--resource-group', payload.resourceGroup,
-      '--location', payload.location
-    ], {}, ws, `${sessionId}-env-create`, 'azure');
-    sendLog(ws, 'azure', '✅ Container environment ready');
-  } catch (error) {
-    sendLog(ws, 'azure', '⚠️ Environment might already exist, continuing...', 'warning');
-  }
-
-  // Create container app
-  sendLog(ws, 'azure', `🚀 Deploying container app: ${payload.appName}`);
-  sendLog(ws, 'azure', `📦 Using image: ghcr.io/${payload.githubOwner}/azure-container-template:latest`);
-  
-  await executeCommand('az', [
-    'containerapp', 'create',
-    '--name', payload.appName,
-    '--resource-group', payload.resourceGroup,
-    '--environment', payload.environmentName,
-    '--image', `ghcr.io/${payload.githubOwner}/azure-container-template:latest`,
-    '--target-port', '3000',
-    '--ingress', 'external',
-    '--registry-server', 'ghcr.io',
-    '--registry-username', payload.githubOwner,
-    '--registry-password', payload.githubToken,
-    '--cpu', '0.25',
-    '--memory', '0.5Gi',
-    '--min-replicas', '0',
-    '--max-replicas', '3'
-  ], {}, ws, `${sessionId}-app-create`, 'azure');
-}
-
-async function getAppUrl(ws, sessionId, appName, resourceGroup) {
-  sendLog(ws, 'azure', '🌐 Getting application URL...');
-  
-  try {
-    await executeCommand('az', [
-      'containerapp', 'show',
-      '--name', appName,
-      '--resource-group', resourceGroup,
-      '--query', 'properties.configuration.ingress.fqdn',
-      '--output', 'tsv'
-    ], {}, ws, `${sessionId}-get-url`, 'azure');
-  } catch (error) {
-    sendLog(ws, 'azure', '⚠️ Could not retrieve URL automatically', 'warning');
-    sendLog(ws, 'azure', `💡 Check Azure portal for ${appName} URL`);
+    sendLog(ws, 'azure-deploy', `❌ Deployment failed: ${error.message}`, 'error');
+    sendStatus(ws, 'azure-deploy', 'failed', { error: error.message });
   }
 }

@@ -34,6 +34,7 @@ function App() {
     download: false
   })
   const [azureConfig, setAzureConfig] = useState({
+    subscriptionId: '',        // Added subscription ID field
     resourceGroup: '',
     environmentName: '',
     appName: '',
@@ -244,10 +245,10 @@ function App() {
       }))
     }
   }
+
   const handleStep2AzureSetup = () => {
     setShowAzureForm(true)
   }
-
 
   const submitAzureSetup = () => {
     if (!ws || isProcessing) return
@@ -497,7 +498,7 @@ jobs:
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="glass-intense-retro rounded-3xl p-8 max-w-lg w-full"
+              className="glass-intense-retro rounded-3xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-2xl font-bold retro-text">Step 2: Azure Configuration</h3>
@@ -510,6 +511,24 @@ jobs:
               </div>
               
               <div className="space-y-4">
+                {/* Subscription ID Field */}
+                <div>
+                  <label className="block text-sm font-medium text-retro-secondary mb-2">
+                    Azure Subscription ID (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="12345678-1234-1234-1234-123456789012"
+                    value={azureConfig.subscriptionId}
+                    onChange={(e) => setAzureConfig(prev => ({ ...prev, subscriptionId: e.target.value }))}
+                    className="w-full px-4 py-3 glass-retro rounded-xl text-retro-primary placeholder-retro-muted focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300"
+                  />
+                  <p className="text-xs text-retro-muted mt-1">
+                    💡 Find your subscription ID in the Azure portal or leave blank to auto-detect
+                  </p>
+                </div>
+
+                {/* GitHub Container URL */}
                 <div>
                   <label className="block text-sm font-medium text-retro-secondary mb-2">
                     GitHub Container Package URL
@@ -526,6 +545,7 @@ jobs:
                   </p>
                 </div>
                 
+                {/* GitHub Owner and Repo */}
                 <div className="grid grid-cols-2 gap-3">
                   <input
                     type="text"
@@ -544,6 +564,8 @@ jobs:
                     readOnly={!!parseGitHubContainerUrl(azureConfig.githubContainerUrl)}
                   />
                 </div>
+
+                {/* Azure Resource Group */}
                 <input
                   type="text"
                   placeholder="Azure Resource Group"
@@ -551,6 +573,8 @@ jobs:
                   onChange={(e) => setAzureConfig(prev => ({ ...prev, resourceGroup: e.target.value }))}
                   className="w-full px-4 py-3 glass-retro rounded-xl text-retro-primary placeholder-retro-muted focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300"
                 />
+
+                {/* Container Environment Name */}
                 <input
                   type="text"
                   placeholder="Container Environment Name"
@@ -558,6 +582,8 @@ jobs:
                   onChange={(e) => setAzureConfig(prev => ({ ...prev, environmentName: e.target.value }))}
                   className="w-full px-4 py-3 glass-retro rounded-xl text-retro-primary placeholder-retro-muted focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300"
                 />
+
+                {/* Container App Name */}
                 <input
                   type="text"
                   placeholder="Container App Name"
@@ -565,6 +591,8 @@ jobs:
                   onChange={(e) => setAzureConfig(prev => ({ ...prev, appName: e.target.value }))}
                   className="w-full px-4 py-3 glass-retro rounded-xl text-retro-primary placeholder-retro-muted focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all duration-300"
                 />
+
+                {/* Azure Region */}
                 <div>
                   <label className="block text-sm font-medium text-retro-secondary mb-2">
                     Azure Region
