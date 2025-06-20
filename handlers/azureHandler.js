@@ -671,49 +671,114 @@ class RestAPIAzureService {
     }
   }
 
+  // FIXED: Robust role assignment with multiple approaches
   async assignIdentityPermissions(ws, subscriptionId, resourceGroupName, principalId) {
     sendLog(ws, 'cicd-setup', '🔐 Assigning Contributor permissions...');
     
     try {
       // Generate a UUID for the role assignment
-      const roleAssignmentId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
+      const roleAssignmentId = crypto.randomUUID ? crypto.randomUUID() : 
+        'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          const r = Math.random() * 16 | 0;
+          const v = c == 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+
+      // Contributor role definition ID (this is a constant for all Azure subscriptions)
+      const contributorRoleId = 'b24988ac-6180-42a0-ab88-20f7382dd24c';
+      
+      // Validate inputs
+      if (!subscriptionId || !resourceGroupName || !principalId) {
+        throw new Error(`Missing required parameters: subscriptionId=${subscriptionId}, resourceGroupName=${resourceGroupName}, principalId=${principalId}`);
+      }
+      
+      sendLog(ws, 'cicd-setup', `🔍 Creating role assignment for resource group: ${resourceGroupName}`);
+      sendLog(ws, 'cicd-setup', `🔍 Principal ID: ${principalId}`);
+      
+      // Use subscription-level API endpoint (simpler and more reliable)
+      const url = `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleAssignments/${roleAssignmentId}?api-version=2022-04-01`;
+      
+      const requestBody = {
+        properties: {
+          roleDefinitionId: `/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/${contributorRoleId}`,
+          principalId: principalId,
+          principalType: 'ServicePrincipal',
+          // Scope to the specific resource group
+          scope: `/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}`
+        }
+      };
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
       });
 
-      // Contributor role definition ID
-      const contributorRoleId = 'b24988ac-6180-42a0-ab88-20f7382dd24c';
-      const scope = `/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}`;
+      if (response.ok || response.status === 201) {
+        sendLog(ws, 'cicd-setup', '✅ Contributor permissions assigned successfully');
+        sendLog(ws, 'cicd-setup', `🎯 Scope: Resource Group "${resourceGroupName}"`);
+      } else if (response.status === 409) {
+        sendLog(ws, 'cicd-setup', '✅ Permissions already exist - continuing...');
+      } else {
+        const errorText = await response.text();
+        sendLog(ws, 'cicd-setup', `❌ Role assignment failed with status: ${response.status}`);
+        sendLog(ws, 'cicd-setup', `❌ Error details: ${errorText}`);
+        
+        // Try the alternative approach using resource group scope in URL
+        sendLog(ws, 'cicd-setup', '🔄 Trying alternative approach...');
+        return await this.assignIdentityPermissionsAlternative(ws, subscriptionId, resourceGroupName, principalId);
+      }
+    } catch (error) {
+      sendLog(ws, 'cicd-setup', `❌ Permission assignment error: ${error.message}`);
+      throw new Error(`Permission assignment failed: ${error.message}`);
+    }
+  }
 
-      const response = await fetch(
-        `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Authorization/roleAssignments/${roleAssignmentId}?api-version=2022-04-01`,
-        {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${this.accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            properties: {
-              roleDefinitionId: `/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/${contributorRoleId}`,
-              principalId: principalId,
-              principalType: 'ServicePrincipal'
-            }
-          })
+  // Fallback method using resource group scope in URL
+  async assignIdentityPermissionsAlternative(ws, subscriptionId, resourceGroupName, principalId) {
+    try {
+      const roleAssignmentId = crypto.randomUUID ? crypto.randomUUID() : 
+        'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          const r = Math.random() * 16 | 0;
+          const v = c == 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+
+      const contributorRoleId = 'b24988ac-6180-42a0-ab88-20f7382dd24c';
+      
+      // Use resource group scoped endpoint
+      const url = `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Authorization/roleAssignments/${roleAssignmentId}?api-version=2022-04-01`;
+      
+      const requestBody = {
+        properties: {
+          roleDefinitionId: `/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/${contributorRoleId}`,
+          principalId: principalId,
+          principalType: 'ServicePrincipal'
         }
-      );
+      };
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
 
       if (response.ok || response.status === 201) {
-        sendLog(ws, 'cicd-setup', '✅ Contributor permissions assigned');
+        sendLog(ws, 'cicd-setup', '✅ Alternative approach succeeded - permissions assigned');
       } else if (response.status === 409) {
         sendLog(ws, 'cicd-setup', '✅ Permissions already exist');
       } else {
         const errorText = await response.text();
-        throw new Error(`Failed to assign permissions: ${response.status} - ${errorText}`);
+        throw new Error(`Alternative approach also failed: ${response.status} - ${errorText}`);
       }
     } catch (error) {
-      throw new Error(`Permission assignment failed: ${error.message}`);
+      throw new Error(`Both role assignment methods failed: ${error.message}`);
     }
   }
 
@@ -864,7 +929,7 @@ export async function handleCICDSetup(ws, payload) {
     const identityDetails = await azureService.getManagedIdentityDetails(ws, payload.resourceGroup, identityName);
 
     // Step 3: Assign permissions to the identity
-    await azureService.assignIdentityPermissions(ws, payload.subscriptionId, payload.resourceGroup, identityDetails.principalId);
+    await azureService.assignIdentityPermissions(ws, azureService.subscriptionId, payload.resourceGroup, identityDetails.principalId);
 
     // Step 4: Create federated identity credential
     await azureService.createFederatedCredential(ws, payload.resourceGroup, identityName, payload.githubOwner, payload.githubRepo);
@@ -876,7 +941,7 @@ export async function handleCICDSetup(ws, payload) {
     sendLog(ws, 'cicd-setup', '🗝️ Required GitHub Repository Secrets:', 'info');
     sendLog(ws, 'cicd-setup', `AZURE_CLIENT_ID: ${identityDetails.clientId}`, 'info');
     sendLog(ws, 'cicd-setup', `AZURE_TENANT_ID: ${identityDetails.tenantId}`, 'info');
-    sendLog(ws, 'cicd-setup', `AZURE_SUBSCRIPTION_ID: ${payload.subscriptionId}`, 'info');
+    sendLog(ws, 'cicd-setup', `AZURE_SUBSCRIPTION_ID: ${azureService.subscriptionId}`, 'info');
     sendLog(ws, 'cicd-setup', '', 'info');
     sendLog(ws, 'cicd-setup', '🔐 For Private Repository Access:', 'info');
     sendLog(ws, 'cicd-setup', 'GHCR_TOKEN: [Create a GitHub Personal Access Token]', 'info');
@@ -892,7 +957,7 @@ export async function handleCICDSetup(ws, payload) {
       secrets: {
         AZURE_CLIENT_ID: identityDetails.clientId,
         AZURE_TENANT_ID: identityDetails.tenantId,
-        AZURE_SUBSCRIPTION_ID: payload.subscriptionId
+        AZURE_SUBSCRIPTION_ID: azureService.subscriptionId
       },
       identityName: identityName
     });
