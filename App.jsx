@@ -18,7 +18,8 @@ import {
   Cpu,
   Server,
   Check,
-  Play
+  Play,
+  Settings
 } from 'lucide-react'
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
   const [completedSteps, setCompletedSteps] = useState({
     github: false,
     azure: false,
+    cicd: false,
     download: false
   })
   const [azureConfig, setAzureConfig] = useState({
@@ -44,6 +46,7 @@ function App() {
     githubOwner: '',
     containerImageName: ''     // Added to store the actual container name
   })
+  const [azureSecrets, setAzureSecrets] = useState(null)
 
   // Azure regions that support Container Apps
   const azureRegions = [
@@ -124,7 +127,15 @@ function App() {
           if (data.status === 'completed') {
             setIsProcessing(false)
             // Mark step as completed
-            if (data.logType === 'azure-setup') setCompletedSteps(prev => ({ ...prev, azure: true }))
+            if (data.logType === 'azure-setup') {
+              setCompletedSteps(prev => ({ ...prev, azure: true }))
+            } else if (data.logType === 'cicd-setup') {
+              setCompletedSteps(prev => ({ ...prev, cicd: true }))
+              // Store the Azure secrets for workflow generation
+              if (data.data?.secrets) {
+                setAzureSecrets(data.data.secrets)
+              }
+            }
           }
           if (data.status === 'failed') {
             setIsProcessing(false)
@@ -169,42 +180,28 @@ function App() {
     setLogs([
       {
         id: Date.now(),
-        message: '📋 Steps: Sync Repository with VS Code',
-        level: 'info',
-        timestamp: new Date().toISOString(),
-        logType: 'github'
-      },
-      {
-        id: Date.now() + 1,
         message: '1️⃣ Push this template to your GitHub repository',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'github'
       },
       {
-        id: Date.now() + 2,
+        id: Date.now() + 1,
         message: '2️⃣ GitHub Actions will automatically build your container',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'github'
       },
       {
-        id: Date.now() + 3,
+        id: Date.now() + 2,
         message: '📦 Your image will be: ghcr.io/[username]/[container-name]:latest',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'github'
       },
       {
-        id: Date.now() + 4,
+        id: Date.now() + 3,
         message: '📋 Copy your container package URL for Step 2',
-        level: 'info',
-        timestamp: new Date().toISOString(),
-        logType: 'github'
-      },
-      {
-        id: Date.now() + 5,
-        message: '✅ Ready for Step 2: Azure Setup',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'github'
@@ -286,22 +283,45 @@ function App() {
     }))
   }
 
-  // Step 3: Download Azure-configured workflow
-  const handleStep3DownloadWorkflow = () => {
+  // Step 3: CI/CD Setup
+  const handleStep3CICDSetup = () => {
     if (!completedSteps.azure) {
       alert('Please complete Azure setup first')
       return
     }
 
-    // Generate the Azure-integrated workflow file
-    const workflowContent = generateAzureWorkflow(azureConfig)
+    setActiveTab('cicd-setup')
+    setLogs([])
+    setIsProcessing(true)
+    sessionIdRef.current = `cicd-setup-${Date.now()}`
+    
+    ws.send(JSON.stringify({
+      type: 'cicd-setup',
+      sessionId: sessionIdRef.current,
+      payload: {
+        ...azureConfig,
+        githubOwner: parseGitHubContainerUrl(azureConfig.githubContainerUrl)?.githubOwner || '',
+        githubRepo: parseGitHubContainerUrl(azureConfig.githubContainerUrl)?.githubRepo || ''
+      }
+    }))
+  }
+
+  // Step 4: Download Enhanced Workflow
+  const handleStep4DownloadWorkflow = () => {
+    if (!completedSteps.cicd) {
+      alert('Please complete CI/CD setup first')
+      return
+    }
+
+    // Generate the enhanced workflow file with OIDC and private registry support
+    const workflowContent = generateEnhancedWorkflow(azureConfig, azureSecrets)
     
     // Create download
     const blob = new Blob([workflowContent], { type: 'text/yaml' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = 'azure-deploy.yml'
+    link.download = 'azure-deploy-enhanced.yml'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -314,28 +334,35 @@ function App() {
     setLogs([
       {
         id: Date.now(),
-        message: '📥 Azure deployment workflow downloaded!',
+        message: '📥 Enhanced Azure deployment workflow downloaded!',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'download'
       },
       {
         id: Date.now() + 1,
-        message: `✅ Configured for: ${azureConfig.appName}`,
+        message: '🔐 Includes OIDC authentication and private registry support',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'download'
       },
       {
         id: Date.now() + 2,
-        message: '📋 Add this file to your .github/workflows/ folder',
+        message: '📋 Replace your current workflow file with this enhanced version',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'download'
       },
       {
         id: Date.now() + 3,
-        message: '🚀 Push to GitHub to trigger Azure deployment!',
+        message: '🔑 Make sure to add the GitHub secrets shown in Step 3',
+        level: 'info',
+        timestamp: new Date().toISOString(),
+        logType: 'download'
+      },
+      {
+        id: Date.now() + 4,
+        message: '🚀 Push to GitHub to trigger secure Azure deployment!',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'download'
@@ -343,9 +370,8 @@ function App() {
     ])
   }
 
-  // Updated generateAzureWorkflow function to use correct image name
-  const generateAzureWorkflow = (config) => {
-    // Parse the container URL to get the correct container name
+  // Enhanced workflow generation function
+  const generateEnhancedWorkflow = (config, secrets) => {
     const parsed = parseGitHubContainerUrl(config.githubContainerUrl)
     const containerName = parsed ? parsed.containerName : config.githubRepo
     
@@ -364,7 +390,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
+      id-token: write  # Required for OIDC
     
     steps:
     - name: Checkout code
@@ -373,12 +399,13 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       
+    # Use PAT for private registry access
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
         username: \${{ github.actor }}
-        password: \${{ secrets.GITHUB_TOKEN }}
+        password: \${{ secrets.GHCR_TOKEN }}  # Uses PAT instead of GITHUB_TOKEN
         
     - name: Create short SHA
       id: short_sha
@@ -413,6 +440,28 @@ jobs:
         tenant-id: \${{ secrets.AZURE_TENANT_ID }}
         subscription-id: \${{ secrets.AZURE_SUBSCRIPTION_ID }}
         
+    # Configure private registry access with PAT
+    - name: Configure private registry access
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "🔐 Configuring private GitHub Container Registry access..."
+        
+        # Remove any existing registry configuration first
+        az containerapp registry remove \\
+          --name ${config.appName} \\
+          --resource-group ${config.resourceGroup} \\
+          --server ghcr.io || echo "No existing registry config to remove"
+        
+        # Configure registry credentials with PAT for persistent access
+        az containerapp registry set \\
+          --name ${config.appName} \\
+          --resource-group ${config.resourceGroup} \\
+          --server ghcr.io \\
+          --username \${{ github.actor }} \\
+          --password \${{ secrets.GHCR_TOKEN }}
+        
+        echo "✅ Registry access configured with PAT"
+        
     - name: Deploy to Azure Container Apps
       if: github.ref == 'refs/heads/main'
       run: |
@@ -425,18 +474,41 @@ jobs:
         
         echo "✅ Deployment completed successfully!"
         
-    - name: Get App URL
+    - name: Verify deployment and check app health
       if: github.ref == 'refs/heads/main'
       run: |
+        echo "🔍 Verifying deployment status..."
+        sleep 30
+      
+        az containerapp revision list \\
+          --name ${config.appName} \\
+          --resource-group ${config.resourceGroup} \\
+          --query '[0].{Name:name,Active:properties.active,CreatedTime:properties.createdTime,Image:properties.template.containers[0].image,TrafficWeight:properties.trafficWeight}' \\
+          --output table
+        
         APP_URL=$(az containerapp show \\
           --name ${config.appName} \\
           --resource-group ${config.resourceGroup} \\
           --query 'properties.configuration.ingress.fqdn' \\
           --output tsv)
         
-        echo "🌐 Application URL: https://$APP_URL"
-        echo "📦 Image: ghcr.io/${config.githubOwner}/${containerName}:latest"
-        echo "🏷️ Build: v\${{ github.run_number }}"`
+        if [ ! -z "$APP_URL" ]; then
+          echo "🌐 Application available at: https://$APP_URL"
+          
+          if curl -f -s --max-time 30 "https://$APP_URL" > /dev/null; then
+            echo "✅ Application is responding successfully!"
+          else
+            echo "⚠️ Application may still be starting up. Check logs in Azure portal."
+          fi
+        fi
+        
+        echo "📊 Deployment summary:"
+        echo "- Image: ghcr.io/${config.githubOwner}/${containerName}:latest"
+        echo "- Build: v\${{ github.run_number }}"
+        echo "- Commit: \${{ steps.short_sha.outputs.sha }}"
+        echo "- Registry: Private (ghcr.io) with PAT authentication"
+        echo "- Status: ✅ Deployed"
+`
   }
 
   const cancelProcess = () => {
@@ -736,7 +808,7 @@ jobs:
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.8 }}
           >
-            3 Simple Steps to Azure Container Apps
+            4 Simple Steps to Azure Container Apps
           </motion.p>
         </motion.header>
 
@@ -749,17 +821,18 @@ jobs:
             transition={{ delay: 0.7, duration: 0.8 }}
           >
             <div className="text-center mb-10">
-              <h2 className="text-4xl font-bold retro-text mb-6">🚀 Simple 3-Step Process</h2>
-              <p className="text-xl text-retro-secondary">Sync, Setup, Deploy</p>
+              <h2 className="text-4xl font-bold retro-text mb-6">🚀 Simple 4-Step Process</h2>
+              <p className="text-xl text-retro-secondary">Sync, Setup, Secure, Deploy</p>
             </div>
 
-            {/* 3-Step Progress Indicator */}
+            {/* 4-Step Progress Indicator */}
             <div className="flex justify-center mb-10">
               <div className="flex items-center space-x-4">
                 {[
                   { step: 1, label: 'GitHub Sync', key: 'github', icon: Github },
                   { step: 2, label: 'Azure Setup', key: 'azure', icon: Cloud },
-                  { step: 3, label: 'Download Config', key: 'download', icon: Download }
+                  { step: 3, label: 'CI/CD Setup', key: 'cicd', icon: Settings },
+                  { step: 4, label: 'Download Config', key: 'download', icon: Download }
                 ].map(({ step, label, key, icon: Icon }, index) => (
                   <div key={step} className="flex items-center">
                     <div className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 ${
@@ -785,7 +858,7 @@ jobs:
                         {label}
                       </div>
                     </div>
-                    {index < 2 && (
+                    {index < 3 && (
                       <div className={`w-8 h-0.5 ${
                         completedSteps[key] ? 'bg-green-400' : 'bg-purple-400/30'
                       }`} />
@@ -795,8 +868,8 @@ jobs:
               </div>
             </div>
 
-            {/* Action Buttons - 3 Steps */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            {/* Action Buttons - 4 Steps */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
               {/* Step 1: GitHub Sync */}
               <motion.button
                 onClick={handleStep1GitHubSync}
@@ -843,12 +916,12 @@ jobs:
                 </div>
               </motion.button>
 
-              {/* Step 3: Download Workflow */}
+              {/* Step 3: CI/CD Setup */}
               <motion.button
-                onClick={handleStep3DownloadWorkflow}
-                disabled={!completedSteps.azure}
+                onClick={handleStep3CICDSetup}
+                disabled={isProcessing || connectionStatus !== 'connected' || !completedSteps.azure}
                 className={`btn-retro group relative overflow-hidden p-6 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-2xl ${
-                  completedSteps.download 
+                  completedSteps.cicd 
                     ? 'bg-gradient-to-r from-green-600/80 to-green-700/80' 
                     : !completedSteps.azure
                     ? 'bg-gradient-to-r from-gray-600/50 to-gray-700/50'
@@ -858,11 +931,35 @@ jobs:
                 whileTap={{ scale: completedSteps.azure ? 0.98 : 1 }}
               >
                 <div className="relative flex flex-col items-center justify-center space-y-3">
-                  {completedSteps.download ? <CheckCircle className="w-8 h-8 text-white" /> : <Download className="w-8 h-8" />}
+                  {completedSteps.cicd ? <CheckCircle className="w-8 h-8 text-white" /> : <Settings className="w-8 h-8" />}
                   <div className="text-center">
                     <div className="font-semibold text-lg">Step 3</div>
+                    <div className="text-sm opacity-90">CI/CD Setup</div>
+                    <div className="text-xs opacity-70 mt-1">Configure OIDC & secrets</div>
+                  </div>
+                </div>
+              </motion.button>
+
+              {/* Step 4: Download Enhanced Workflow */}
+              <motion.button
+                onClick={handleStep4DownloadWorkflow}
+                disabled={!completedSteps.cicd}
+                className={`btn-retro group relative overflow-hidden p-6 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-2xl ${
+                  completedSteps.download 
+                    ? 'bg-gradient-to-r from-green-600/80 to-green-700/80' 
+                    : !completedSteps.cicd
+                    ? 'bg-gradient-to-r from-gray-600/50 to-gray-700/50'
+                    : 'bg-gradient-to-r from-indigo-600/80 to-indigo-700/80 hover:from-indigo-500/90 hover:to-indigo-600/90'
+                } disabled:opacity-50 disabled:cursor-not-allowed text-retro-primary`}
+                whileHover={{ scale: completedSteps.cicd ? 1.02 : 1 }}
+                whileTap={{ scale: completedSteps.cicd ? 0.98 : 1 }}
+              >
+                <div className="relative flex flex-col items-center justify-center space-y-3">
+                  {completedSteps.download ? <CheckCircle className="w-8 h-8 text-white" /> : <Download className="w-8 h-8" />}
+                  <div className="text-center">
+                    <div className="font-semibold text-lg">Step 4</div>
                     <div className="text-sm opacity-90">Download Config</div>
-                    <div className="text-xs opacity-70 mt-1">Get workflow file</div>
+                    <div className="text-xs opacity-70 mt-1">Enhanced workflow</div>
                   </div>
                 </div>
               </motion.button>
@@ -939,7 +1036,7 @@ jobs:
 
             {/* Instructions */}
             <motion.div 
-              className="mt-12 grid md:grid-cols-3 gap-6"
+              className="mt-12 grid md:grid-cols-4 gap-6"
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.8 }}
@@ -955,9 +1052,14 @@ jobs:
                 <p className="text-retro-secondary">Set up your Azure Container Apps resources and deployment settings</p>
               </div>
               <div className="info-card-retro rounded-2xl p-6">
-                <Download className="w-8 h-8 text-orange-400 mb-4" />
-                <h3 className="text-xl font-semibold text-retro-primary mb-2">3. Get Workflow</h3>
-                <p className="text-retro-secondary">Download the configured workflow file and add it to your project</p>
+                <Settings className="w-8 h-8 text-orange-400 mb-4" />
+                <h3 className="text-xl font-semibold text-retro-primary mb-2">3. Setup CI/CD</h3>
+                <p className="text-retro-secondary">Configure OIDC authentication and GitHub secrets for secure deployment</p>
+              </div>
+              <div className="info-card-retro rounded-2xl p-6">
+                <Download className="w-8 h-8 text-indigo-400 mb-4" />
+                <h3 className="text-xl font-semibold text-retro-primary mb-2">4. Get Workflow</h3>
+                <p className="text-retro-secondary">Download the enhanced workflow file with private registry support</p>
               </div>
             </motion.div>
           </motion.div>

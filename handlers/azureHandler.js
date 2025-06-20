@@ -197,8 +197,6 @@ class RestAPIAzureService {
 
   async checkLatestAPIVersion(ws) {
     try {
-      sendLog(ws, 'azure-setup', '🔍 Checking latest Container Apps API version...');
-      
       const response = await fetch(
         `https://management.azure.com/subscriptions/${this.subscriptionId}/providers/Microsoft.App?api-version=2021-04-01`,
         {
@@ -214,13 +212,11 @@ class RestAPIAzureService {
         const containerAppsResource = providerInfo.resourceTypes?.find(rt => rt.resourceType === 'containerApps');
         if (containerAppsResource) {
           const latestApiVersion = containerAppsResource.apiVersions?.[0];
-          sendLog(ws, 'azure-setup', `📋 Latest API version: ${latestApiVersion || 'Unknown'}`);
-          sendLog(ws, 'azure-setup', `📋 Available versions: ${containerAppsResource.apiVersions?.slice(0, 3).join(', ') || 'Unknown'}`);
           return latestApiVersion;
         }
       }
     } catch (error) {
-      sendLog(ws, 'azure-setup', `⚠️ Could not check API versions: ${error.message}`, 'warning');
+      // Silent fallback
     }
     return '2025-01-01'; // fallback
   }
@@ -248,14 +244,6 @@ class RestAPIAzureService {
   async createContainerAppViaRestAPI(ws, resourceGroupName, appName, environmentName, location, payload) {
     sendLog(ws, 'azure-setup', `🚀 Creating container app: ${appName}`);
     
-    // Debug: Log the payload to see what we're receiving
-    sendLog(ws, 'azure-setup', `🔍 Debug - Received payload keys: ${Object.keys(payload).join(', ')}`);
-    sendLog(ws, 'azure-setup', `🔍 Debug - Payload values:`, 'info');
-    sendLog(ws, 'azure-setup', `  - githubOwner: "${payload.githubOwner || 'not set'}"`, 'info');
-    sendLog(ws, 'azure-setup', `  - githubRepo: "${payload.githubRepo || 'not set'}"`, 'info');
-    sendLog(ws, 'azure-setup', `  - containerImageName: "${payload.containerImageName || 'not set'}"`, 'info');
-    sendLog(ws, 'azure-setup', `  - githubContainerUrl: "${payload.githubContainerUrl || 'not set'}"`, 'info');
-    
     let userImage = null;
     let githubOwner = '';
     let containerName = '';
@@ -265,7 +253,7 @@ class RestAPIAzureService {
       githubOwner = payload.githubOwner;
       containerName = payload.containerImageName;
       userImage = `ghcr.io/${githubOwner}/${containerName}:latest`;
-      sendLog(ws, 'azure-setup', `🔍 ✅ Using containerImageName from frontend: ${githubOwner}/${containerName}`);
+      sendLog(ws, 'azure-setup', `✅ Using containerImageName from frontend: ${githubOwner}/${containerName}`);
     }
     // Priority 2: Parse the GitHub container URL
     else if (payload.githubContainerUrl) {
@@ -276,8 +264,8 @@ class RestAPIAzureService {
         githubOwner = parsed.githubOwner;
         containerName = parsed.containerName;
         userImage = parsed.imageUrl;
-        sendLog(ws, 'azure-setup', `🔍 ✅ Parsed package URL - Owner: ${githubOwner}, Container: ${containerName}`);
-        sendLog(ws, 'azure-setup', `🔍 ✅ Image URL: ${userImage}`);
+        sendLog(ws, 'azure-setup', `✅ Parsed package URL - Owner: ${githubOwner}, Container: ${containerName}`);
+        sendLog(ws, 'azure-setup', `✅ Image URL: ${userImage}`);
       } else {
         sendLog(ws, 'azure-setup', `⚠️ Could not parse GitHub container URL`, 'warning');
       }
@@ -287,7 +275,7 @@ class RestAPIAzureService {
       githubOwner = payload.githubOwner;
       containerName = payload.githubRepo.toLowerCase(); // Convert to lowercase for container registry
       userImage = `ghcr.io/${githubOwner}/${containerName}:latest`;
-      sendLog(ws, 'azure-setup', `🔍 ⚠️ Using legacy owner/repo (converted to lowercase): ${githubOwner}/${containerName}`);
+      sendLog(ws, 'azure-setup', `⚠️ Using legacy owner/repo (converted to lowercase): ${githubOwner}/${containerName}`);
     }
     
     const deploymentImage = userImage || 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest';
@@ -301,10 +289,6 @@ class RestAPIAzureService {
       sendLog(ws, 'azure-setup', `💡 If private, you'll need to add registry credentials to Azure`);
     } else {
       sendLog(ws, 'azure-setup', `📦 ❌ No GitHub image found - using demo image: ${deploymentImage}`, 'warning');
-      sendLog(ws, 'azure-setup', `🔍 Debug info - No valid image source found:`, 'warning');
-      sendLog(ws, 'azure-setup', `  - githubOwner: "${payload.githubOwner || 'missing'}"`, 'warning');
-      sendLog(ws, 'azure-setup', `  - containerImageName: "${payload.containerImageName || 'missing'}"`, 'warning');
-      sendLog(ws, 'azure-setup', `  - githubContainerUrl: "${payload.githubContainerUrl || 'missing'}"`, 'warning');
     }
     
     try {
@@ -381,13 +365,7 @@ class RestAPIAzureService {
         }
       };
 
-      sendLog(ws, 'azure-setup', '🔍 Using configuration that matches working template...');
-      sendLog(ws, 'azure-setup', `📦 Request body size: ${JSON.stringify(containerAppConfig).length} chars`);
       sendLog(ws, 'azure-setup', `📦 Final image being deployed: ${deploymentImage}`);
-      
-      // Log the exact configuration being sent for debugging
-      sendLog(ws, 'azure-setup', '🔍 Debug - Full request body:');
-      sendLog(ws, 'azure-setup', JSON.stringify(containerAppConfig, null, 2));
       
       const response = await fetch(
         `https://management.azure.com/subscriptions/${this.subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.App/containerApps/${appName}?api-version=${latestApiVersion}`,
@@ -405,38 +383,13 @@ class RestAPIAzureService {
         const containerApp = await response.json();
         sendLog(ws, 'azure-setup', '✅ Container app created successfully');
         
-        // Log the full response for debugging
-        sendLog(ws, 'azure-setup', `🔍 Azure response status: ${response.status}`);
-        sendLog(ws, 'azure-setup', `📋 Container app ID: ${containerApp.id || 'Unknown'}`);
-        sendLog(ws, 'azure-setup', `📊 Provisioning state: ${containerApp.properties?.provisioningState || 'Unknown'}`);
-        
-        // Log the actual image that was deployed
-        const deployedImage = containerApp.properties?.template?.containers?.[0]?.image;
-        sendLog(ws, 'azure-setup', `📦 Deployed image: ${deployedImage}`);
-        
-        // Check if the image matches what we intended
-        if (deployedImage === deploymentImage) {
-          sendLog(ws, 'azure-setup', '✅ Image deployment matches expected image');
-        } else {
-          sendLog(ws, 'azure-setup', `⚠️ Image mismatch! Expected: ${deploymentImage}, Got: ${deployedImage}`, 'warning');
-        }
-        
         // Get the app URL and provide clear feedback
         if (containerApp.properties?.configuration?.ingress?.fqdn) {
           const url = `https://${containerApp.properties.configuration.ingress.fqdn}`;
           sendLog(ws, 'azure-setup', `🌍 Application URL: ${url}`);
         } else {
           sendLog(ws, 'azure-setup', '⚠️ No FQDN found in response - container app may not be properly configured', 'warning');
-          sendLog(ws, 'azure-setup', '🔍 Ingress config in response:', 'warning');
-          sendLog(ws, 'azure-setup', JSON.stringify(containerApp.properties?.configuration?.ingress || 'No ingress found', null, 2), 'warning');
         }
-        
-        // Log the revision details for debugging
-        sendLog(ws, 'azure-setup', '🔍 Container app details:');
-        sendLog(ws, 'azure-setup', `  - Image: ${deploymentImage}`);
-        sendLog(ws, 'azure-setup', `  - Port: ${targetPort}`);
-        sendLog(ws, 'azure-setup', `  - CPU: 0.25, Memory: 0.5Gi`);
-        sendLog(ws, 'azure-setup', `  - Scale: 0-3 replicas`);
         
         // Wait a moment then check revision status
         sendLog(ws, 'azure-setup', '⏳ Checking revision status in 15 seconds...');
@@ -476,9 +429,6 @@ class RestAPIAzureService {
         
       } else {
         const errorText = await response.text();
-        sendLog(ws, 'azure-setup', `❌ Container app creation response: ${response.status}`, 'error');
-        sendLog(ws, 'azure-setup', `📋 Response headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`, 'error');
-        sendLog(ws, 'azure-setup', `📄 Error details: ${errorText}`, 'error');
         throw new Error(`Failed to create container app: ${response.status} - ${errorText}`);
       }
       
@@ -508,11 +458,8 @@ class RestAPIAzureService {
           const latestRevision = revisions.value[0];
           const status = latestRevision.properties?.provisioningState || 'Unknown';
           const trafficWeight = latestRevision.properties?.trafficWeight || 0;
-          const revisionImage = latestRevision.properties?.template?.containers?.[0]?.image || 'Unknown';
           
-          sendLog(ws, 'azure-setup', `🔍 Latest revision: ${latestRevision.name}`);
           sendLog(ws, 'azure-setup', `📊 Status: ${status}, Traffic: ${trafficWeight}%`);
-          sendLog(ws, 'azure-setup', `📦 Revision image: ${revisionImage}`);
           
           if (status === 'Failed') {
             sendLog(ws, 'azure-setup', '❌ Revision failed to start!', 'error');
@@ -520,27 +467,6 @@ class RestAPIAzureService {
             sendLog(ws, 'azure-setup', '  - Image failed to pull (check if image exists and is public)', 'info');
             sendLog(ws, 'azure-setup', '  - App crashed on startup', 'info');
             sendLog(ws, 'azure-setup', '  - Wrong port configuration', 'info');
-            
-            // Get more detailed error info
-            try {
-              const revisionDetailResponse = await fetch(
-                `https://management.azure.com/subscriptions/${this.subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.App/containerApps/${appName}/revisions/${latestRevision.name}?api-version=2025-01-01`,
-                {
-                  headers: {
-                    'Authorization': `Bearer ${this.accessToken}`,
-                    'Content-Type': 'application/json'
-                  }
-                }
-              );
-              
-              if (revisionDetailResponse.ok) {
-                const revisionDetail = await revisionDetailResponse.json();
-                sendLog(ws, 'azure-setup', '🔍 Revision failure details:', 'error');
-                sendLog(ws, 'azure-setup', JSON.stringify(revisionDetail.properties?.template || 'No details available', null, 2), 'error');
-              }
-            } catch (detailError) {
-              sendLog(ws, 'azure-setup', '⚠️ Could not get revision failure details', 'warning');
-            }
           } else if (status === 'Provisioning') {
             sendLog(ws, 'azure-setup', '⏳ Revision is still starting up...', 'info');
           } else if (status === 'Provisioned') {
@@ -548,10 +474,6 @@ class RestAPIAzureService {
           }
         } else {
           sendLog(ws, 'azure-setup', '⚠️ No revisions found - this indicates a problem', 'warning');
-          sendLog(ws, 'azure-setup', '💡 Possible causes:', 'warning');
-          sendLog(ws, 'azure-setup', '  - Container App is still being created', 'warning');
-          sendLog(ws, 'azure-setup', '  - Image validation failed before revision creation', 'warning');
-          sendLog(ws, 'azure-setup', '  - Infrastructure provisioning issues', 'warning');
         }
       }
     } catch (error) {
