@@ -1,6 +1,8 @@
 # Azure Container Template
 
-A modern React + Express.js application template with an interactive web interface for Azure Container Apps deployment. Features real-time deployment monitoring, automated GitHub Actions workflows, and a sleek retro-themed UI.
+A modern React + Express.js application template with an interactive web interface for Azure Container Apps deployment. Features real-time deployment monitoring, automated GitHub Actions workflows, and OIDC authentication.
+
+![Azure Container Template Interface](Azure%20Dev.png)
 
 ## 🚀 Quick Start
 
@@ -9,243 +11,147 @@ A modern React + Express.js application template with an interactive web interfa
 # Install dependencies
 npm install
 
-# Start both frontend and backend (development mode)
+# Start both frontend and backend
 npm run dev
 ```
 
-- **Frontend (React + Vite)**: `http://localhost:3000`
-- **Backend (Express + WebSocket)**: `http://localhost:3001`
-- **WebSocket**: Live connection for real-time deployment logs
+- **Frontend (React + Vite)**: http://localhost:3000
+- **Backend (Express + WebSocket)**: http://localhost:3001
 
-### Production Build
+### Production
 ```bash
-# Build the React application
+# Build and start production server
 npm run build
-
-# Start production server
 npm start
 ```
 
-Visit `http://localhost:3000` to see your application.
+Visit http://localhost:3000 to access the deployment interface.
 
-## 🌟 Current Development Status
+## 🎯 6-Step Deployment Process
 
-### ✅ Completed Features
-- **Interactive Web Interface**: Modern React app with retro-themed UI
-- **Real-time WebSocket Communication**: Live deployment logs and status updates
-- **GitHub Actions Integration**: Automated container builds and deployments
-- **Docker Configuration**: Multi-stage builds with optimized production setup
-- **Azure Container Apps Support**: Ready-to-deploy workflows
-- **3-Step Deployment Process**: Simplified user experience
+### **For Public Repositories (Steps 1-4):**
+1. **GitHub Sync** - View repository setup instructions
+2. **Azure Setup** - Configure Azure Container Apps resources  
+3. **CI/CD Setup** - Configure OIDC authentication and secrets
+4. **Download Standard Workflow** - Get workflow file with GITHUB_TOKEN
 
-### 🚧 In Development
-- **GitHub OAuth Integration**: Automatic repository creation and management
-- **Azure CLI Integration**: Direct Azure resource provisioning through the web interface
-- **Enhanced Error Handling**: Better user feedback and recovery options
-- **Template Customization**: Dynamic workflow generation based on user preferences
+### **For Private Repositories (Steps 1-6):**
+1. **GitHub Sync** - View repository setup instructions
+2. **Azure Setup** - Configure Azure Container Apps resources
+3. **CI/CD Setup** - Configure OIDC authentication and secrets  
+4. **Download Standard Workflow** - Get basic workflow file
+5. **Private Repo Setup** - Create PAT and configure secrets
+6. **Download Enhanced Workflow** - Get workflow with private registry support
 
-### 📋 Upcoming Features
-- **Multi-cloud Support**: AWS and GCP deployment options
-- **Advanced Monitoring**: Application health checks and metrics
-- **Environment Management**: Dev/staging/production pipeline automation
+## ✨ Key Features
 
-## 🎨 Web Interface Features
-
-The application includes a sophisticated web interface with:
-
-- **3-Step Deployment Wizard**:
-  1. **GitHub Sync**: Trigger container image builds
-  2. **Azure Setup**: Configure Azure Container Apps resources
-  3. **Download Config**: Get customized deployment workflows
-
-- **Real-time Terminal**: Live command execution with colored output
-- **Connection Status**: WebSocket connectivity indicator
-- **Progress Tracking**: Visual step completion indicators
-- **Responsive Design**: Works on desktop and mobile devices
-
-## 🐳 Docker Deployment
-
-### Build the Docker image
-```bash
-docker build -t azure-container-template .
-```
-
-### Run the container locally
-```bash
-docker run -p 3000:3000 azure-container-template
-```
-
-Visit `http://localhost:3000` to see your containerized application.
-
-## ☁️ Azure Deployment
-
-This template is optimized for Azure Container Apps with automated GitHub Actions deployment.
-
-### Automatic Deployment (Recommended)
-
-1. **Push to GitHub**: The included workflow automatically builds your container
-2. **Use Web Interface**: Configure Azure resources through the app
-3. **Deploy**: Update your Azure Container App with the built image
-
-### Manual Azure Setup
-
-```bash
-# Create resource group
-az group create --name myResourceGroup --location eastus
-
-# Create container app environment
-az containerapp env create \
-  --name myContainerAppEnv \
-  --resource-group myResourceGroup \
-  --location eastus
-
-# Deploy container app
-az containerapp create \
-  --name mycontainerapp \
-  --resource-group myResourceGroup \
-  --environment myContainerAppEnv \
-  --image ghcr.io/[username]/[repo]:latest \
-  --target-port 3000 \
-  --ingress 'external'
-```
-
-## 📁 Project Structure
-
-```
-├── 📄 Configuration Files
-│   ├── package.json              # Dependencies and scripts
-│   ├── vite.config.js            # Vite build configuration
-│   ├── tailwind.config.js        # Tailwind CSS configuration
-│   ├── postcss.config.js         # PostCSS configuration
-│   ├── nodemon.json              # Development server configuration
-│   ├── Dockerfile                # Multi-stage Docker build
-│   ├── .dockerignore             # Docker ignore patterns
-│   └── .gitignore                # Git ignore patterns
-│
-├── 🎨 Frontend (React + Vite)
-│   ├── index.html                # Main HTML file
-│   ├── main.jsx                  # React application entry point
-│   ├── App.jsx                   # Main React component with deployment interface
-│   └── style.css                 # Tailwind CSS + custom retro styling
-│
-├── 🔧 Backend (Express.js)
-│   ├── server.js                 # Express server + WebSocket handling
-│   ├── handlers/
-│   │   ├── azureHandler.js       # Azure CLI deployment commands
-│   │   └── dockerHandler.js      # Azure setup simulation
-│   ├── services/
-│   │   └── githubService.js      # GitHub API integration (Octokit)
-│   └── utils/
-│       ├── commandUtils.js       # Command execution utilities
-│       ├── templateUtils.js      # Dynamic file generation
-│       └── wsUtils.js            # WebSocket helper functions
-│
-└── 🚀 CI/CD
-    ├── .github/workflows/
-    │   ├── build.yml             # Main build and push workflow
-    │   └── templates/            # Template workflows for different scenarios
-    └── templates/                # Additional workflow templates
-```
+- **🔐 OIDC Authentication** - Secure passwordless authentication with Azure
+- **📦 Dynamic Workflows** - Standard and enhanced workflow generation
+- **🔄 Real-time Monitoring** - Live deployment logs via WebSocket
+- **🎨 Modern UI** - Retro-themed responsive interface
+- **🚀 Container Ready** - Optimized for Azure Container Apps
+- **📱 Mobile Friendly** - Works on all devices
 
 ## 🛠️ Technical Stack
 
 ### Frontend
-- **React 18**: Modern functional components with hooks
-- **Vite 5**: Lightning-fast development and optimized builds
-- **Tailwind CSS**: Utility-first styling with custom retro theme
-- **Framer Motion**: Smooth animations and transitions
-- **Lucide React**: Beautiful, consistent icons
+- **React 18** with Vite 5
+- **Tailwind CSS** with custom styling
+- **Framer Motion** for animations
+- **WebSocket** for real-time updates
 
-### Backend
-- **Express.js**: RESTful API and static file serving
-- **WebSocket (ws)**: Real-time bidirectional communication
-- **Octokit**: GitHub API integration
-- **Simple Git**: Git operations and repository management
-- **Child Process**: Secure command execution for Azure CLI
+### Backend  
+- **Express.js** with WebSocket support
+- **Azure Identity SDK** for OIDC authentication
+- **REST API** for Azure resource management
+- **Dynamic workflow generation**
 
 ### DevOps
-- **GitHub Actions**: Automated CI/CD pipelines
-- **Docker**: Containerization with multi-stage builds
-- **Azure Container Apps**: Serverless container hosting
-- **GitHub Container Registry**: Container image storage
+- **GitHub Actions** with OIDC
+- **Docker** containerization
+- **Azure Container Apps** hosting
+- **GitHub Container Registry** (GHCR)
 
-## 🔧 Customization
+## 🔧 How It Works
 
-### Frontend Modifications
-- **UI Theme**: Modify `style.css` for custom styling
-- **Components**: Update `App.jsx` for interface changes
-- **Build Settings**: Configure `vite.config.js` for build optimization
+### Authentication
+Uses Microsoft's official Azure CLI client ID (`04b07795-8ddb-461a-bbee-02f9e1bf7b46`) for secure, multi-tenant authentication.
 
-### Backend Configuration
-- **API Endpoints**: Add routes in `server.js`
-- **WebSocket Handlers**: Extend handlers in `handlers/` directory
-- **Command Integration**: Add new CLI tools in `utils/commandUtils.js`
+### Workflow Types
 
-### Deployment Workflows
-- **GitHub Actions**: Customize `.github/workflows/build.yml`
-- **Template Generation**: Modify `utils/templateUtils.js`
-- **Azure Configuration**: Update Azure CLI commands in `handlers/azureHandler.js`
+#### Standard Workflow (Public Repos)
+- Uses `GITHUB_TOKEN` for builds
+- Dynamic repository references
+- Works immediately with public repositories
 
-## 📝 Key Features
+#### Enhanced Workflow (Private Repos)  
+- Uses `GITHUB_TOKEN` for builds
+- Uses `GHCR_TOKEN` (PAT) for Azure registry access
+- Configures Azure Container Apps registry automatically
 
-- ⚡ **Fast Development**: Vite HMR + React Fast Refresh
-- 🐳 **Container Ready**: Optimized Docker configuration
-- ☁️ **Azure Optimized**: Tailored for Azure Container Apps
-- 🔄 **CI/CD Integrated**: GitHub Actions workflows included
-- 🎨 **Modern UI**: Retro-themed responsive design
-- 🔗 **Real-time Updates**: WebSocket-powered live feedback
-- 📦 **GitHub Integration**: Automated repository and package management
-- 🛡️ **Production Ready**: Security best practices and error handling
-- 📱 **Mobile Friendly**: Responsive design for all devices
-- 🎯 **User Focused**: Simplified 3-step deployment process
+### Azure Resources Created
+- **Resource Group** - Contains all resources
+- **Container Environment** - Managed environment for apps
+- **Container App** - Your deployed application
+- **Managed Identity** - For OIDC authentication (CI/CD only)
+- **Federated Credentials** - Links GitHub to Azure identity
 
-## 🚦 Getting Started Guide
+## 📋 Required GitHub Secrets
 
-1. **Clone the repository**
+### For All Deployments:
+```
+AZURE_CLIENT_ID      # From CI/CD setup (Step 3)
+AZURE_TENANT_ID      # From CI/CD setup (Step 3)  
+AZURE_SUBSCRIPTION_ID # From CI/CD setup (Step 3)
+```
+
+### For Private Repositories Only:
+```
+GHCR_TOKEN          # GitHub Personal Access Token
+                    # Scopes: read:packages, write:packages
+```
+
+## 🐳 Docker Support
+
+```bash
+# Build image
+docker build -t azure-container-template .
+
+# Run locally  
+docker run -p 3000:3000 azure-container-template
+
+## 🔐 Security Features
+
+- **OIDC Authentication** - No stored secrets or passwords
+- **Least Privilege Access** - Managed identity scoped to resource group
+- **Automatic Token Refresh** - Azure handles token lifecycle
+- **Secure WebSocket** - Real-time encrypted communication
+
+## 🚦 Getting Started
+
+1. **Clone and setup:**
    ```bash
    git clone [your-repo-url]
    cd azure-container-template
-   ```
-
-2. **Install dependencies**
-   ```bash
    npm install
-   ```
-
-3. **Start development server**
-   ```bash
    npm run dev
    ```
 
-4. **Open the web interface**
-   - Visit `http://localhost:3000`
-   - Follow the 3-step deployment process
-   - Monitor real-time deployment logs
+2. **Access the interface:**
+   - Open http://localhost:3000
+   - Follow the 6-step deployment process
 
-5. **Push to GitHub**
-   - GitHub Actions will automatically build your container
-   - Image will be available at `ghcr.io/[username]/[repo]:latest`
+3. **Deploy:**
+   - Complete steps based on your repository type (public vs private)
+   - Push to GitHub to trigger automated deployment
 
-6. **Deploy to Azure**
-   - Use the web interface to configure Azure resources
-   - Download the generated workflow file
-   - Push to trigger Azure deployment
+## 🤝 Two Deployment Paths
 
-## 🤝 Contributing
-
-This project is actively developed and welcomes contributions. The current focus is on:
-
-- Enhancing the Azure CLI integration
-- Improving error handling and user feedback
-- Adding support for additional cloud providers
-- Expanding template customization options
-
-For more information and updates, visit the repository.
+| Repository Type | Steps | Authentication | Use Case |
+|----------------|-------|----------------|----------|
+| **Public** | 1-4 | GITHUB_TOKEN only | Simple, immediate deployment |
+| **Private** | 1-6 | GITHUB_TOKEN + PAT | Enterprise, private repositories |
 
 ## 📄 License
 
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
-*Built with ❤️ for developers who want simple, powerful Azure deployments*
+MIT License - feel free to use this template for your projects!

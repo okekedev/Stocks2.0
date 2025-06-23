@@ -625,8 +625,14 @@ class RestAPIAzureService {
 
       if (response.ok || response.status === 201) {
         sendLog(ws, 'cicd-setup', '✅ Managed identity created successfully');
+        sendLog(ws, 'cicd-setup', `🏷️  Name: ${identityName}`);
+        sendLog(ws, 'cicd-setup', `📍 Location: ${location}`);
+        sendLog(ws, 'cicd-setup', `🏗️  Resource Group: ${resourceGroupName}`);
       } else if (response.status === 409) {
         sendLog(ws, 'cicd-setup', '✅ Managed identity already exists');
+        sendLog(ws, 'cicd-setup', `🏷️  Name: ${identityName}`);
+        sendLog(ws, 'cicd-setup', `🏗️  Resource Group: ${resourceGroupName}`);
+        sendLog(ws, 'cicd-setup', `🔄 Using existing identity for OIDC setup...`);
       } else {
         const errorText = await response.text();
         throw new Error(`Failed to create managed identity: ${response.status} - ${errorText}`);
@@ -671,11 +677,23 @@ class RestAPIAzureService {
     }
   }
 
-  // FIXED: Robust role assignment with multiple approaches
+  // OPTIMIZED: Use the working approach directly (resource group scoped)
   async assignIdentityPermissions(ws, subscriptionId, resourceGroupName, principalId) {
     sendLog(ws, 'cicd-setup', '🔐 Assigning Contributor permissions...');
     
     try {
+      // Validate inputs
+      if (!subscriptionId || !resourceGroupName || !principalId) {
+        throw new Error(`Missing required parameters: subscriptionId=${subscriptionId}, resourceGroupName=${resourceGroupName}, principalId=${principalId}`);
+      }
+      
+      sendLog(ws, 'cicd-setup', `🎯 Resource Group: ${resourceGroupName}`);
+      sendLog(ws, 'cicd-setup', `🆔 Principal ID: ${principalId}`);
+      sendLog(ws, 'cicd-setup', `📋 Subscription: ${subscriptionId}`);
+
+      // First, check if permissions already exist by listing role assignments
+      await this.checkExistingRoleAssignments(ws, subscriptionId, resourceGroupName, principalId);
+
       // Generate a UUID for the role assignment
       const roleAssignmentId = crypto.randomUUID ? crypto.randomUUID() : 
         'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -684,30 +702,21 @@ class RestAPIAzureService {
           return v.toString(16);
         });
 
-      // Contributor role definition ID (this is a constant for all Azure subscriptions)
       const contributorRoleId = 'b24988ac-6180-42a0-ab88-20f7382dd24c';
       
-      // Validate inputs
-      if (!subscriptionId || !resourceGroupName || !principalId) {
-        throw new Error(`Missing required parameters: subscriptionId=${subscriptionId}, resourceGroupName=${resourceGroupName}, principalId=${principalId}`);
-      }
-      
-      sendLog(ws, 'cicd-setup', `🔍 Creating role assignment for resource group: ${resourceGroupName}`);
-      sendLog(ws, 'cicd-setup', `🔍 Principal ID: ${principalId}`);
-      
-      // Use subscription-level API endpoint (simpler and more reliable)
-      const url = `https://management.azure.com/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleAssignments/${roleAssignmentId}?api-version=2022-04-01`;
+      // Use the working approach: resource group scoped endpoint
+      const url = `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Authorization/roleAssignments/${roleAssignmentId}?api-version=2022-04-01`;
       
       const requestBody = {
         properties: {
           roleDefinitionId: `/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/${contributorRoleId}`,
           principalId: principalId,
-          principalType: 'ServicePrincipal',
-          // Scope to the specific resource group
-          scope: `/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}`
+          principalType: 'ServicePrincipal'
         }
       };
 
+      sendLog(ws, 'cicd-setup', '🔧 Creating role assignment...');
+      
       const response = await fetch(url, {
         method: 'PUT',
         headers: {
@@ -719,66 +728,53 @@ class RestAPIAzureService {
 
       if (response.ok || response.status === 201) {
         sendLog(ws, 'cicd-setup', '✅ Contributor permissions assigned successfully');
+        sendLog(ws, 'cicd-setup', `🎯 Role: Contributor`);
         sendLog(ws, 'cicd-setup', `🎯 Scope: Resource Group "${resourceGroupName}"`);
+        sendLog(ws, 'cicd-setup', `🆔 Assignment ID: ${roleAssignmentId}`);
       } else if (response.status === 409) {
-        sendLog(ws, 'cicd-setup', '✅ Permissions already exist - continuing...');
+        sendLog(ws, 'cicd-setup', '✅ Role assignment already exists');
+        sendLog(ws, 'cicd-setup', `🎯 The managed identity already has Contributor access to "${resourceGroupName}"`);
+        sendLog(ws, 'cicd-setup', `🔄 Continuing with existing permissions...`);
       } else {
         const errorText = await response.text();
         sendLog(ws, 'cicd-setup', `❌ Role assignment failed with status: ${response.status}`);
         sendLog(ws, 'cicd-setup', `❌ Error details: ${errorText}`);
-        
-        // Try the alternative approach using resource group scope in URL
-        sendLog(ws, 'cicd-setup', '🔄 Trying alternative approach...');
-        return await this.assignIdentityPermissionsAlternative(ws, subscriptionId, resourceGroupName, principalId);
+        throw new Error(`Failed to assign permissions: ${response.status} - ${errorText}`);
       }
     } catch (error) {
-      sendLog(ws, 'cicd-setup', `❌ Permission assignment error: ${error.message}`);
       throw new Error(`Permission assignment failed: ${error.message}`);
     }
   }
 
-  // Fallback method using resource group scope in URL
-  async assignIdentityPermissionsAlternative(ws, subscriptionId, resourceGroupName, principalId) {
+  // Helper method to check and display existing role assignments
+  async checkExistingRoleAssignments(ws, subscriptionId, resourceGroupName, principalId) {
     try {
-      const roleAssignmentId = crypto.randomUUID ? crypto.randomUUID() : 
-        'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-          const r = Math.random() * 16 | 0;
-          const v = c == 'x' ? r : (r & 0x3 | 0x8);
-          return v.toString(16);
-        });
-
-      const contributorRoleId = 'b24988ac-6180-42a0-ab88-20f7382dd24c';
+      sendLog(ws, 'cicd-setup', '🔍 Checking existing permissions...');
       
-      // Use resource group scoped endpoint
-      const url = `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Authorization/roleAssignments/${roleAssignmentId}?api-version=2022-04-01`;
+      const url = `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Authorization/roleAssignments?api-version=2022-04-01&$filter=principalId eq '${principalId}'`;
       
-      const requestBody = {
-        properties: {
-          roleDefinitionId: `/subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/${contributorRoleId}`,
-          principalId: principalId,
-          principalType: 'ServicePrincipal'
-        }
-      };
-
       const response = await fetch(url, {
-        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${this.accessToken}`,
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
+        }
       });
 
-      if (response.ok || response.status === 201) {
-        sendLog(ws, 'cicd-setup', '✅ Alternative approach succeeded - permissions assigned');
-      } else if (response.status === 409) {
-        sendLog(ws, 'cicd-setup', '✅ Permissions already exist');
-      } else {
-        const errorText = await response.text();
-        throw new Error(`Alternative approach also failed: ${response.status} - ${errorText}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.value && data.value.length > 0) {
+          sendLog(ws, 'cicd-setup', `📋 Found ${data.value.length} existing role assignment(s):`);
+          data.value.forEach((assignment, index) => {
+            const roleName = assignment.properties.roleDefinitionId.split('/').pop();
+            sendLog(ws, 'cicd-setup', `  ${index + 1}. Role: ${roleName}, Scope: ${assignment.properties.scope}`);
+          });
+        } else {
+          sendLog(ws, 'cicd-setup', '📋 No existing role assignments found - will create new one');
+        }
       }
     } catch (error) {
-      throw new Error(`Both role assignment methods failed: ${error.message}`);
+      // Silent fail - this is just informational
+      sendLog(ws, 'cicd-setup', '🔍 Could not check existing permissions (continuing anyway)');
     }
   }
 
@@ -787,6 +783,11 @@ class RestAPIAzureService {
     
     try {
       const credentialName = 'github-actions-federated-credential';
+      const subject = `repo:${githubOwner}/${githubRepo}:ref:refs/heads/main`;
+      
+      sendLog(ws, 'cicd-setup', `🏷️  Credential Name: ${credentialName}`);
+      sendLog(ws, 'cicd-setup', `📦 GitHub Repository: ${githubOwner}/${githubRepo}`);
+      sendLog(ws, 'cicd-setup', `🌿 Branch: main`);
       
       const response = await fetch(
         `https://management.azure.com/subscriptions/${this.subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${identityName}/federatedIdentityCredentials/${credentialName}?api-version=2023-01-31`,
@@ -799,7 +800,7 @@ class RestAPIAzureService {
           body: JSON.stringify({
             properties: {
               issuer: 'https://token.actions.githubusercontent.com',
-              subject: `repo:${githubOwner}/${githubRepo}:ref:refs/heads/main`,
+              subject: subject,
               audiences: ['api://AzureADTokenExchange']
             }
           })
@@ -808,8 +809,12 @@ class RestAPIAzureService {
 
       if (response.ok || response.status === 201) {
         sendLog(ws, 'cicd-setup', '✅ Federated credential created successfully');
+        sendLog(ws, 'cicd-setup', `🔐 OIDC connection established between GitHub and Azure`);
+        sendLog(ws, 'cicd-setup', `🎯 Subject: ${subject}`);
       } else if (response.status === 409) {
         sendLog(ws, 'cicd-setup', '✅ Federated credential already exists');
+        sendLog(ws, 'cicd-setup', `🔐 OIDC connection already configured for ${githubOwner}/${githubRepo}`);
+        sendLog(ws, 'cicd-setup', `🔄 Using existing credential for GitHub Actions...`);
       } else {
         const errorText = await response.text();
         throw new Error(`Failed to create federated credential: ${response.status} - ${errorText}`);
