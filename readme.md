@@ -121,20 +121,6 @@ docker build -t azure-container-template .
 docker run -p 3000:3000 azure-container-template
 ```
 
-## 📁 Project Structure
-
-```
-├── package.json              # Dependencies and scripts
-├── vite.config.js            # Vite configuration  
-├── Dockerfile                # Container configuration
-├── server.js                 # Express server + WebSocket
-├── App.jsx                   # Main React component
-├── handlers/
-│   └── azureHandler.js       # Azure REST API integration
-└── utils/
-    └── wsUtils.js            # WebSocket utilities
-```
-
 ## 🔐 Security Features
 
 - **OIDC Authentication** - No stored secrets or passwords
@@ -146,8 +132,8 @@ docker run -p 3000:3000 azure-container-template
 
 1. **Clone and setup:**
    ```bash
-   git clone [your-repo-url]
-   cd azure-container-template
+   git clone https://github.com/okekedev/Azure-Dev
+   cd Azure-Dev
    npm install
    npm run dev
    ```
