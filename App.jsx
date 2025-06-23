@@ -575,54 +575,6 @@ jobs:
         echo "- Status: ✅ Deployed"`
   }
 
-  // Private repo setup instructions
-  const generatePrivateRepoInstructions = () => {
-    return `# 🔐 Private Repository Setup Instructions
-
-## Why do you need this?
-If your GitHub repository is **private**, Azure needs persistent access to pull your container images. The standard workflow uses \`GITHUB_TOKEN\` which expires after the workflow, so Azure can't pull images later.
-
-## 📋 Setup Steps:
-
-### 1. Create a GitHub Personal Access Token (PAT)
-1. Go to GitHub → Settings → Developer settings → Personal access tokens → **Tokens (classic)**
-2. Click **"Generate new token"** → **"Generate new token (classic)"**
-3. Give it a descriptive name: \`Azure Container Registry Access\`
-4. Select these scopes:
-   - ✅ \`read:packages\` - Download packages
-   - ✅ \`write:packages\` - Upload packages
-   - ✅ \`delete:packages\` - Delete packages (optional)
-5. Click **"Generate token"**
-6. **⚠️ Copy the token immediately** - you won't see it again!
-
-### 2. Add the PAT to GitHub Repository Secrets
-1. Go to your repository → **Settings** → **Secrets and variables** → **Actions**
-2. Click **"New repository secret"**
-3. Name: \`GHCR_TOKEN\`
-4. Value: Paste your PAT token
-5. Click **"Add secret"**
-
-### 3. Verify Your Secrets
-Make sure you have all these secrets configured:
-- ✅ \`AZURE_CLIENT_ID\` (from Step 3)
-- ✅ \`AZURE_TENANT_ID\` (from Step 3)  
-- ✅ \`AZURE_SUBSCRIPTION_ID\` (from Step 3)
-- ✅ \`GHCR_TOKEN\` (new - for private repo access)
-
-## 🚀 Ready for Enhanced Workflow
-Once you've added the \`GHCR_TOKEN\` secret, download the enhanced workflow file that includes private repository support!
-
-## 🔍 How it works:
-- **Build phase**: Uses \`GITHUB_TOKEN\` (automatic, secure)
-- **Azure phase**: Uses \`GHCR_TOKEN\` (persistent, so Azure can pull images anytime)
-- **Result**: Azure can access your private container images reliably
-
-## ❓ Troubleshooting:
-- **Token expired?** Generate a new PAT and update the secret
-- **Permission denied?** Ensure your PAT has \`read:packages\` and \`write:packages\` scopes
-- **Still not working?** Check that the \`GHCR_TOKEN\` secret name matches exactly`
-  }
-
   // Step 4: Download Standard Workflow
   const handleStep4DownloadStandard = () => {
     if (!completedSteps.cicd) {
@@ -699,17 +651,6 @@ Once you've added the \`GHCR_TOKEN\` secret, download the enhanced workflow file
     }
 
     setActiveTab('private-repo-setup')
-    
-    const instructions = generatePrivateRepoInstructions()
-    const blob = new Blob([instructions], { type: 'text/markdown' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'private-repo-setup-instructions.md'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
 
     setLogs([
       {
@@ -721,55 +662,48 @@ Once you've added the \`GHCR_TOKEN\` secret, download the enhanced workflow file
       },
       {
         id: Date.now() + 1,
-        message: '📥 Setup instructions downloaded as markdown file',
-        level: 'info',
-        timestamp: new Date().toISOString(),
-        logType: 'private-repo-setup'
-      },
-      {
-        id: Date.now() + 2,
         message: '🔑 Step 1: Create GitHub Personal Access Token (PAT)',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'private-repo-setup'
       },
       {
-        id: Date.now() + 3,
+        id: Date.now() + 2,
         message: '   → Go to GitHub → Settings → Developer settings → Personal access tokens',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'private-repo-setup'
       },
       {
-        id: Date.now() + 4,
+        id: Date.now() + 3,
         message: '   → Select scopes: read:packages, write:packages',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'private-repo-setup'
       },
       {
-        id: Date.now() + 5,
+        id: Date.now() + 4,
         message: '🎯 Step 2: Add PAT to Repository Secrets',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'private-repo-setup'
       },
       {
-        id: Date.now() + 6,
+        id: Date.now() + 5,
         message: '   → Repository → Settings → Secrets and variables → Actions',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'private-repo-setup'
       },
       {
-        id: Date.now() + 7,
+        id: Date.now() + 6,
         message: '   → Add secret: GHCR_TOKEN = your-pat-token',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'private-repo-setup'
       },
       {
-        id: Date.now() + 8,
+        id: Date.now() + 7,
         message: '✅ Once completed, proceed to Step 6 for enhanced workflow',
         level: 'success',
         timestamp: new Date().toISOString(),
