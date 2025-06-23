@@ -69,10 +69,15 @@ jobs:
       run: |
         echo "🚀 Deploying to Azure Container Apps..."
         
+        # Create unique revision suffix with date and short commit
+        REVISION_SUFFIX=$(date +%Y%m%d-%H%M%S)-${{ steps.short_sha.outputs.sha }}
+        echo "📋 Creating revision: $REVISION_SUFFIX"
+        
         az containerapp update \
           --name azure-dev-app \
           --resource-group azure-dev \
-          --image ghcr.io/${{ github.repository_owner }}/azure-dev:latest
+          --image ghcr.io/${{ github.repository_owner }}/azure-dev:latest \
+          --revision-suffix $REVISION_SUFFIX
         
         echo "✅ Deployment completed successfully!"
         

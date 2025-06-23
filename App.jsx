@@ -184,13 +184,6 @@ function App() {
         timestamp: new Date().toISOString(),
         logType: 'github'
       },
-        {
-        id: Date.now(),
-        message: '⁉️ You can copy the workflow file to your own repo, but you need a working dockerfile already build',
-        level: 'info',
-        timestamp: new Date().toISOString(),
-        logType: 'github'
-      },
       {
         id: Date.now() + 1,
         message: '2️⃣ GitHub Actions will automatically build your container',
@@ -200,21 +193,14 @@ function App() {
       },
       {
         id: Date.now() + 2,
-        message: '📦 Your image will be in the packages section of your Github account',
-        level: 'info',
-        timestamp: new Date().toISOString(),
-        logType: 'github'
-      },
-          {
-        id: Date.now(),
-        message: '⁉️ You can copy the workflow file to your own repo, but you need a working dockerfile already build',
+        message: '📦 Your image will be: ghcr.io/[username]/[container-name]:latest',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'github'
       },
       {
         id: Date.now() + 3,
-        message: '📋 Copy your container package URL for Step 2. It will look something like this: https://github.com/okekedev/Azure-Dev/pkgs/container/azure-dev ',
+        message: '📋 Copy your container package URL for Step 2',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'github'
@@ -390,10 +376,15 @@ jobs:
       run: |
         echo "🚀 Deploying to Azure Container Apps..."
         
+        # Create unique revision suffix with date and short commit
+        REVISION_SUFFIX=$(date +%Y%m%d-%H%M%S)-\${{ steps.short_sha.outputs.sha }}
+        echo "📋 Creating revision: $REVISION_SUFFIX"
+        
         az containerapp update \\
           --name ${config.appName} \\
           --resource-group ${config.resourceGroup} \\
-          --image ghcr.io/\${{ github.repository_owner }}/${containerName}:latest
+          --image ghcr.io/\${{ github.repository_owner }}/${containerName}:latest \\
+          --revision-suffix $REVISION_SUFFIX
         
         echo "✅ Deployment completed successfully!"
         
@@ -531,10 +522,20 @@ jobs:
       run: |
         echo "🚀 Deploying to Azure Container Apps..."
         
+    - name: Deploy to Azure Container Apps
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "🚀 Deploying to Azure Container Apps..."
+        
+        # Create unique revision suffix with date and short commit
+        REVISION_SUFFIX=$(date +%Y%m%d-%H%M%S)-\${{ steps.short_sha.outputs.sha }}
+        echo "📋 Creating revision: $REVISION_SUFFIX"
+        
         az containerapp update \\
           --name ${config.appName} \\
           --resource-group ${config.resourceGroup} \\
-          --image ghcr.io/\${{ github.repository_owner }}/${containerName}:latest
+          --image ghcr.io/\${{ github.repository_owner }}/${containerName}:latest \\
+          --revision-suffix $REVISION_SUFFIX
         
         echo "✅ Deployment completed successfully!"
         
@@ -668,27 +669,20 @@ Once you've added the \`GHCR_TOKEN\` secret, download the enhanced workflow file
       },
       {
         id: Date.now() + 3,
-        message: '📋 Place this file in .github/workflows/ in your local repository',
+        message: '📋 Place this file in .github/workflows/ in your repository',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'standard-workflow'
       },
       {
         id: Date.now() + 4,
-        message: '⁉️ Delete the old workflow file currently in .github/workflows/ in your local repository',
-        level: 'info',
-        timestamp: new Date().toISOString(),
-        logType: 'standard-workflow'
-      },
-      {
-        id: Date.now() + 5,
         message: '🚀 Push to GitHub to trigger automated deployment!',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'standard-workflow'
       },
       {
-        id: Date.now() + 6,
+        id: Date.now() + 5,
         message: '🔐 For private repositories, continue to Step 5',
         level: 'warning',
         timestamp: new Date().toISOString(),
@@ -1133,7 +1127,7 @@ Once you've added the \`GHCR_TOKEN\` secret, download the enhanced workflow file
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            Azure Container Apps<span className="retro-text">CD</span>
+            Azure Container <span className="retro-text">Deployment</span>
           </motion.h1>
           <motion.p 
             className="text-xl text-retro-secondary"
@@ -1141,7 +1135,7 @@ Once you've added the \`GHCR_TOKEN\` secret, download the enhanced workflow file
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.8 }}
           >
-            Easily Deploy Docker Containers to Azure Container Apps
+            6 Simple Steps to Azure Container Apps
           </motion.p>
         </motion.header>
 
@@ -1446,11 +1440,11 @@ Once you've added the \`GHCR_TOKEN\` secret, download the enhanced workflow file
               <div className="grid md:grid-cols-2 gap-4 text-sm">
                 <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4">
                   <h4 className="font-semibold text-green-400 mb-2">📖 Public Repositories</h4>
-                  <p className="text-retro-secondary">Complete Steps 1-4. Configures CD with public Github packages.</p>
+                  <p className="text-retro-secondary">Complete Steps 1-4. Uses GITHUB_TOKEN for everything. Simple and secure.</p>
                 </div>
                 <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4">
                   <h4 className="font-semibold text-purple-400 mb-2">🔐 Private Repositories</h4>
-                  <p className="text-retro-secondary">Complete Steps 1-6. Adds PAT configuration to support private Github packages.</p>
+                  <p className="text-retro-secondary">Complete Steps 1-6. Adds PAT configuration for persistent Azure access.</p>
                 </div>
               </div>
             </motion.div>
