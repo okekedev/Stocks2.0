@@ -676,34 +676,41 @@ jobs:
       },
       {
         id: Date.now() + 3,
-        message: '   → Select scopes: read:packages, write:packages',
+        message: '   → Go to GitHub → Settings → Developer settings → Personal access tokens',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'private-repo-setup'
       },
       {
         id: Date.now() + 4,
-        message: '🎯 Step 2: Add PAT to Repository Secrets',
+        message: '   → Select scopes: read:packages, write:packages',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'private-repo-setup'
       },
       {
         id: Date.now() + 5,
-        message: '   → Repository → Settings → Secrets and variables → Actions',
+        message: '🎯 Step 2: Add PAT to Repository Secrets',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'private-repo-setup'
       },
       {
         id: Date.now() + 6,
-        message: '   → Add secret: GHCR_TOKEN = your-pat-token',
+        message: '   → Repository → Settings → Secrets and variables → Actions',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'private-repo-setup'
       },
       {
         id: Date.now() + 7,
+        message: '   → Add secret: GHCR_TOKEN = your-pat-token',
+        level: 'info',
+        timestamp: new Date().toISOString(),
+        logType: 'private-repo-setup'
+      },
+      {
+        id: Date.now() + 8,
         message: '✅ Once completed, proceed to Step 6 for enhanced workflow',
         level: 'success',
         timestamp: new Date().toISOString(),
@@ -1061,7 +1068,7 @@ jobs:
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            Azure Container <span className="retro-text">Deployment</span>
+            Azure Container <span className="retro-text">CD</span>
           </motion.h1>
           <motion.p 
             className="text-xl text-retro-secondary"
@@ -1069,7 +1076,7 @@ jobs:
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.8 }}
           >
-            6 Simple Steps to Azure Container Apps
+            Configure CD with Azure + GitHub Container Registry
           </motion.p>
         </motion.header>
 
@@ -1349,17 +1356,17 @@ jobs:
               <div className="info-card-retro rounded-2xl p-6">
                 <Play className="w-8 h-8 text-purple-400 mb-4" />
                 <h3 className="text-xl font-semibold text-retro-primary mb-2">1-3. Core Setup</h3>
-                <p className="text-retro-secondary">GitHub sync, Azure configuration, and CI/CD with OIDC authentication</p>
+                <p className="text-retro-secondary">GitHub sync, Azure configuration, and CI/CD setup</p>
               </div>
               <div className="info-card-retro rounded-2xl p-6">
                 <Download className="w-8 h-8 text-blue-400 mb-4" />
                 <h3 className="text-xl font-semibold text-retro-primary mb-2">4. Standard Workflow</h3>
-                <p className="text-retro-secondary">Download basic workflow for public repositories using GITHUB_TOKEN</p>
+                <p className="text-retro-secondary">Download CD workflow file for public repositories</p>
               </div>
               <div className="info-card-retro rounded-2xl p-6">
                 <Shield className="w-8 h-8 text-yellow-400 mb-4" />
                 <h3 className="text-xl font-semibold text-retro-primary mb-2">5-6. Private Repos</h3>
-                <p className="text-retro-secondary">Optional: Setup PAT and get enhanced workflow for private repositories</p>
+                <p className="text-retro-secondary">Optional: Setup Personal access token for private repository workflow</p>
               </div>
             </motion.div>
 
@@ -1374,11 +1381,11 @@ jobs:
               <div className="grid md:grid-cols-2 gap-4 text-sm">
                 <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4">
                   <h4 className="font-semibold text-green-400 mb-2">📖 Public Repositories</h4>
-                  <p className="text-retro-secondary">Complete Steps 1-4. Uses GITHUB_TOKEN for everything. Simple and secure.</p>
+                  <p className="text-retro-secondary">Complete Steps 1-4.</p>
                 </div>
                 <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4">
-                  <h4 className="font-semibold text-purple-400 mb-2">🔐 Private Repositories</h4>
-                  <p className="text-retro-secondary">Complete Steps 1-6. Adds PAT configuration for persistent Azure access.</p>
+                  <h4 className="font-semibold text-purple-400 mb-2">🔐 Private Package Configuration</h4>
+                  <p className="text-retro-secondary">Complete Steps 1-6.</p>
                 </div>
               </div>
             </motion.div>
