@@ -1,4 +1,5 @@
 import { sendLog, sendStatus } from '../utils/wsUtils.js';
+import fs from 'fs';
 
 class RestAPIAzureService {
   constructor() {
@@ -10,20 +11,45 @@ class RestAPIAzureService {
 
   async authenticateWithBrowser(ws) {
     sendLog(ws, 'azure-setup', '🔑 Starting Microsoft Azure authentication...');
-    sendLog(ws, 'azure-setup', '⏳ Opening browser for Azure login...');
     
     try {
-      const { InteractiveBrowserCredential } = await import('@azure/identity');
+      // Try to detect if we're in a container environment
+      const isContainer = process.env.DOCKER_ENV || 
+                         fs.existsSync('/.dockerenv') || 
+                         process.env.NODE_ENV === 'production';
       
-      sendLog(ws, 'azure-setup', '🌐 Browser window should open shortly...');
-      sendLog(ws, 'azure-setup', '📱 If no browser opens, check popup blockers or try a different browser');
-      
-      this.credential = new InteractiveBrowserCredential({
-        clientId: "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
-        tenantId: "common",
-        redirectUri: "http://localhost:3000",
-        additionallyAllowedTenants: ["*"]
-      });
+      if (isContainer) {
+        // Use DeviceCodeCredential for containers
+        sendLog(ws, 'azure-setup', '🖥️ Container environment detected - using device code authentication');
+        sendLog(ws, 'azure-setup', '📱 You will receive a device code to authenticate');
+        
+        const { DeviceCodeCredential } = await import('@azure/identity');
+        
+        this.credential = new DeviceCodeCredential({
+          clientId: "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+          tenantId: "common",
+          userPromptCallback: (info) => {
+            sendLog(ws, 'azure-setup', '🔗 Device Code Authentication Required:', 'info');
+            sendLog(ws, 'azure-setup', `📱 Go to: ${info.verificationUri}`, 'info');
+            sendLog(ws, 'azure-setup', `🔑 Enter code: ${info.userCode}`, 'info');
+            sendLog(ws, 'azure-setup', '⏳ Waiting for authentication...', 'info');
+          }
+        });
+      } else {
+        // Use InteractiveBrowserCredential for local development
+        sendLog(ws, 'azure-setup', '🌐 Local environment detected - opening browser for authentication');
+        sendLog(ws, 'azure-setup', '⏳ Browser window should open shortly...');
+        sendLog(ws, 'azure-setup', '📱 If no browser opens, check popup blockers');
+        
+        const { InteractiveBrowserCredential } = await import('@azure/identity');
+        
+        this.credential = new InteractiveBrowserCredential({
+          clientId: "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+          tenantId: "common",
+          redirectUri: "http://localhost:3000",
+          additionallyAllowedTenants: ["*"]
+        });
+      }
       
       sendLog(ws, 'azure-setup', '🔐 Getting authentication token...');
       
@@ -692,15 +718,20 @@ class RestAPIAzureService {
       sendLog(ws, 'cicd-setup', `📋 Subscription: ${subscriptionId}`);
 
       // First, check if permissions already exist by listing role assignments
-      await this.checkExistingRoleAssignments(ws, subscriptionId, resourceGroupName, principalId);
+      const hasExistingPermissions = await this.checkExistingRoleAssignments(ws, subscriptionId, resourceGroupName, principalId);
+      
+      if (hasExistingPermissions) {
+        sendLog(ws, 'cicd-setup', '✅ Required permissions already exist - skipping role assignment creation');
+        sendLog(ws, 'cicd-setup', '🎯 The managed identity already has sufficient access');
+        return; // Skip the role assignment creation
+      }
 
-      // Generate a UUID for the role assignment
-      const roleAssignmentId = crypto.randomUUID ? crypto.randomUUID() : 
-        'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-          const r = Math.random() * 16 | 0;
-          const v = c == 'x' ? r : (r & 0x3 | 0x8);
-          return v.toString(16);
-        });
+      // Generate a UUID for the role assignment (browser-compatible)
+      const roleAssignmentId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
 
       const contributorRoleId = 'b24988ac-6180-42a0-ab88-20f7382dd24c';
       
@@ -768,13 +799,17 @@ class RestAPIAzureService {
             const roleName = assignment.properties.roleDefinitionId.split('/').pop();
             sendLog(ws, 'cicd-setup', `  ${index + 1}. Role: ${roleName}, Scope: ${assignment.properties.scope}`);
           });
+          return true; // Has existing permissions
         } else {
           sendLog(ws, 'cicd-setup', '📋 No existing role assignments found - will create new one');
+          return false; // No existing permissions
         }
       }
+      return false; // Default to no permissions if we can't check
     } catch (error) {
       // Silent fail - this is just informational
       sendLog(ws, 'cicd-setup', '🔍 Could not check existing permissions (continuing anyway)');
+      return false; // Default to no permissions if check fails
     }
   }
 
@@ -847,9 +882,6 @@ export async function handleAzureSetup(ws, payload) {
     await azureService.createContainerEnvironmentViaRestAPI(ws, payload.resourceGroup, payload.environmentName, payload.location);
     await azureService.createContainerAppViaRestAPI(ws, payload.resourceGroup, payload.appName, payload.environmentName, payload.location, payload);
 
-    // Optional: Try SDK fallback for future operations
-    await azureService.trySDKFallback(ws, payload);
-
     sendLog(ws, 'azure-setup', '🎉 Azure infrastructure setup completed!');
     sendLog(ws, 'azure-setup', `🏗️ Resource Group: ${payload.resourceGroup}`);
     sendLog(ws, 'azure-setup', `🌍 Container Environment: ${payload.environmentName}`);
@@ -887,6 +919,7 @@ export async function handleAzureSetup(ws, payload) {
       sendLog(ws, 'azure-setup', '⚠️ Could not retrieve application URL', 'warning');
     }
 
+    // IMPORTANT: Send completion status BEFORE trying SDK fallback
     sendStatus(ws, 'azure-setup', 'completed', {
       message: 'Azure infrastructure ready!',
       resourceGroup: payload.resourceGroup,
@@ -894,6 +927,14 @@ export async function handleAzureSetup(ws, payload) {
       appName: payload.appName,
       subscriptionId: azureService.subscriptionId
     });
+
+    // Optional: Try SDK fallback for future operations (this runs AFTER completion)
+    try {
+      await azureService.trySDKFallback(ws, payload);
+    } catch (fallbackError) {
+      // Silent fail - this is just for future operations
+      sendLog(ws, 'azure-setup', '⚠️ SDK fallback skipped - continuing with REST API', 'info');
+    }
 
   } catch (error) {
     sendLog(ws, 'azure-setup', `❌ Error: ${error.message}`, 'error');
