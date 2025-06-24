@@ -8,17 +8,6 @@ class RestAPIAzureService {
     this.useRestAPI = false;
   }
 
-  // Helper function to get environment-appropriate redirect URI
-  getRedirectUri() {
-    // Check if running in Docker/container environment
-    if (process.env.DOCKER_ENV || process.env.NODE_ENV === 'production') {
-      // In production/Docker, use the host-accessible URL
-      return "http://localhost:3000";
-    }
-    // In development, also use localhost:3000 for consistency
-    return "http://localhost:3000";
-  }
-
   async authenticateWithBrowser(ws) {
     sendLog(ws, 'azure-setup', '🔑 Starting Microsoft Azure authentication...');
     sendLog(ws, 'azure-setup', '⏳ Opening browser for Azure login...');
@@ -29,14 +18,10 @@ class RestAPIAzureService {
       sendLog(ws, 'azure-setup', '🌐 Browser window should open shortly...');
       sendLog(ws, 'azure-setup', '📱 If no browser opens, check popup blockers or try a different browser');
       
-      // Use the environment-aware redirect URI
-      const redirectUri = this.getRedirectUri();
-      sendLog(ws, 'azure-setup', `🔗 Using redirect URI: ${redirectUri}`);
-      
       this.credential = new InteractiveBrowserCredential({
         clientId: "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
         tenantId: "common",
-        redirectUri: redirectUri,
+        redirectUri: "http://localhost:3000",
         additionallyAllowedTenants: ["*"]
       });
       
