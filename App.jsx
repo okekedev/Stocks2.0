@@ -97,15 +97,21 @@ function App() {
   }, [logs])
 
   // WebSocket connection
-  useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const host = window.location.hostname
+  // WebSocket connection
+useEffect(() => {
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  
+  // Simple approach: if we're accessing via localhost:3000, assume it's Docker/production
+  // Only use 3001 if we detect we're in actual Vite dev mode
+  const isViteDev = import.meta.hot !== undefined
+  
+  const wsUrl = isViteDev
+    ? 'ws://localhost:3001'  // True Vite development
+    : `${protocol}//${window.location.host}`  // Docker or production
     
-    const isDevelopment = window.location.port === '3000'
-    const wsPort = isDevelopment ? '3001' : (window.location.port || '3000')
-    const wsUrl = `${protocol}//${host}:${wsPort}`
-    
-    const websocket = new WebSocket(wsUrl)
+  console.log('WebSocket connecting to:', wsUrl) // Temporary debug
+  
+  const websocket = new WebSocket(wsUrl)
     
     websocket.onopen = () => {
       setConnectionStatus('connected')
@@ -179,21 +185,28 @@ function App() {
     setLogs([
       {
         id: Date.now(),
-        message: '1️⃣ Push this template to your GitHub repository',
+        message: '1️⃣ Push this template to your GitHub repository, or copy the yml in this project to your existing repo',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'github'
       },
       {
         id: Date.now() + 1,
-        message: '2️⃣ GitHub Actions will automatically build your container',
+        message: '⁉️ Ensure your repository has a working Dockerfile for your application',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'github'
       },
       {
         id: Date.now() + 2,
-        message: '📦 Your image will be: ghcr.io/[username]/[container-name]:latest',
+        message: '2️⃣ GitHub Actions will automatically build your container',
+        level: 'info',
+        timestamp: new Date().toISOString(),
+        logType: 'github'
+      },
+      {
+        id: Date.now() + 3,
+        message: '📦 Your image will be in the packages section of your Github profile',
         level: 'info',
         timestamp: new Date().toISOString(),
         logType: 'github'
