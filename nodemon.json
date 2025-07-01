@@ -1,8 +1,8 @@
 {
   "watch": [
-    "server.js",
-    "handlers/",
-    "utils/"
+    "backend/server.js",
+    "backend/handlers/",
+    "backend/utils/"
   ],
   "ext": "js,json",
   "ignore": [

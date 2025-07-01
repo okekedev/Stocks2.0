@@ -1,4 +1,4 @@
-import { sendLog, sendStatus } from '../utils/wsUtils.js';
+import { sendLog, sendStatus } from '../../utils/wsUtils.js';
 import fs from 'fs';
 
 class RestAPIAzureService {
