@@ -1,9 +1,3 @@
-"""
-Polygon.io $29 Stocks Starter Plan - Complete Data Collection Script
-This script pulls all available data types from Polygon.io's $29/month plan
-including aggregates, snapshots, technical indicators, reference data, and news.
-"""
-
 import os
 import json
 import sqlite3

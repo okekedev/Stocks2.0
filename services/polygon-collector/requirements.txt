@@ -1,0 +1,5 @@
+polygon-api-client==1.13.2
+pandas==2.1.4
+requests==2.31.0
+aiohttp==3.9.1
+python-dotenv==1.0.0
