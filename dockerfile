@@ -19,6 +19,9 @@ RUN npm run build
 # Remove dev dependencies to reduce image size
 RUN npm ci --only=production && npm cache clean --force
 
+# Set production environment variable
+ENV NODE_ENV=production
+
 # Expose port 3000 (standard frontend port)
 EXPOSE 3000
 

@@ -51,7 +51,7 @@ if (isProduction) {
 }
 
 // Port configuration: 3001 for development, 3000 for production
-const PORT = isProduction ? 3000 : 3001;
+const PORT = process.env.NODE_ENV === 'production' ? 3000 : 3001;
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Simple React App Server running on port ${PORT}`);
