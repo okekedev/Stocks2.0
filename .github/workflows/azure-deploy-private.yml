@@ -9,9 +9,9 @@ on:
 
 env:
   # 🔧 Configure these environment variables for your project
-  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || 'my-resource-group' }}
-  AZURE_CONTAINER_APP_NAME: ${{ vars.AZURE_CONTAINER_APP_NAME || 'my-container-app' }}
-  CONTAINER_IMAGE_NAME: ${{ vars.CONTAINER_IMAGE_NAME || github.event.repository.name }}
+  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || 'stocks-rg' }}
+  AZURE_CONTAINER_APP_NAME: ${{ vars.AZURE_CONTAINER_APP_NAME || 'stocks2' }}
+  CONTAINER_IMAGE_NAME: ${{ vars.CONTAINER_IMAGE_NAME || 'stocks2' }}
 
 jobs:
   build-and-deploy:
@@ -76,21 +76,46 @@ jobs:
       run: |
         echo "🔐 Configuring private GitHub Container Registry access with PAT..."
         
-        # Remove any existing registry configuration first
-        az containerapp registry remove \
-          --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
-          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-          --server ghcr.io || echo "No existing registry config to remove"
-        
-        # Configure registry credentials with PAT for persistent access
-        az containerapp registry set \
-          --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
-          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-          --server ghcr.io \
-          --username ${{ github.actor }} \
-          --password ${{ secrets.GHCR_TOKEN }}
-        
-        echo "✅ Registry access configured with PAT"
+        # Check if container app exists, if not create it
+        if ! az containerapp show --name ${{ env.AZURE_CONTAINER_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} >/dev/null 2>&1; then
+          echo "📦 Container app doesn't exist, creating it..."
+          
+          # Create container app with the stocks2 image
+          az containerapp create \
+            --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --environment ${{ vars.AZURE_CONTAINER_ENVIRONMENT || 'stocks-env' }} \
+            --image ghcr.io/${{ github.repository_owner }}/${{ env.CONTAINER_IMAGE_NAME }}:latest \
+            --target-port 80 \
+            --ingress external \
+            --registry-server ghcr.io \
+            --registry-username ${{ github.actor }} \
+            --registry-password ${{ secrets.GHCR_TOKEN }} \
+            --cpu 0.25 \
+            --memory 0.5Gi \
+            --min-replicas 0 \
+            --max-replicas 1
+            
+          echo "✅ Container app created successfully!"
+        else
+          echo "📦 Container app exists, updating registry credentials..."
+          
+          # Remove any existing registry configuration first
+          az containerapp registry remove \
+            --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --server ghcr.io || echo "No existing registry config to remove"
+          
+          # Configure registry credentials with PAT for persistent access
+          az containerapp registry set \
+            --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --server ghcr.io \
+            --username ${{ github.actor }} \
+            --password ${{ secrets.GHCR_TOKEN }}
+          
+          echo "✅ Registry credentials updated!"
+        fi
         
     - name: Deploy to Azure Container Apps
       if: github.ref == 'refs/heads/main'
