@@ -1,4 +1,4 @@
-name: Build and Deploy to Azure Container Apps
+name: Build and Deploy to Azure Container Apps (Private Repo Support)
 
 on:
   push:
@@ -6,12 +6,6 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-
-env:
-  # 🔧 Configure these environment variables for your project
-  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || 'stocks-rg' }}
-  AZURE_CONTAINER_APP_NAME: ${{ vars.AZURE_CONTAINER_APP_NAME || 'stocks2' }}
-  CONTAINER_IMAGE_NAME: ${{ vars.CONTAINER_IMAGE_NAME || 'stocks2' }}
 
 jobs:
   build-and-deploy:
@@ -44,8 +38,8 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        # ✅ Dynamic repository reference using configured image name
-        images: ghcr.io/${{ github.repository_owner }}/${{ env.CONTAINER_IMAGE_NAME }}
+        # ✅ Dynamic repository reference
+        images: ghcr.io/${{ github.repository_owner }}/stocks2
         tags: |
           type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
           type=raw,value=v${{ github.run_number }},enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
@@ -76,46 +70,26 @@ jobs:
       run: |
         echo "🔐 Configuring private GitHub Container Registry access with PAT..."
         
-        # Check if container app exists, if not create it
-        if ! az containerapp show --name ${{ env.AZURE_CONTAINER_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} >/dev/null 2>&1; then
-          echo "📦 Container app doesn't exist, creating it..."
-          
-          # Create container app with the stocks2 image
-          az containerapp create \
-            --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --environment ${{ vars.AZURE_CONTAINER_ENVIRONMENT || 'stocks-env' }} \
-            --image ghcr.io/${{ github.repository_owner }}/${{ env.CONTAINER_IMAGE_NAME }}:latest \
-            --target-port 80 \
-            --ingress external \
-            --registry-server ghcr.io \
-            --registry-username ${{ github.actor }} \
-            --registry-password ${{ secrets.GHCR_TOKEN }} \
-            --cpu 0.25 \
-            --memory 0.5Gi \
-            --min-replicas 0 \
-            --max-replicas 1
-            
-          echo "✅ Container app created successfully!"
-        else
-          echo "📦 Container app exists, updating registry credentials..."
-          
-          # Remove any existing registry configuration first
-          az containerapp registry remove \
-            --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --server ghcr.io || echo "No existing registry config to remove"
-          
-          # Configure registry credentials with PAT for persistent access
-          az containerapp registry set \
-            --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --server ghcr.io \
-            --username ${{ github.actor }} \
-            --password ${{ secrets.GHCR_TOKEN }}
-          
-          echo "✅ Registry credentials updated!"
-        fi
+        # Remove any existing registry configuration first
+        az containerapp registry remove \
+          --name stocks2-app \
+          --resource-group stocks2-rg \
+          --server ghcr.io || echo "No existing registry config to remove"
+        
+        # Configure registry credentials with PAT for persistent access
+        az containerapp registry set \
+          --name stocks2-app \
+          --resource-group stocks2-rg \
+          --server ghcr.io \
+          --username ${{ github.actor }} \
+          --password ${{ secrets.GHCR_TOKEN }}
+        
+        echo "✅ Registry access configured with PAT"
+        
+    - name: Deploy to Azure Container Apps
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "🚀 Deploying to Azure Container Apps..."
         
     - name: Deploy to Azure Container Apps
       if: github.ref == 'refs/heads/main'
@@ -127,9 +101,9 @@ jobs:
         echo "📋 Creating revision: $REVISION_SUFFIX"
         
         az containerapp update \
-          --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
-          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-          --image ghcr.io/${{ github.repository_owner }}/${{ env.CONTAINER_IMAGE_NAME }}:latest \
+          --name stocks2-app \
+          --resource-group stocks2-rg \
+          --image ghcr.io/${{ github.repository_owner }}/stocks2:latest \
           --revision-suffix $REVISION_SUFFIX
         
         echo "✅ Deployment completed successfully!"
@@ -141,14 +115,14 @@ jobs:
         sleep 30
       
         az containerapp revision list \
-          --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
-          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+          --name stocks2-app \
+          --resource-group stocks2-rg \
           --query '[0].{Name:name,Active:properties.active,CreatedTime:properties.createdTime,Image:properties.template.containers[0].image,TrafficWeight:properties.trafficWeight}' \
           --output table
         
         APP_URL=$(az containerapp show \
-          --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
-          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+          --name stocks2-app \
+          --resource-group stocks2-rg \
           --query 'properties.configuration.ingress.fqdn' \
           --output tsv)
         
@@ -163,10 +137,8 @@ jobs:
         fi
         
         echo "📊 Deployment summary:"
-        echo "- Image: ghcr.io/${{ github.repository_owner }}/${{ env.CONTAINER_IMAGE_NAME }}:latest"
+        echo "- Image: ghcr.io/${{ github.repository_owner }}/stocks2:latest"
         echo "- Build: v${{ github.run_number }}"
         echo "- Commit: ${{ steps.short_sha.outputs.sha }}"
         echo "- Registry: Private GitHub Container Registry (ghcr.io) with PAT"
-        echo "- Resource Group: ${{ env.AZURE_RESOURCE_GROUP }}"
-        echo "- Container App: ${{ env.AZURE_CONTAINER_APP_NAME }}"
         echo "- Status: ✅ Deployed"
