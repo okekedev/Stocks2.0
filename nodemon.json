@@ -1,6 +1,6 @@
 {
   "watch": [
-    "backend/server.js",
+    "server.js",
     "backend/handlers/",
     "backend/services/",
     "backend/utils/"
