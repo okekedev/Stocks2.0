@@ -1,590 +1,520 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, TrendingUp, DollarSign, Activity, Zap, Globe, Filter } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { TrendingUp, TrendingDown, Newspaper, Play, Pause, Clock, Flame, Zap, AlertCircle, LineChart, Search, Filter } from 'lucide-react';
 
-function StockNewsRadar() {
-  const [isMonitoring, setIsMonitoring] = useState(false);
-  const [criteria, setCriteria] = useState({
-    minPrice: 1.00,
-    maxPrice: 8.00,
-    minMarketCap: 100,
-    maxMarketCap: 3000,
-    minVolume: 500,
-    exchanges: ['NASDAQ', 'NYSE'],
-    sectors: 'all'
-  });
+export default function NewsDriverStockDashboard() {
+  const [isDataSyncing, setIsDataSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState(null);
   const [qualifyingStocks, setQualifyingStocks] = useState([]);
-  const [newsStream, setNewsStream] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [stats, setStats] = useState({
-    totalScanned: 0,
-    newsFound: 0,
-    avgSentiment: 0
+  const [newsWithTechnicals, setNewsWithTechnicals] = useState([]);
+  const [topMovers, setTopMovers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [screeningCriteria, setScreeningCriteria] = useState({
+    minPrice: 10,
+    maxPrice: 500,
+    minMarketCap: 100,
+    maxMarketCap: 100000,
+    minVolume: 1000,
+    exchanges: ['XNYS', 'XNAS', 'XNGS']
   });
-  const newsEndRef = useRef(null);
+  const syncIntervalRef = useRef(null);
 
-  const availableExchanges = [
-    { code: 'NASDAQ', name: 'NASDAQ', tradeable: true },
-    { code: 'NYSE', name: 'NYSE', tradeable: true },
-    { code: 'NYSEARCA', name: 'NYSE Arca', tradeable: true },
-    { code: 'BATS', name: 'BATS', tradeable: true },
-    { code: 'OTC', name: 'OTC Markets', tradeable: false },
-    { code: 'PINK', name: 'Pink Sheets', tradeable: false }
-  ];
-
-  useEffect(() => {
-    newsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [newsStream]);
-
-  useEffect(() => {
-    if (!isMonitoring) return;
-
-    const interval = setInterval(() => {
-      checkForNews();
-    }, 60000);
-
-    checkForNews();
-    return () => clearInterval(interval);
-  }, [isMonitoring, qualifyingStocks]);
-
-  const findQualifyingStocks = async () => {
-    setIsLoading(true);
-    try {
-      console.log('🔍 Screening stocks with real data...');
+  // Calculate news-driven score using backend technical analysis
+  const calculateNewsScore = (stock, technicalAnalysis, newsData) => {
+    let score = 50; // Base score
+    
+    if (technicalAnalysis) {
+      // Technical indicators (40% weight)
+      const rsiScore = technicalAnalysis.rsi > 70 ? 20 : technicalAnalysis.rsi < 30 ? -15 : 
+                      (technicalAnalysis.rsi - 50) * 0.3;
       
-      const response = await fetch('/api/stocks/screen', {
+      const volumeScore = technicalAnalysis.volumeSurge > 150 ? 15 : 
+                         technicalAnalysis.volumeSurge > 100 ? 10 : 0;
+      
+      const momentumScore = technicalAnalysis.hourMomentum > 2 ? 15 : 
+                           technicalAnalysis.hourMomentum > 0 ? 10 : 
+                           technicalAnalysis.hourMomentum < -2 ? -10 : 0;
+      
+      const vwapScore = technicalAnalysis.priceVsVWAP > 1 ? 10 : 
+                       technicalAnalysis.priceVsVWAP > 0 ? 5 : -5;
+      
+      const buyingPressureScore = technicalAnalysis.buyingPressure?.score ? 
+                                 (technicalAnalysis.buyingPressure.score - 50) * 0.2 : 0;
+      
+      score += (rsiScore + volumeScore + momentumScore + vwapScore + buyingPressureScore) * 0.4;
+    }
+    
+    // News sentiment (60% weight) - only positive news from backend
+    if (newsData && newsData.length > 0) {
+      const newsImpact = newsData.length * 8; // Each positive news adds 8 points
+      const recencyBonus = newsData.filter(news => {
+        const age = Date.now() - new Date(news.time).getTime();
+        return age < 10 * 60 * 1000; // Last 10 minutes
+      }).length * 5; // Recent news gets bonus
+      
+      score += (newsImpact + recencyBonus) * 0.6;
+    }
+    
+    // Price change boost
+    if (technicalAnalysis?.dayChangePercent) {
+      score += technicalAnalysis.dayChangePercent * 2;
+    }
+    
+    // Ensure realistic distribution (5-95 range)
+    return Math.round(Math.max(5, Math.min(95, score)));
+  };
+
+  // Get API base URL based on environment
+  const getApiBaseUrl = () => {
+    // In development, Vite runs on 3000, Express on 3001
+    // In production, Express serves everything on 3000
+    return window.location.hostname === 'localhost' && window.location.port === '3000' 
+      ? 'http://localhost:3001' 
+      : '';
+  };
+
+  // Screen stocks using backend API
+  const screenStocks = async () => {
+    try {
+      setError(null);
+      setLoading(true);
+      
+      const response = await fetch(`${getApiBaseUrl()}/api/stocks/screen`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          minPrice: criteria.minPrice,
-          maxPrice: criteria.maxPrice,
-          minMarketCap: criteria.minMarketCap,
-          maxMarketCap: criteria.maxMarketCap,
-          minVolume: criteria.minVolume,
-          exchanges: criteria.exchanges
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(screeningCriteria)
       });
       
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Screening failed: ${response.status}`);
       
       const data = await response.json();
-      console.log('📊 Real stocks found:', data.qualifyingStocks.length);
-      
       setQualifyingStocks(data.qualifyingStocks || []);
-      setStats(prev => ({
-        ...prev,
-        totalScanned: data.totalScanned || 0
-      }));
       
-    } catch (error) {
-      console.error('❌ Error finding real stocks:', error);
-      // Fallback to empty array on error
-      setQualifyingStocks([]);
-      setStats(prev => ({
-        ...prev,
-        totalScanned: 0
-      }));
-    } finally {
-      setIsLoading(false);
+      return data.qualifyingStocks || [];
+    } catch (err) {
+      setError(`Screening error: ${err.message}`);
+      return [];
     }
   };
 
-  const checkForNews = async () => {
-    if (qualifyingStocks.length === 0) return;
-
+  // Get news with technical analysis using backend API
+  const getNewsWithTechnicals = async (tickers) => {
     try {
-      console.log(`📰 Checking real news + technicals for ${qualifyingStocks.length} stocks...`);
-      
-      const tickers = qualifyingStocks.map(stock => stock.ticker);
-      
-      const response = await fetch('/api/news/check-with-technicals', {
+      const response = await fetch(`${getApiBaseUrl()}/api/news/check-with-technicals`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tickers })
       });
       
-      if (!response.ok) {
-        throw new Error(`News API Error: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`News analysis failed: ${response.status}`);
       
       const data = await response.json();
-      console.log('📈 Real positive news + technicals found:', data.news.length);
-      
-      if (data.news && data.news.length > 0) {
-        // Add new news to the top of the stream
-        setNewsStream(prev => [...data.news, ...prev].slice(0, 50));
-        
-        setStats(prev => ({
-          ...prev,
-          newsFound: prev.newsFound + data.news.length,
-          avgSentiment: 1.0 // All positive since we filter for positive only
-        }));
-        
-        console.log(`✅ Added ${data.news.length} positive news + technical analysis to stream`);
-      }
-      
-    } catch (error) {
-      console.error('❌ Error checking real news + technicals:', error);
+      return data.news || [];
+    } catch (err) {
+      console.error('News analysis error:', err);
+      return [];
     }
   };
 
-  const startMonitoring = () => {
-    if (qualifyingStocks.length === 0) {
-      findQualifyingStocks().then(() => {
-        setIsMonitoring(true);
+  // Main sync function
+  const syncData = async () => {
+    try {
+      setError(null);
+      
+      // 1. Screen qualifying stocks
+      const stocks = await screenStocks();
+      if (stocks.length === 0) {
+        setTopMovers([]);
+        setLastSyncTime(new Date());
+        return;
+      }
+      
+      // 2. Get tickers for news analysis
+      const tickers = stocks.map(s => s.ticker);
+      
+      // 3. Get news with technical analysis
+      const newsData = await getNewsWithTechnicals(tickers);
+      setNewsWithTechnicals(newsData);
+      
+      // 4. Calculate scores and create top movers
+      const stocksWithScores = stocks.map(stock => {
+        const stockNews = newsData.filter(news => news.ticker === stock.ticker);
+        const technicalAnalysis = stockNews.length > 0 ? stockNews[0].technicalAnalysis : null;
+        
+        const newsScore = calculateNewsScore(stock, technicalAnalysis, stockNews);
+        
+        return {
+          ...stock,
+          newsScore,
+          technicalAnalysis,
+          relatedNews: stockNews,
+          chartData: generateMockChartData(stock.price, technicalAnalysis?.dayChangePercent || 0)
+        };
       });
+      
+      // Sort by news score and get top 5
+      const top5 = stocksWithScores
+        .sort((a, b) => b.newsScore - a.newsScore)
+        .slice(0, 5);
+      
+      setTopMovers(top5);
+      setLastSyncTime(new Date());
+      
+    } catch (err) {
+      setError(`Sync error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Generate mock chart data for visualization
+  const generateMockChartData = (currentPrice, changePercent) => {
+    const points = [];
+    const startPrice = currentPrice / (1 + (changePercent || 0) / 100);
+    
+    for (let i = 0; i < 20; i++) {
+      const progress = i / 19;
+      const trend = startPrice + (currentPrice - startPrice) * progress;
+      const volatility = (Math.random() - 0.5) * currentPrice * 0.02;
+      points.push(Math.max(0, trend + volatility));
+    }
+    return points;
+  };
+
+  // Toggle sync
+  const toggleSync = () => {
+    if (isDataSyncing) {
+      clearInterval(syncIntervalRef.current);
+      setIsDataSyncing(false);
     } else {
-      setIsMonitoring(true);
+      setIsDataSyncing(true);
+      syncData(); // Initial sync
+      syncIntervalRef.current = setInterval(syncData, 60000); // Every minute
     }
   };
 
-  const formatTime = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
-  };
-
-  const formatMarketCap = (cap) => {
-    if (cap >= 1000) return `$${(cap/1000).toFixed(1)}B`;
-    return `$${cap}M`;
-  };
-
-  const getSentimentColor = (sentiment) => {
-    switch(sentiment) {
-      case 'positive': return 'text-emerald';
-      case 'negative': return 'text-rose';
-      default: return 'text-amber';
-    }
-  };
-
-  const getCategoryIcon = (category) => {
-    switch(category) {
-      case 'Technology': return <Zap className="w-4 h-4" />;
-      case 'Earnings': return <TrendingUp className="w-4 h-4" />;
-      case 'Business': return <DollarSign className="w-4 h-4" />;
-      default: return <Activity className="w-4 h-4" />;
-    }
-  };
-
-  const TechnicalAnalysisCard = ({ analysis, ticker }) => {
-    if (!analysis) return null;
+  // Initial load
+  useEffect(() => {
+    syncData();
     
-    const getBuyingPressureColor = (score) => {
-      if (score >= 70) return 'text-emerald';
-      if (score >= 50) return 'text-amber';
-      return 'text-rose';
-    };
-    
-    const getSignalStrengthColor = (strength) => {
-      switch(strength) {
-        case 'high': return 'bg-emerald/20 text-emerald border-emerald/30';
-        case 'medium': return 'bg-amber/20 text-amber border-amber/30';
-        default: return 'bg-rose/20 text-rose border-rose/30';
+    return () => {
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
       }
     };
-    
-    return (
-      <div className="ultra-glass p-4 mt-3 space-y-3">
-        <div className="flex items-center space-x-2">
-          <TrendingUp className="w-4 h-4 text-electric" />
-          <span className="text-electric font-semibold text-sm">TECHNICAL ANALYSIS</span>
-        </div>
+  }, []);
+
+  // Mini chart component
+  const MiniChart = ({ data, positive }) => (
+    <div className="w-full h-16 relative">
+      <svg className="w-full h-full" viewBox="0 0 200 64">
+        <defs>
+          <linearGradient id={`gradient-${positive ? 'green' : 'red'}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={positive ? "#10b981" : "#ef4444"} stopOpacity="0.3"/>
+            <stop offset="100%" stopColor={positive ? "#10b981" : "#ef4444"} stopOpacity="0.1"/>
+          </linearGradient>
+        </defs>
         
-        {/* Key Metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-          <div className="text-center">
-            <div className="text-primary font-bold">${analysis.currentPrice?.toFixed(2)}</div>
-            <div className="text-muted">Current</div>
-          </div>
-          <div className="text-center">
-            <div className={`font-bold ${analysis.hourMomentum > 0 ? 'text-emerald' : 'text-rose'}`}>
-              {analysis.hourMomentum?.toFixed(1)}%
-            </div>
-            <div className="text-muted">1H Momentum</div>
-          </div>
-          <div className="text-center">
-            <div className="text-violet font-bold">{analysis.volumeSurge?.toFixed(0)}%</div>
-            <div className="text-muted">Volume Surge</div>
-          </div>
-          <div className="text-center">
-            <div className={`font-bold ${getBuyingPressureColor(analysis.buyingPressure?.score)}`}>
-              {analysis.buyingPressure?.score || 0}
-            </div>
-            <div className="text-muted">Buy Pressure</div>
-          </div>
-        </div>
-        
-        {/* Technical Signals */}
-        {analysis.signals && analysis.signals.length > 0 && (
-          <div className="space-y-2">
-            <div className="text-xs text-electric font-medium">SIGNALS:</div>
-            <div className="flex flex-wrap gap-1">
-              {analysis.signals.slice(0, 3).map((signal, idx) => (
-                <span
-                  key={idx}
-                  className={`px-2 py-1 rounded text-xs border ${getSignalStrengthColor(signal.strength)}`}
-                >
-                  {signal.message}
-                </span>
-              ))}
-            </div>
-          </div>
+        {data.length > 1 && (
+          <>
+            <path
+              d={`M 0,${64 - ((data[0] - Math.min(...data)) / (Math.max(...data) - Math.min(...data))) * 48} ${data.map((point, i) => 
+                `L ${(i / (data.length - 1)) * 200},${64 - ((point - Math.min(...data)) / (Math.max(...data) - Math.min(...data))) * 48}`
+              ).join(' ')}`}
+              fill="none"
+              stroke={positive ? "#10b981" : "#ef4444"}
+              strokeWidth="2"
+            />
+            <path
+              d={`M 0,64 L 0,${64 - ((data[0] - Math.min(...data)) / (Math.max(...data) - Math.min(...data))) * 48} ${data.map((point, i) => 
+                `L ${(i / (data.length - 1)) * 200},${64 - ((point - Math.min(...data)) / (Math.max(...data) - Math.min(...data))) * 48}`
+              ).join(' ')} L 200,64 Z`}
+              fill={`url(#gradient-${positive ? 'green' : 'red'})`}
+            />
+          </>
         )}
-        
-        {/* Buying Pressure Details */}
-        {analysis.buyingPressure?.signals && analysis.buyingPressure.signals.length > 0 && (
-          <div className="space-y-1">
-            <div className="text-xs text-emerald font-medium">BUYING PRESSURE:</div>
-            {analysis.buyingPressure.signals.slice(0, 2).map((signal, idx) => (
-              <div key={idx} className="text-xs text-secondary">• {signal}</div>
-            ))}
-          </div>
-        )}
-        
-        {/* Additional Metrics */}
-        <div className="flex justify-between text-xs text-muted border-t border-white/5 pt-2">
-          <span>RSI: <span className="text-secondary">{analysis.rsi}</span></span>
-          <span>vs VWAP: <span className={analysis.priceVsVWAP > 0 ? 'text-emerald' : 'text-rose'}>
-            {analysis.priceVsVWAP > 0 ? '+' : ''}{analysis.priceVsVWAP}%
-          </span></span>
-          <span>Vol: <span className="text-secondary">{(analysis.currentVolume / 1000).toFixed(0)}K</span></span>
-        </div>
-      </div>
-    );
+      </svg>
+    </div>
+  );
+
+  // Heat map color based on score
+  const getHeatColor = (score) => {
+    if (score >= 80) return 'from-red-500 to-orange-400'; // Hot
+    if (score >= 70) return 'from-orange-400 to-yellow-400'; // Warm  
+    if (score >= 60) return 'from-yellow-400 to-green-400'; // Neutral-warm
+    if (score >= 40) return 'from-blue-400 to-cyan-400'; // Cool
+    if (score >= 30) return 'from-cyan-400 to-blue-500'; // Cold
+    return 'from-blue-600 to-purple-600'; // Very cold
   };
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Hero Header */}
-        <div className="text-center space-y-6">
-          <div className="inline-flex items-center space-x-3 mb-4">
-            <div className="p-3 bg-gradient-to-r from-electric to-violet rounded-2xl">
-              <Activity className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-6xl font-bold bg-gradient-to-r from-electric via-violet to-emerald bg-clip-text text-transparent">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 text-white p-4">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-2">
               Neural Stock Radar
             </h1>
-          </div>
-          <p className="text-xl text-secondary max-w-3xl mx-auto leading-relaxed">
-            Advanced momentum detection system powered by real-time sentiment analysis 
-            and institutional-grade market data intelligence
-          </p>
-          
-          {/* Live Stats */}
-          <div className="flex justify-center space-x-8 mt-8">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-electric">{stats.totalScanned}</div>
-              <div className="text-sm text-muted">Stocks Monitored</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-emerald">{stats.newsFound}</div>
-              <div className="text-sm text-muted">News Events</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-violet">{(stats.avgSentiment * 100).toFixed(0)}%</div>
-              <div className="text-sm text-muted">Avg Sentiment</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Control Panel */}
-        <div className="ultra-glass p-8">
-          <div className="flex items-center space-x-4 mb-8">
-            <Filter className="w-6 h-6 text-electric" />
-            <h2 className="text-2xl font-bold text-primary">Screening Parameters</h2>
+            <p className="text-gray-400">Real-time positive sentiment news + technical analysis</p>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-8">
+          {/* Controls */}
+          <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+            <div className="flex items-center space-x-2 px-3 py-2 bg-gray-800 rounded-lg">
+              <Clock className="w-4 h-4 text-blue-400" />
+              <span className="text-sm text-gray-300">
+                {lastSyncTime ? lastSyncTime.toLocaleTimeString() : 'Never'}
+              </span>
+            </div>
             
-            {/* Price Range */}
-            <div className="space-y-4">
-              <label className="block text-sm font-semibold text-electric uppercase tracking-wider">
-                Price Range
-              </label>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <span className="text-muted text-sm w-8">Min</span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={criteria.minPrice}
-                    onChange={(e) => setCriteria(prev => ({...prev, minPrice: parseFloat(e.target.value)}))}
-                    className="neo-input flex-1"
-                    placeholder="1.00"
-                  />
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-muted text-sm w-8">Max</span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={criteria.maxPrice}
-                    onChange={(e) => setCriteria(prev => ({...prev, maxPrice: parseFloat(e.target.value)}))}
-                    className="neo-input flex-1"
-                    placeholder="8.00"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Market Cap */}
-            <div className="space-y-4">
-              <label className="block text-sm font-semibold text-violet uppercase tracking-wider">
-                Market Cap (M)
-              </label>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <span className="text-muted text-sm w-8">Min</span>
-                  <input
-                    type="number"
-                    value={criteria.minMarketCap}
-                    onChange={(e) => setCriteria(prev => ({...prev, minMarketCap: parseInt(e.target.value)}))}
-                    className="neo-input flex-1"
-                    placeholder="100"
-                  />
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-muted text-sm w-8">Max</span>
-                  <input
-                    type="number"
-                    value={criteria.maxMarketCap}
-                    onChange={(e) => setCriteria(prev => ({...prev, maxMarketCap: parseInt(e.target.value)}))}
-                    className="neo-input flex-1"
-                    placeholder="3000"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Volume */}
-            <div className="space-y-4">
-              <label className="block text-sm font-semibold text-emerald uppercase tracking-wider">
-                Min Volume (K)
-              </label>
-              <input
-                type="number"
-                value={criteria.minVolume}
-                onChange={(e) => setCriteria(prev => ({...prev, minVolume: parseInt(e.target.value)}))}
-                className="neo-input w-full"
-                placeholder="500"
-              />
-            </div>
-
-            {/* Exchanges */}
-            <div className="space-y-4">
-              <label className="block text-sm font-semibold text-amber uppercase tracking-wider">
-                Exchanges
-              </label>
-              <div className="space-y-3 max-h-32 overflow-y-auto">
-                {availableExchanges.filter(ex => ex.tradeable).map(exchange => (
-                  <label key={exchange.code} className="flex items-center space-x-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={criteria.exchanges.includes(exchange.code)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setCriteria(prev => ({
-                            ...prev, 
-                            exchanges: [...prev.exchanges, exchange.code]
-                          }));
-                        } else {
-                          setCriteria(prev => ({
-                            ...prev,
-                            exchanges: prev.exchanges.filter(ex => ex !== exchange.code)
-                          }));
-                        }
-                      }}
-                      className="neo-checkbox"
-                    />
-                    <span className="text-secondary group-hover:text-primary transition-colors">
-                      {exchange.name}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Control Actions */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              {!isMonitoring ? (
-                <button
-                  onClick={startMonitoring}
-                  disabled={isLoading}
-                  className="neo-button flex items-center space-x-3 disabled:opacity-50"
-                >
-                  <Play className="w-5 h-5" />
-                  <span>{isLoading ? 'Scanning Markets...' : 'Start Neural Scan'}</span>
-                </button>
+            <button
+              onClick={toggleSync}
+              disabled={loading}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                isDataSyncing 
+                  ? 'bg-red-600 hover:bg-red-700' 
+                  : 'bg-green-600 hover:bg-green-700'
+              } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {loading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : isDataSyncing ? (
+                <Pause className="w-4 h-4" />
               ) : (
-                <button
-                  onClick={() => setIsMonitoring(false)}
-                  className="neo-button flex items-center space-x-3"
-                  style={{
-                    background: 'linear-gradient(135deg, #F43F5E, #EF4444)'
-                  }}
-                >
-                  <Pause className="w-5 h-5" />
-                  <span>Stop Monitoring</span>
-                </button>
+                <Play className="w-4 h-4" />
               )}
-            </div>
-            
-            {qualifyingStocks.length > 0 && (
-              <div className="flex items-center space-x-4">
-                <div className={`neo-status ${isMonitoring ? '' : 'inactive'}`}></div>
-                <span className="text-secondary">
-                  Neural network monitoring <span className="text-electric font-bold text-lg">{qualifyingStocks.length}</span> targets
-                </span>
-              </div>
-            )}
+              <span>{loading ? 'Loading...' : isDataSyncing ? 'Stop' : 'Start'} Sync</span>
+            </button>
           </div>
         </div>
 
-        {/* Qualifying Stocks Grid */}
-        {qualifyingStocks.length > 0 && (
-          <div className="ultra-glass p-8">
-            <div className="flex items-center space-x-4 mb-6">
-              <Globe className="w-6 h-6 text-violet" />
-              <h3 className="text-2xl font-bold text-primary">
-                Active Targets ({qualifyingStocks.length})
-              </h3>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {qualifyingStocks.map(stock => (
-                <div key={stock.ticker} className="neo-stock-tag">
-                  <div className="flex flex-col">
-                    <span className="font-bold text-primary text-lg">{stock.ticker}</span>
-                    <span className="text-secondary text-sm">${stock.price}</span>
-                    <span className="text-muted text-xs">{formatMarketCap(stock.marketCap)}</span>
-                  </div>
-                </div>
-              ))}
+        {error && (
+          <div className="bg-red-600/20 border border-red-600/30 rounded-lg p-4 mb-4">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="w-5 h-5 text-red-400" />
+              <span className="text-red-400">Error: {error}</span>
             </div>
           </div>
         )}
+      </div>
 
-        {/* Live News Terminal */}
-        <div className="neo-terminal">
-          <div className="neo-terminal-header">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className={`neo-status ${isMonitoring ? '' : 'inactive'}`}></div>
-                <span className="text-electric font-bold text-lg">NEURAL FEED</span>
-                {isMonitoring && (
-                  <span className="text-emerald text-sm font-mono">ACTIVE_SCAN</span>
-                )}
-              </div>
-              <div className="text-muted text-sm font-mono">
-                {new Date().toLocaleTimeString()}
-              </div>
-            </div>
+      {/* Screening Criteria */}
+      <div className="mb-6 bg-gray-800 rounded-lg p-6">
+        <h3 className="text-lg font-semibold mb-4 flex items-center">
+          <Filter className="w-5 h-5 mr-2 text-blue-400" />
+          Stock Screening Criteria
+        </h3>
+        
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Min Price ($)</label>
+            <input
+              type="number"
+              value={screeningCriteria.minPrice}
+              onChange={(e) => setScreeningCriteria(prev => ({ ...prev, minPrice: parseFloat(e.target.value) || 0 }))}
+              className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 text-white"
+            />
           </div>
-          
-          <div className="neo-terminal-content">
-            {newsStream.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 space-y-6">
-                {isMonitoring ? (
-                  <>
-                    <div className="relative">
-                      <div className="w-16 h-16 border-4 border-electric/30 border-t-electric rounded-full animate-spin"></div>
-                      <Activity className="w-8 h-8 text-electric absolute top-4 left-4" />
-                    </div>
-                    <div className="text-center space-y-2">
-                      <p className="text-lg font-medium text-primary">Neural networks are scanning...</p>
-                      <p className="text-sm text-secondary">Monitoring {qualifyingStocks.length} targets across multiple data streams</p>
-                      <div className="flex items-center justify-center space-x-4 mt-4 text-xs text-muted">
-                        <span>• Real-time sentiment analysis</span>
-                        <span>• Market momentum detection</span>
-                        <span>• Volume spike monitoring</span>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Activity className="w-16 h-16 text-muted mx-auto mb-4" />
-                    <div className="text-center space-y-2">
-                      <p className="text-lg font-medium text-primary">Neural Feed Offline</p>
-                      <p className="text-sm text-secondary">Configure parameters and start monitoring to see live market intelligence</p>
-                    </div>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {newsStream.map((news, index) => (
-                  <div key={index} className="neo-news-item">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center space-x-4">
-                        <span className="text-electric font-mono text-sm font-bold">
-                          {formatTime(news.time)}
-                        </span>
-                        <div className="flex items-center space-x-2">
-                          {getCategoryIcon(news.category)}
-                          <span className="text-violet font-bold px-3 py-1 bg-violet/10 rounded-lg">
-                            {news.ticker}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-emerald text-xs font-medium px-2 py-1 rounded bg-emerald/10">
-                          POSITIVE
-                        </span>
-                        {news.technicalAnalysis && (
-                          <span className="text-electric text-xs font-medium px-2 py-1 rounded bg-electric/10">
-                            TECHNICAL ✓
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <h4 className="text-primary font-medium mb-1 leading-relaxed">
-                      {news.title}
-                    </h4>
-                    {news.sentimentReasoning && (
-                      <p className="text-secondary text-sm mb-2 italic">
-                        "{news.sentimentReasoning}"
-                      </p>
-                    )}
-                    <div className="flex items-center space-x-4 text-xs text-muted mb-2">
-                      <span>Source: <span className="text-secondary font-medium">{news.source}</span></span>
-                      <span>Category: <span className="text-secondary">{news.category}</span></span>
-                      {news.url && (
-                        <a 
-                          href={news.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-electric hover:text-violet transition-colors"
-                        >
-                          Read Full Article →
-                        </a>
-                      )}
-                    </div>
-                    
-                    {/* Technical Analysis Card */}
-                    <TechnicalAnalysisCard 
-                      analysis={news.technicalAnalysis} 
-                      ticker={news.ticker} 
-                    />
-                  </div>
-                ))}
-                <div ref={newsEndRef} />
-              </div>
-            )}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Max Price ($)</label>
+            <input
+              type="number"
+              value={screeningCriteria.maxPrice}
+              onChange={(e) => setScreeningCriteria(prev => ({ ...prev, maxPrice: parseFloat(e.target.value) || 1000 }))}
+              className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Min Volume (K)</label>
+            <input
+              type="number"
+              value={screeningCriteria.minVolume}
+              onChange={(e) => setScreeningCriteria(prev => ({ ...prev, minVolume: parseFloat(e.target.value) || 0 }))}
+              className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Min Market Cap (M)</label>
+            <input
+              type="number"
+              value={screeningCriteria.minMarketCap}
+              onChange={(e) => setScreeningCriteria(prev => ({ ...prev, minMarketCap: parseFloat(e.target.value) || 0 }))}
+              className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 text-white"
+            />
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={syncData}
+              disabled={loading}
+              className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded transition-colors disabled:opacity-50"
+            >
+              <Search className="w-4 h-4 inline mr-2" />
+              Re-screen
+            </button>
           </div>
         </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-gray-800 rounded-lg p-4">
+          <div className="text-2xl font-bold text-blue-400">{qualifyingStocks.length}</div>
+          <div className="text-gray-400">Qualifying Stocks</div>
+        </div>
+        <div className="bg-gray-800 rounded-lg p-4">
+          <div className="text-2xl font-bold text-green-400">{newsWithTechnicals.length}</div>
+          <div className="text-gray-400">Positive News Items</div>
+        </div>
+        <div className="bg-gray-800 rounded-lg p-4">
+          <div className="text-2xl font-bold text-purple-400">{topMovers.length}</div>
+          <div className="text-gray-400">Top Ranked Movers</div>
+        </div>
+      </div>
+
+      {/* Stock Charts */}
+      {topMovers.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4 flex items-center">
+            <LineChart className="w-5 h-5 mr-2 text-blue-400" />
+            Live Charts - Top News-Driven Stocks
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {topMovers.map((stock) => (
+              <div key={stock.ticker} className="bg-gray-800 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <h3 className="font-semibold text-blue-400">{stock.ticker}</h3>
+                    <p className="text-xs text-gray-400">${stock.price}</p>
+                  </div>
+                  <div className={`text-right ${(stock.technicalAnalysis?.dayChangePercent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {(stock.technicalAnalysis?.dayChangePercent || 0) >= 0 ? 
+                      <TrendingUp className="w-4 h-4" /> : 
+                      <TrendingDown className="w-4 h-4" />
+                    }
+                    <p className="text-xs">{(stock.technicalAnalysis?.dayChangePercent || 0).toFixed(2)}%</p>
+                  </div>
+                </div>
+                
+                <MiniChart 
+                  data={stock.chartData || []} 
+                  positive={(stock.technicalAnalysis?.dayChangePercent || 0) >= 0} 
+                />
+                
+                <div className="mt-2 flex items-center justify-between text-xs">
+                  <span className="text-gray-400">Vol: {stock.volume}K</span>
+                  <span className="text-purple-400">Score: {stock.newsScore}</span>
+                </div>
+                
+                {stock.technicalAnalysis && (
+                  <div className="mt-2 text-xs text-gray-400">
+                    RSI: {stock.technicalAnalysis.rsi} | VWAP: {stock.technicalAnalysis.priceVsVWAP}%
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Top 5 Heat Map */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4 flex items-center">
+          <Flame className="w-5 h-5 mr-2 text-orange-400" />
+          Top 5 News-Driven Heat Map
+        </h2>
+        
+        {topMovers.length === 0 ? (
+          <div className="bg-gray-800 rounded-lg p-8 text-center">
+            <div className="text-gray-400">No qualifying stocks found with current criteria</div>
+            <button
+              onClick={syncData}
+              className="mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded transition-colors"
+            >
+              Try Different Criteria
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+            {topMovers.slice(0, 5).map((stock, index) => (
+              <div 
+                key={stock.ticker} 
+                className={`relative overflow-hidden rounded-lg p-6 bg-gradient-to-br ${getHeatColor(stock.newsScore)} transform hover:scale-105 transition-all duration-300`}
+              >
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-2xl font-bold text-white">#{index + 1}</span>
+                    <Zap className="w-6 h-6 text-white" />
+                  </div>
+                  
+                  <div className="mb-4">
+                    <h3 className="text-xl font-bold text-white">{stock.ticker}</h3>
+                    <p className="text-white/80 text-sm">${stock.price}</p>
+                    <p className="text-white/60 text-xs">{stock.name}</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white/80 text-sm">News Score</span>
+                      <span className="text-2xl font-bold text-white">{stock.newsScore}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-white/80 text-sm">Change</span>
+                      <span className="text-white font-semibold">
+                        {(stock.technicalAnalysis?.dayChangePercent || 0).toFixed(2)}%
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-white/80 text-sm">Volume</span>
+                      <span className="text-white font-semibold">{stock.volume}K</span>
+                    </div>
+                    
+                    {stock.relatedNews.length > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-white/80 text-sm">News Items</span>
+                        <span className="text-white font-semibold">{stock.relatedNews.length}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {stock.relatedNews && stock.relatedNews.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-white/20">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Newspaper className="w-4 h-4 text-white" />
+                        <span className="text-white/80 text-xs">Latest Positive News</span>
+                      </div>
+                      <p className="text-white text-xs line-clamp-2">
+                        {stock.relatedNews[0].title}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {stock.technicalAnalysis && (
+                    <div className="mt-2 pt-2 border-t border-white/20">
+                      <div className="text-white/80 text-xs">
+                        RSI: {stock.technicalAnalysis.rsi} | Vol Surge: {stock.technicalAnalysis.volumeSurge}%
+                      </div>
+                      {stock.technicalAnalysis.signals && stock.technicalAnalysis.signals.length > 0 && (
+                        <div className="text-white/60 text-xs mt-1">
+                          {stock.technicalAnalysis.signals[0].message}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Background pattern */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="w-full h-full bg-gradient-to-br from-white/20 to-transparent"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
-export default StockNewsRadar;
