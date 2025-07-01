@@ -1,4 +1,4 @@
-name: Build and Deploy to Azure Container Apps (Private Repo Support)
+name: Build and Deploy to Azure Container Apps
 
 on:
   push:
@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+
+env:
+  # 🔧 Configure these environment variables for your project
+  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || 'my-resource-group' }}
+  AZURE_CONTAINER_APP_NAME: ${{ vars.AZURE_CONTAINER_APP_NAME || 'my-container-app' }}
+  CONTAINER_IMAGE_NAME: ${{ vars.CONTAINER_IMAGE_NAME || github.event.repository.name }}
 
 jobs:
   build-and-deploy:
@@ -38,8 +44,8 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        # ✅ Dynamic repository reference
-        images: ghcr.io/${{ github.repository_owner }}/azure-dev
+        # ✅ Dynamic repository reference using configured image name
+        images: ghcr.io/${{ github.repository_owner }}/${{ env.CONTAINER_IMAGE_NAME }}
         tags: |
           type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
           type=raw,value=v${{ github.run_number }},enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
@@ -72,14 +78,14 @@ jobs:
         
         # Remove any existing registry configuration first
         az containerapp registry remove \
-          --name azure-dev-app \
-          --resource-group azure-dev \
+          --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
           --server ghcr.io || echo "No existing registry config to remove"
         
         # Configure registry credentials with PAT for persistent access
         az containerapp registry set \
-          --name azure-dev-app \
-          --resource-group azure-dev \
+          --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
           --server ghcr.io \
           --username ${{ github.actor }} \
           --password ${{ secrets.GHCR_TOKEN }}
@@ -91,19 +97,14 @@ jobs:
       run: |
         echo "🚀 Deploying to Azure Container Apps..."
         
-    - name: Deploy to Azure Container Apps
-      if: github.ref == 'refs/heads/main'
-      run: |
-        echo "🚀 Deploying to Azure Container Apps..."
-        
         # Create unique revision suffix with date and short commit
         REVISION_SUFFIX=$(date +%Y%m%d-%H%M%S)-${{ steps.short_sha.outputs.sha }}
         echo "📋 Creating revision: $REVISION_SUFFIX"
         
         az containerapp update \
-          --name azure-dev-app \
-          --resource-group azure-dev \
-          --image ghcr.io/${{ github.repository_owner }}/azure-dev:latest \
+          --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+          --image ghcr.io/${{ github.repository_owner }}/${{ env.CONTAINER_IMAGE_NAME }}:latest \
           --revision-suffix $REVISION_SUFFIX
         
         echo "✅ Deployment completed successfully!"
@@ -115,14 +116,14 @@ jobs:
         sleep 30
       
         az containerapp revision list \
-          --name azure-dev-app \
-          --resource-group azure-dev \
+          --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
           --query '[0].{Name:name,Active:properties.active,CreatedTime:properties.createdTime,Image:properties.template.containers[0].image,TrafficWeight:properties.trafficWeight}' \
           --output table
         
         APP_URL=$(az containerapp show \
-          --name azure-dev-app \
-          --resource-group azure-dev \
+          --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
           --query 'properties.configuration.ingress.fqdn' \
           --output tsv)
         
@@ -137,8 +138,10 @@ jobs:
         fi
         
         echo "📊 Deployment summary:"
-        echo "- Image: ghcr.io/${{ github.repository_owner }}/azure-dev:latest"
+        echo "- Image: ghcr.io/${{ github.repository_owner }}/${{ env.CONTAINER_IMAGE_NAME }}:latest"
         echo "- Build: v${{ github.run_number }}"
         echo "- Commit: ${{ steps.short_sha.outputs.sha }}"
         echo "- Registry: Private GitHub Container Registry (ghcr.io) with PAT"
+        echo "- Resource Group: ${{ env.AZURE_RESOURCE_GROUP }}"
+        echo "- Container App: ${{ env.AZURE_CONTAINER_APP_NAME }}"
         echo "- Status: ✅ Deployed"
