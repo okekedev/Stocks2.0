@@ -81,3 +81,21 @@ tmp/
 temp/
 
 polygon_complete_data.db
+# Polygon Data Extractor files
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+polygon_market_data.db
+polygon_extraction.log
+polygon_data_collection.log
+*.db-backup
+*.bak
+.env.*
+*.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+desktop.ini
