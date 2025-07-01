@@ -7,19 +7,19 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies (including devDependencies for build)
+# Install dependencies
 RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build the React application
+# Build the application
 RUN npm run build
 
 # Remove dev dependencies to reduce image size
 RUN npm ci --only=production && npm cache clean --force
 
-# Expose port 3000
+# Expose port 3000 (standard frontend port)
 EXPOSE 3000
 
 # Start the Express server
