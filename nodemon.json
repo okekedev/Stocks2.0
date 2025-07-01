@@ -2,6 +2,7 @@
   "watch": [
     "backend/server.js",
     "backend/handlers/",
+    "backend/services/",
     "backend/utils/"
   ],
   "ext": "js,json",

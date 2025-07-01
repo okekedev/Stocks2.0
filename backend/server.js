@@ -7,7 +7,6 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { handleAzureSetup, handleCICDSetup, handleAzureDeploy } from './handlers/azureHandler.js';
 
-
 // ES module compatibility
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,7 +22,12 @@ app.use(express.json());
 const distPath = path.join(__dirname, 'dist');
 const isProduction = fs.existsSync(distPath) && fs.existsSync(path.join(distPath, 'index.html'));
 
-if (isProduction) {
+// Force production mode in container environment
+const isContainer = process.env.DOCKER_ENV || 
+                   fs.existsSync('/.dockerenv') || 
+                   process.env.NODE_ENV === 'production';
+
+if (isProduction || isContainer) {
   // Production: serve built React app
   app.use(express.static(distPath));
   console.log('📦 Production mode - serving built React app from dist/');
@@ -38,7 +42,10 @@ global.activeProcesses = new Map();
 // GitHub OAuth configuration (simplified - no env vars needed for basic setup)
 const GITHUB_CLIENT_ID = 'your_github_client_id';
 const GITHUB_CLIENT_SECRET = 'your_github_client_secret';
-const REDIRECT_URI = `http://localhost:${isProduction ? '3000' : '3001'}/auth/github/callback`;
+
+// Use port 3000 in container, 3001 for local development only
+const PORT = (isContainer || isProduction) ? 3000 : 3001;
+const REDIRECT_URI = `http://localhost:${PORT}/auth/github/callback`;
 
 // GitHub OAuth routes
 app.get('/auth/github', (req, res) => {
@@ -130,7 +137,7 @@ wss.on('connection', (ws) => {
         case 'azure-setup':
           await handleAzureSetup(ws, data.payload);
           break;
-        case 'cicd-setup':  // 👈 ADDED THIS CASE!
+        case 'cicd-setup':
           await handleCICDSetup(ws, data.payload);
           break;
         case 'github-push':
@@ -171,25 +178,25 @@ function cancelProcess(sessionId) {
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'healthy', 
-    mode: isProduction ? 'production' : 'development',
-    timestamp: new Date().toISOString()
+    mode: (isProduction || isContainer) ? 'production' : 'development',
+    timestamp: new Date().toISOString(),
+    port: PORT,
+    isContainer: isContainer,
+    isProduction: isProduction
   });
 });
 
 // Serve React app for all non-API routes (only in production)
-if (isProduction) {
+if (isProduction || isContainer) {
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
   });
 }
 
-// Simple port configuration
-const PORT = isProduction ? 3000 : 3001;
-
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Azure Container Template Server running on port ${PORT}`);
   
-  if (isProduction) {
+  if (isProduction || isContainer) {
     console.log(`📱 Application: http://localhost:${PORT}`);
   } else {
     console.log(`📱 Frontend (Vite): http://localhost:3000`);
