@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ExternalLink, TrendingUp, TrendingDown, Clock, MessageSquare } from 'lucide-react';
+import { ExternalLink, TrendingUp, TrendingDown, Clock, MessageSquare, X } from 'lucide-react';
+import { StockDetailModal } from './StockDetailModal';
 
 export function NewsTable({ stocks, allArticles }) {
   const [selectedStock, setSelectedStock] = useState(null);

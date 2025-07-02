@@ -1,4 +1,26 @@
-function StockDetailModal({ stock, onClose }) {
+import React from 'react';
+import { X, ExternalLink } from 'lucide-react';
+
+export function StockDetailModal({ stock, onClose }) {
+  // Helper functions (moved from NewsTable or redefined)
+  const formatTime = (minutes) => {
+    if (minutes < 60) return `${minutes}m ago`;
+    if (minutes < 1440) return `${Math.floor(minutes / 60)}h ago`;
+    return `${Math.floor(minutes / 1440)}d ago`;
+  };
+
+  const getSentimentColor = (sentiment) => {
+    if (sentiment > 0.2) return 'text-green-400';
+    if (sentiment < -0.2) return 'text-red-400';
+    return 'text-gray-400';
+  };
+
+  const getImpactColor = (impact) => {
+    if (impact > 0.6) return 'text-orange-400';
+    if (impact > 0.4) return 'text-yellow-400';
+    return 'text-gray-400';
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
