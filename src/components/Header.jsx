@@ -1,43 +1,48 @@
-import { Clock, AlertTriangle } from 'lucide-react';
+import React from 'react';
+import { RefreshCw, TrendingUp, Clock } from 'lucide-react';
 
-export default function Header({ 
-  lastSyncTime, 
-  stocksCount, 
-  error 
-}) {
+export function Header({ onRefresh, loading, lastUpdate, totalStocks, totalArticles }) {
+  const formatTime = (timestamp) => {
+    if (!timestamp) return 'Never';
+    return new Date(timestamp).toLocaleTimeString();
+  };
+
   return (
-    <div className="mb-6">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
-        <div>
-          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-2">
-            Neural Stock Radar
-          </h1>
-          <p className="text-gray-400">Real-time news-driven technical analysis with algorithmic ranking</p>
+    <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <TrendingUp className="w-8 h-8 text-blue-400" />
+          <div>
+            <h1 className="text-2xl font-bold text-white">Live Stock News Monitor</h1>
+            <p className="text-sm text-gray-400">Real-time news-driven stock discovery</p>
+          </div>
         </div>
         
-        {/* Sync Status - moved to top right */}
-        <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-          <div className="flex items-center space-x-2 px-3 py-2 bg-gray-800 rounded-lg">
-            <Clock className="w-4 h-4 text-blue-400" />
-            <span className="text-sm text-gray-300">
-              Last sync: {lastSyncTime ? lastSyncTime.toLocaleTimeString() : 'Never'}
-            </span>
+        <div className="flex items-center space-x-6">
+          <div className="text-right">
+            <div className="text-sm text-gray-400 flex items-center">
+              <Clock className="w-4 h-4 mr-1" />
+              Last Update: {formatTime(lastUpdate)}
+            </div>
+            <div className="text-xs text-gray-500">
+              {totalStocks} stocks • {totalArticles} articles
+            </div>
           </div>
           
-          <div className="text-2xl font-bold text-blue-400">{stocksCount}</div>
-          <div className="text-gray-400">Qualifying Stocks Found</div>
+          <button
+            onClick={onRefresh}
+            disabled={loading}
+            className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
+              loading 
+                ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
+            }`}
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? 'Refreshing...' : 'Refresh'}
+          </button>
         </div>
       </div>
-
-      {/* Error Display */}
-      {error && (
-        <div className="bg-red-600/20 border border-red-600/30 rounded-lg p-4 mb-4">
-          <div className="flex items-center space-x-2">
-            <AlertTriangle className="w-5 h-5 text-red-400" />
-            <span className="text-red-400">Error: {error}</span>
-          </div>
-        </div>
-      )}
-    </div>
+    </header>
   );
 }
