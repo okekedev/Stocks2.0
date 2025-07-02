@@ -25,7 +25,10 @@ export default function StockScreener({
             <input
               type="number"
               value={screeningCriteria.minPrice}
-              onChange={(e) => setScreeningCriteria(prev => ({ ...prev, minPrice: parseFloat(e.target.value) || 0 }))}
+              onChange={(e) => setScreeningCriteria(prev => ({ 
+                ...prev, 
+                minPrice: e.target.value === '' ? '' : parseFloat(e.target.value) || 0 
+              }))}
               className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 text-white"
               placeholder="1"
             />
@@ -35,7 +38,10 @@ export default function StockScreener({
             <input
               type="number"
               value={screeningCriteria.maxPrice}
-              onChange={(e) => setScreeningCriteria(prev => ({ ...prev, maxPrice: parseFloat(e.target.value) || 1000 }))}
+              onChange={(e) => setScreeningCriteria(prev => ({ 
+                ...prev, 
+                maxPrice: e.target.value === '' ? '' : parseFloat(e.target.value) || 0 
+              }))}
               className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 text-white"
               placeholder="8"
             />
@@ -52,7 +58,10 @@ export default function StockScreener({
             <input
               type="number"
               value={screeningCriteria.minVolume}
-              onChange={(e) => setScreeningCriteria(prev => ({ ...prev, minVolume: parseFloat(e.target.value) || 0 }))}
+              onChange={(e) => setScreeningCriteria(prev => ({ 
+                ...prev, 
+                minVolume: e.target.value === '' ? '' : parseFloat(e.target.value) || 0 
+              }))}
               className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 text-white"
               placeholder="500"
             />
@@ -62,9 +71,12 @@ export default function StockScreener({
             <input
               type="number"
               value={screeningCriteria.maxVolume || ''}
-              onChange={(e) => setScreeningCriteria(prev => ({ ...prev, maxVolume: parseFloat(e.target.value) || null }))}
+              onChange={(e) => setScreeningCriteria(prev => ({ 
+                ...prev, 
+                maxVolume: e.target.value === '' ? null : parseFloat(e.target.value) || null 
+              }))}
               className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 text-white"
-              placeholder="1000000"
+              placeholder="Leave blank for no limit"
             />
           </div>
         </div>
@@ -79,7 +91,10 @@ export default function StockScreener({
             <input
               type="number"
               value={screeningCriteria.minMarketCap}
-              onChange={(e) => setScreeningCriteria(prev => ({ ...prev, minMarketCap: parseFloat(e.target.value) || 0 }))}
+              onChange={(e) => setScreeningCriteria(prev => ({ 
+                ...prev, 
+                minMarketCap: e.target.value === '' ? '' : parseFloat(e.target.value) || 0 
+              }))}
               className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 text-white"
               placeholder="Leave blank for no limit"
             />
@@ -89,7 +104,10 @@ export default function StockScreener({
             <input
               type="number"
               value={screeningCriteria.maxMarketCap}
-              onChange={(e) => setScreeningCriteria(prev => ({ ...prev, maxMarketCap: parseFloat(e.target.value) || 500000 }))}
+              onChange={(e) => setScreeningCriteria(prev => ({ 
+                ...prev, 
+                maxMarketCap: e.target.value === '' ? '' : parseFloat(e.target.value) || 0 
+              }))}
               className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 text-white"
               placeholder="Leave blank for no limit"
             />
@@ -200,7 +218,7 @@ export default function StockScreener({
           ) : (
             <Play className="w-4 h-4" />
           )}
-          <span>{loading ? 'Loading...' : isDataSyncing ? 'Stop Sync' : 'Start Sync'}</span>
+          <span>{loading ? 'Loading...' : isDataSyncing ? 'Stop Monitoring' : 'Start Monitoring'}</span>
         </button>
         
         <button

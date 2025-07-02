@@ -3,7 +3,6 @@ import { Search, Monitor } from 'lucide-react';
 
 // Import components from the components folder
 import Header from './components/Header';
-import RankingWeights from './components/RankingWeights';
 import StockScreener from './components/StockScreener';
 import StockTable from './components/StockTable';
 import MonitoringDashboard from './components/MonitoringDashboard';
@@ -16,12 +15,6 @@ export default function App() {
   const [monitoringList, setMonitoringList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [rankingMetrics, setRankingMetrics] = useState({
-    technicalScore: 0.2,    // Lower weight - news is more important for big moves
-    sentimentScore: 0.5,    // Higher weight - news sentiment drives big movements
-    volumeScore: 0.2,       // Moderate weight - volume confirms momentum
-    momentumScore: 0.1      // Lower weight - we want early detection, not late momentum
-  });
   const [screeningCriteria, setScreeningCriteria] = useState({
     minPrice: 1,            // Lower prices for bigger % movements
     maxPrice: 8,           // Cap at $8 for optimal volatility
@@ -42,103 +35,7 @@ export default function App() {
       : '';
   };
 
-  // Calculate overall ranking based on weighted scores and real data
-  const calculateOverallRank = (stock) => {
-    const { technicalScore, sentimentScore, volumeScore, momentumScore } = stock;
-    const { technicalScore: tWeight, sentimentScore: sWeight, volumeScore: vWeight, momentumScore: mWeight } = rankingMetrics;
-    
-    return (
-      technicalScore * tWeight +
-      sentimentScore * sWeight +
-      volumeScore * vWeight +
-      momentumScore * mWeight
-    );
-  };
-
-  // Enhanced scoring function optimized for news-driven breakouts
-  const calculateStockScores = (stock, technicalAnalysis, newsData) => {
-    // Technical Score - focus on breakout indicators
-    let technicalScore = 50;
-    if (technicalAnalysis) {
-      // RSI - favor stocks not overbought (room to run)
-      const rsiScore = technicalAnalysis.rsi > 80 ? 30 :  // Overbought - penalize
-                      technicalAnalysis.rsi > 60 ? 85 :   // Strong but not overbought - ideal
-                      technicalAnalysis.rsi > 40 ? 70 :   // Neutral - good
-                      20; // Oversold - risky for momentum plays
-      
-      // VWAP - favor stocks breaking above VWAP with momentum
-      const vwapScore = technicalAnalysis.priceVsVWAP > 3 ? 95 :    // Strong breakout
-                       technicalAnalysis.priceVsVWAP > 1 ? 85 :     // Good momentum  
-                       technicalAnalysis.priceVsVWAP > 0 ? 65 :     // Above VWAP
-                       30; // Below VWAP - less likely for breakout
-      
-      // Volume surge - critical for news-driven moves
-      const volumeComponent = technicalAnalysis.volumeSurge > 300 ? 95 :  // Massive surge
-                             technicalAnalysis.volumeSurge > 200 ? 85 :   // Strong surge
-                             technicalAnalysis.volumeSurge > 150 ? 75 :   // Good surge
-                             technicalAnalysis.volumeSurge > 100 ? 60 :   // Moderate
-                             40; // Low volume - less likely to move
-      
-      // Buying pressure - shows institutional interest
-      const pressureScore = technicalAnalysis.buyingPressure?.score || 50;
-      
-      technicalScore = (rsiScore * 0.25 + vwapScore * 0.25 + volumeComponent * 0.35 + pressureScore * 0.15);
-    }
-
-    // Sentiment Score - heavily weighted for news-driven moves
-    let sentimentScore = 30; // Start lower - no news is bad for our use case
-    if (newsData && newsData.length > 0) {
-      const positiveNews = newsData.filter(news => news.sentiment === 'positive').length;
-      const totalNews = newsData.length;
-      
-      // Recent news gets massive boost (last 15 minutes)
-      const veryRecentNews = newsData.filter(news => {
-        const age = Date.now() - new Date(news.time).getTime();
-        return age < 15 * 60 * 1000; // Last 15 minutes
-      }).length;
-      
-      // Breaking news boost (last 5 minutes)
-      const breakingNews = newsData.filter(news => {
-        const age = Date.now() - new Date(news.time).getTime();
-        return age < 5 * 60 * 1000; // Last 5 minutes
-      }).length;
-      
-      sentimentScore = 40 + (positiveNews / totalNews) * 30 + 
-                      veryRecentNews * 15 + breakingNews * 20;
-      sentimentScore = Math.min(98, sentimentScore); // Cap at 98
-    }
-
-    // Volume Score - confirms news impact
-    let volumeScore = 40;
-    if (technicalAnalysis?.volumeSurge) {
-      // Exponential scoring for volume - big moves need big volume
-      volumeScore = technicalAnalysis.volumeSurge > 500 ? 95 :
-                   technicalAnalysis.volumeSurge > 300 ? 90 :
-                   technicalAnalysis.volumeSurge > 200 ? 80 :
-                   technicalAnalysis.volumeSurge > 150 ? 70 :
-                   technicalAnalysis.volumeSurge > 100 ? 60 : 40;
-    }
-
-    // Momentum Score - early detection focus
-    let momentumScore = 50;
-    if (technicalAnalysis?.hourMomentum !== undefined) {
-      // Favor early momentum, not late-stage moves
-      momentumScore = technicalAnalysis.hourMomentum > 8 ? 75 :  // Strong but not parabolic
-                     technicalAnalysis.hourMomentum > 4 ? 85 :   // Ideal momentum
-                     technicalAnalysis.hourMomentum > 1 ? 70 :   // Early momentum
-                     technicalAnalysis.hourMomentum > -2 ? 55 :  // Neutral
-                     30; // Negative momentum
-    }
-
-    return {
-      technicalScore: Math.round(Math.max(10, Math.min(95, technicalScore))),
-      sentimentScore: Math.round(Math.max(10, Math.min(95, sentimentScore))),
-      volumeScore: Math.round(Math.max(10, Math.min(95, volumeScore))),
-      momentumScore: Math.round(Math.max(10, Math.min(95, momentumScore)))
-    };
-  };
-
-  // Screen stocks using backend API
+  // Screen stocks using backend API with positive news monitoring
   const screenStocks = async () => {
     try {
       setError(null);
@@ -153,78 +50,104 @@ export default function App() {
       if (!response.ok) throw new Error(`Screening failed: ${response.status}`);
       
       const data = await response.json();
-      return data.qualifyingStocks || [];
+      return data.results || [];
     } catch (err) {
       setError(`Screening error: ${err.message}`);
       return [];
     }
   };
 
-  // Get news with technical analysis
-  const getNewsWithTechnicals = async (tickers) => {
+  // Start positive news monitoring
+  const startPositiveNewsMonitoring = async (tickers) => {
     try {
-      const response = await fetch(`${getApiBaseUrl()}/api/news/check-with-technicals`, {
+      const response = await fetch(`${getApiBaseUrl()}/api/news/monitor/positive`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          tickers,
+          hours: 2 // 2-hour window
+        })
+      });
+      
+      if (!response.ok) throw new Error(`Monitoring failed: ${response.status}`);
+      
+      const data = await response.json();
+      return data;
+    } catch (err) {
+      console.error('Monitoring error:', err);
+      return null;
+    }
+  };
+
+  // Update technical data for watchlist
+  const updateTechnicalData = async (tickers) => {
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/api/news/update/technicals`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tickers })
       });
       
-      if (!response.ok) throw new Error(`News analysis failed: ${response.status}`);
+      if (!response.ok) throw new Error(`Technical update failed: ${response.status}`);
       
       const data = await response.json();
-      return data.news || [];
+      return data.updates || [];
     } catch (err) {
-      console.error('News analysis error:', err);
+      console.error('Technical update error:', err);
       return [];
     }
   };
 
-  // Enhanced sync function that combines screening and news
+  // Check for new positive news
+  const checkForNewNews = async (currentWatchlist, lastCheck) => {
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/api/news/check/new-news`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          currentWatchlist: currentWatchlist.map(stock => stock.ticker),
+          lastCheck 
+        })
+      });
+      
+      if (!response.ok) throw new Error(`News check failed: ${response.status}`);
+      
+      const data = await response.json();
+      return data;
+    } catch (err) {
+      console.error('News check error:', err);
+      return null;
+    }
+  };
+
+  // Enhanced sync function - initial screening and positive news monitoring
   const syncTechnicalData = async () => {
     try {
       setLastSyncTime(new Date());
       
       // 1. Screen for qualifying stocks
+      console.log('Starting stock screening...');
       const qualifyingStocks = await screenStocks();
+      console.log(`Found ${qualifyingStocks.length} qualifying stocks`);
+      
       if (qualifyingStocks.length === 0) {
         setStocks([]);
         return;
       }
 
-      // 2. Get news with technical analysis for these stocks
+      // Update stocks list immediately with screening results
+      setStocks(qualifyingStocks);
+
+      // 2. Start positive news monitoring for screened stocks
       const tickers = qualifyingStocks.map(s => s.ticker);
-      const newsData = await getNewsWithTechnicals(tickers);
-
-      // 3. Enhance stocks with scores and technical data
-      const enhancedStocks = qualifyingStocks.map(stock => {
-        // Find related news for this stock
-        const stockNews = newsData.filter(news => news.ticker === stock.ticker);
-        const technicalAnalysis = stockNews.length > 0 ? stockNews[0].technicalAnalysis : null;
-        
-        // Calculate scores
-        const scores = calculateStockScores(stock, technicalAnalysis, stockNews);
-        
-        // Get latest news info
-        const latestNews = stockNews[0];
-        const newsAge = latestNews ? Math.floor((Date.now() - new Date(latestNews.time).getTime()) / 60000) : null;
-        
-        return {
-          ...stock,
-          ...scores,
-          // Technical indicators
-          rsi: technicalAnalysis?.rsi || 50,
-          macd: technicalAnalysis?.priceVsVWAP || 0,
-          movingAvg20: technicalAnalysis?.sma20 || stock.price,
-          movingAvg50: technicalAnalysis?.sma50 || stock.price,
-          // News info
-          lastNewsTime: newsAge ? `${newsAge}min ago` : 'No recent news',
-          newsSentiment: latestNews?.sentiment || 'neutral',
-          relatedNews: stockNews,
-          technicalAnalysis
-        };
-      });
-
-      setStocks(enhancedStocks);
+      console.log('Starting positive news monitoring...');
+      const monitoringData = await startPositiveNewsMonitoring(tickers);
+      
+      if (monitoringData && monitoringData.watchlist && monitoringData.watchlist.length > 0) {
+        // Update monitoring list with stocks that have positive news
+        setMonitoringList(monitoringData.watchlist);
+        console.log(`Added ${monitoringData.watchlist.length} stocks with positive news to monitoring`);
+      }
       
     } catch (err) {
       setError(`Sync error: ${err.message}`);
@@ -233,44 +156,80 @@ export default function App() {
     }
   };
 
-  // Start minute-by-minute data sync
+  // Start continuous monitoring system
   const startDataSync = () => {
     setIsDataSyncing(true);
     syncTechnicalData(); // Initial sync
     
-    syncIntervalRef.current = setInterval(() => {
-      syncTechnicalData();
-    }, 60000); // Every minute
+    // Set up monitoring intervals
+    const newsCheckInterval = setInterval(async () => {
+      if (monitoringList.length > 0) {
+        console.log('Checking for new positive news...');
+        const newNewsData = await checkForNewNews(monitoringList, new Date(Date.now() - 5 * 60 * 1000));
+        
+        if (newNewsData && newNewsData.newNewsCount > 0) {
+          console.log(`Found ${newNewsData.newNewsCount} new positive news articles`);
+          // Could trigger re-analysis or UI updates here
+        }
+      }
+    }, 5 * 60 * 1000); // Every 5 minutes
+    
+    const technicalUpdateInterval = setInterval(async () => {
+      if (monitoringList.length > 0) {
+        console.log('Updating technical data for watchlist...');
+        const tickers = monitoringList.map(stock => stock.ticker);
+        const updates = await updateTechnicalData(tickers);
+        
+        if (updates.length > 0) {
+          // Update monitoring list with new technical data
+          setMonitoringList(prev => 
+            prev.map(stock => {
+              const update = updates.find(u => u.ticker === stock.ticker);
+              return update ? { ...stock, ...update } : stock;
+            })
+          );
+        }
+      }
+    }, 60 * 1000); // Every minute
+    
+    // Store interval references for cleanup
+    syncIntervalRef.current = {
+      newsCheck: newsCheckInterval,
+      technicalUpdate: technicalUpdateInterval
+    };
   };
 
   // Stop data sync
   const stopDataSync = () => {
     setIsDataSyncing(false);
     if (syncIntervalRef.current) {
-      clearInterval(syncIntervalRef.current);
+      clearInterval(syncIntervalRef.current.newsCheck);
+      clearInterval(syncIntervalRef.current.technicalUpdate);
     }
   };
 
-  // FIXED: Initialize without automatic screening - let user choose when to start
+  // Initialize without automatic screening - let user choose when to start
   useEffect(() => {
-    // Don't auto-screen on load - wait for user action
     return () => {
       if (syncIntervalRef.current) {
-        clearInterval(syncIntervalRef.current);
+        clearInterval(syncIntervalRef.current.newsCheck);
+        clearInterval(syncIntervalRef.current.technicalUpdate);
       }
     };
   }, []);
 
-  // All filtering is now done at the backend level, so just use the stocks directly
+  // Process stocks for display (backend now handles all scoring)
   const rankedStocks = stocks
-    .map(stock => ({
-      ...stock,
-      overallScore: calculateOverallRank(stock)
-    }))
-    .sort((a, b) => b.overallScore - a.overallScore)
     .map((stock, index) => ({
       ...stock,
-      overallRank: index + 1
+      overallRank: index + 1,
+      // Add display formatting
+      lastNewsTime: stock.technicals?.newsCorrelation?.events?.length > 0 
+        ? `${stock.technicals.newsCorrelation.events[0].minutesAgo}min ago` 
+        : 'No recent news',
+      newsSentiment: stock.technicals?.newsCorrelation?.events?.length > 0
+        ? stock.technicals.newsCorrelation.events[0].sentimentScore > 0 ? 'positive' : 'negative'
+        : 'neutral'
     }));
 
   // Add selected stocks to monitoring list
@@ -327,12 +286,6 @@ export default function App() {
 
       {currentView === 'screener' && (
         <div className="space-y-6">
-          {/* Ranking Weights Component */}
-          <RankingWeights 
-            rankingMetrics={rankingMetrics}
-            setRankingMetrics={setRankingMetrics}
-          />
-
           {/* Stock Screener Component */}
           <StockScreener
             screeningCriteria={screeningCriteria}
