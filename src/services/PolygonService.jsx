@@ -1,4 +1,4 @@
-// src/services/PolygonService.js
+// src/services/PolygonService.js - Enhanced version
 class PolygonService {
   constructor() {
     this.apiKey = import.meta.env.VITE_POLYGON_API_KEY;
@@ -43,21 +43,6 @@ class PolygonService {
     const fromDate = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
     const toDate = new Date().toISOString();
     
-    // Robinhood supported exchanges
-    const robinhoodExchanges = [
-      'XNYS', // NYSE
-      'XNAS', // NASDAQ
-      'ARCX', // NYSE Arca
-      'XASE', // NYSE American
-      'BATS', // Cboe BZX
-      'BATY', // Cboe BYX
-      'EDGX', // Cboe EDGX
-      'EDGA', // Cboe EDGA
-      'IEXG', // IEX
-      'MEMX', // MEMX
-      'LTSE'  // Long Term Stock Exchange
-    ];
-    
     console.log('[INFO] Fetching positive sentiment news from Robinhood exchanges...');
     
     const response = await this.makeRequest('/v2/reference/news', {
@@ -98,6 +83,58 @@ class PolygonService {
     return response;
   }
 
+  // Enhanced method: Get detailed minute data for chart (1 hour before news to current)
+  async getDetailedMinuteData(ticker, startTime, endTime) {
+    try {
+      const fromDate = startTime.toISOString().split('T')[0];
+      const toDate = endTime.toISOString().split('T')[0];
+      
+      console.log(`[INFO] 📊 Fetching detailed minute data for ${ticker} from ${fromDate} to ${toDate}`);
+      
+      const response = await this.makeRequest(`/v2/aggs/ticker/${ticker}/range/1/minute/${fromDate}/${toDate}`, {
+        adjusted: true,
+        sort: 'asc',
+        limit: 50000
+      });
+      
+      if (!response.results || response.results.length === 0) {
+        console.log(`[WARNING] No minute data for ${ticker}`);
+        return [];
+      }
+      
+      // Filter to exact time range and format for chart
+      const startTimestamp = startTime.getTime();
+      const endTimestamp = endTime.getTime();
+      
+      const chartData = response.results
+        .filter(bar => bar.t >= startTimestamp && bar.t <= endTimestamp)
+        .map(bar => ({
+          timestamp: bar.t,
+          time: new Date(bar.t).toISOString(),
+          open: bar.o,
+          high: bar.h,
+          low: bar.l,
+          close: bar.c,
+          volume: bar.v,
+          volumeWeightedPrice: bar.vw || bar.c,
+          transactions: bar.n || 0,
+          // Additional fields for AI analysis
+          priceChange: bar.c - bar.o,
+          priceChangePercent: ((bar.c - bar.o) / bar.o) * 100,
+          range: bar.h - bar.l,
+          volatility: ((bar.h - bar.l) / bar.o) * 100
+        }))
+        .sort((a, b) => a.timestamp - b.timestamp);
+      
+      console.log(`[INFO] Retrieved ${chartData.length} minute bars for ${ticker} chart`);
+      return chartData;
+      
+    } catch (error) {
+      console.error(`[ERROR] Failed to get detailed minute data for ${ticker}:`, error);
+      return [];
+    }
+  }
+
   // Get market snapshots
   async getMarketData(tickers) {
     try {
@@ -127,7 +164,7 @@ class PolygonService {
     }
   }
 
-  // Get 30 minutes of minute data
+  // Get 30 minutes of minute data (existing method)
   async getMinuteData(ticker, minutesBack = 30) {
     try {
       const now = new Date();
@@ -203,7 +240,117 @@ class PolygonService {
     }
   }
 
-  // Analyze price action
+  // Enhanced: Create formatted data package for AI analysis
+  createAIDataPackage(ticker, chartData, newsTime, currentSnapshot) {
+    if (!chartData || chartData.length === 0) {
+      return null;
+    }
+
+    const newsTimestamp = newsTime ? new Date(newsTime).getTime() : null;
+    
+    // Split data into pre-news and post-news
+    const preNewsData = newsTimestamp ? 
+      chartData.filter(d => d.timestamp < newsTimestamp) : [];
+    const postNewsData = newsTimestamp ? 
+      chartData.filter(d => d.timestamp >= newsTimestamp) : chartData;
+
+    // Calculate various metrics for AI
+    const metrics = {
+      // Basic price action
+      totalPriceChange: chartData.length > 0 ? 
+        ((chartData[chartData.length - 1].close - chartData[0].open) / chartData[0].open) * 100 : 0,
+      
+      // Pre/post news comparison
+      preNewsAvgPrice: preNewsData.length > 0 ? 
+        preNewsData.reduce((sum, d) => sum + d.close, 0) / preNewsData.length : 0,
+      postNewsAvgPrice: postNewsData.length > 0 ? 
+        postNewsData.reduce((sum, d) => sum + d.close, 0) / postNewsData.length : 0,
+      
+      // Volume analysis
+      totalVolume: chartData.reduce((sum, d) => sum + d.volume, 0),
+      avgVolume: chartData.reduce((sum, d) => sum + d.volume, 0) / chartData.length,
+      maxVolume: Math.max(...chartData.map(d => d.volume)),
+      volumeSpike: this.detectVolumeSpike(chartData, newsTimestamp),
+      
+      // Volatility
+      priceRange: Math.max(...chartData.map(d => d.high)) - Math.min(...chartData.map(d => d.low)),
+      avgVolatility: chartData.reduce((sum, d) => sum + d.volatility, 0) / chartData.length,
+      
+      // Momentum
+      momentum: this.calculateMomentum(chartData),
+      trend: this.calculateTrend(chartData),
+      
+      // Support/Resistance levels
+      supportLevel: Math.min(...chartData.map(d => d.low)),
+      resistanceLevel: Math.max(...chartData.map(d => d.high)),
+      
+      // Time-based metrics
+      dataPoints: chartData.length,
+      timespan: chartData.length > 0 ? 
+        (chartData[chartData.length - 1].timestamp - chartData[0].timestamp) / (1000 * 60) : 0, // minutes
+    };
+
+    return {
+      ticker,
+      newsTime: newsTime?.toISOString(),
+      currentPrice: currentSnapshot?.currentPrice || chartData[chartData.length - 1]?.close,
+      chartData: chartData, // Full minute-by-minute data
+      metrics,
+      summary: {
+        priceChangeTotal: metrics.totalPriceChange,
+        priceChangePostNews: newsTimestamp && postNewsData.length > 0 ? 
+          ((postNewsData[postNewsData.length - 1].close - (preNewsData[preNewsData.length - 1]?.close || postNewsData[0].open)) / 
+           (preNewsData[preNewsData.length - 1]?.close || postNewsData[0].open)) * 100 : 0,
+        volumeProfile: metrics.volumeSpike,
+        volatilityLevel: metrics.avgVolatility > 2 ? 'high' : metrics.avgVolatility > 1 ? 'medium' : 'low',
+        momentum: metrics.momentum,
+        trend: metrics.trend
+      }
+    };
+  }
+
+  // Helper methods for AI data package
+  detectVolumeSpike(chartData, newsTimestamp) {
+    if (!newsTimestamp || chartData.length < 10) return false;
+    
+    const preNewsData = chartData.filter(d => d.timestamp < newsTimestamp);
+    const postNewsData = chartData.filter(d => d.timestamp >= newsTimestamp).slice(0, 10); // First 10 minutes after news
+    
+    if (preNewsData.length < 5 || postNewsData.length < 5) return false;
+    
+    const avgPreVolume = preNewsData.reduce((sum, d) => sum + d.volume, 0) / preNewsData.length;
+    const avgPostVolume = postNewsData.reduce((sum, d) => sum + d.volume, 0) / postNewsData.length;
+    
+    return avgPostVolume > avgPreVolume * 2; // 200% increase
+  }
+
+  calculateMomentum(chartData) {
+    if (chartData.length < 10) return 0;
+    
+    const recent = chartData.slice(-10);
+    const earlier = chartData.slice(-20, -10);
+    
+    const recentAvg = recent.reduce((sum, d) => sum + d.close, 0) / recent.length;
+    const earlierAvg = earlier.reduce((sum, d) => sum + d.close, 0) / earlier.length;
+    
+    return earlierAvg > 0 ? ((recentAvg - earlierAvg) / earlierAvg) * 100 : 0;
+  }
+
+  calculateTrend(chartData) {
+    if (chartData.length < 5) return 'insufficient_data';
+    
+    const first = chartData[0].close;
+    const last = chartData[chartData.length - 1].close;
+    const change = ((last - first) / first) * 100;
+    
+    if (change > 2) return 'strong_bullish';
+    if (change > 0.5) return 'bullish';
+    if (change < -2) return 'strong_bearish';
+    if (change < -0.5) return 'bearish';
+    return 'sideways';
+  }
+
+  // Analyze price action (existing method, kept for compatibility)
   analyzePriceAction(minuteData, currentSnapshot) {
     if (!minuteData || minuteData.length < 5) {
       return {

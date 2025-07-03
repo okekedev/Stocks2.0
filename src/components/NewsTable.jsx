@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
-import { ExternalLink, TrendingUp, TrendingDown, Clock, MessageSquare, X, ChevronUp, ChevronDown, Brain, Zap } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { ExternalLink, TrendingUp, TrendingDown, Clock, MessageSquare, Brain, Zap, ChevronUp, ChevronDown } from 'lucide-react';
+import { StockChart } from './StockChart';
+import { polygonService } from '../services/PolygonService';
+import { geminiService } from '../services/GeminiService';
 
-export function NewsTable({ stocks, allArticles }) {
-  const [sortBy, setSortBy] = useState('buySignal'); // Default to AI buy signals
+export function NewsTableWithCharts({ stocks, allArticles }) {
+  const [selectedStock, setSelectedStock] = useState(null);
+  const [sortBy, setSortBy] = useState('buySignal');
   const [sortOrder, setSortOrder] = useState('desc');
+  const [hoveredStock, setHoveredStock] = useState(null);
+  const [chartData, setChartData] = useState({});
+  const [loadingChart, setLoadingChart] = useState(null);
+  const [analyzingAI, setAnalyzingAI] = useState(null);
+  const hoverTimeoutRef = useRef(null);
 
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -11,6 +20,110 @@ export function NewsTable({ stocks, allArticles }) {
     } else {
       setSortBy(field);
       setSortOrder(field === 'latestNews' ? 'asc' : 'desc');
+    }
+  };
+
+  // Enhanced hover handler - fetches chart data
+  const handleStockHover = async (stock) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+
+    setHoveredStock(stock.ticker);
+
+    // Delay chart data fetching slightly to avoid excessive API calls
+    hoverTimeoutRef.current = setTimeout(async () => {
+      if (!chartData[stock.ticker] && !loadingChart) {
+        setLoadingChart(stock.ticker);
+        
+        try {
+          // Calculate time range: 1 hour before news to current time
+          const newsTime = new Date(stock.latestNews?.publishedUtc || Date.now());
+          const startTime = new Date(newsTime.getTime() - 60 * 60 * 1000); // 1 hour before news
+          const endTime = new Date(); // Current time
+          
+          console.log(`[INFO] 📊 Fetching chart data for ${stock.ticker}`);
+          
+          // Fetch minute-by-minute data
+          const minuteData = await polygonService.getDetailedMinuteData(
+            stock.ticker, 
+            startTime, 
+            endTime
+          );
+
+          if (minuteData && minuteData.length > 0) {
+            const chartDataPackage = {
+              ticker: stock.ticker,
+              newsTime: newsTime,
+              data: minuteData,
+              summary: {
+                dataPoints: minuteData.length,
+                timespan: `${Math.round((endTime - startTime) / (1000 * 60))} minutes`,
+                priceMove: minuteData.length > 0 ? 
+                  ((minuteData[minuteData.length - 1].close - minuteData[0].open) / minuteData[0].open) * 100 : 0
+              }
+            };
+
+            setChartData(prev => ({
+              ...prev,
+              [stock.ticker]: chartDataPackage
+            }));
+          }
+        } catch (error) {
+          console.error(`[ERROR] Failed to fetch chart data for ${stock.ticker}:`, error);
+        } finally {
+          setLoadingChart(null);
+        }
+      }
+    }, 300);
+  };
+
+  const handleStockLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    
+    setTimeout(() => {
+      setHoveredStock(null);
+    }, 100);
+  };
+
+  const handleChartHover = (ticker) => {
+    setHoveredStock(ticker);
+  };
+
+  // AI Analysis trigger (separate from hover)
+  const handleAIAnalysis = async (stock) => {
+    if (!chartData[stock.ticker]) {
+      console.log('[WARNING] No chart data available for AI analysis');
+      return;
+    }
+
+    setAnalyzingAI(stock.ticker);
+    
+    try {
+      console.log(`[INFO] 🤖 AI analyzing ${stock.ticker}...`);
+      
+      // Use your existing GeminiService directly - let AI do everything!
+      const buySignal = await geminiService.generateBuySignalWithChart(
+        stock,
+        chartData[stock.ticker]
+      );
+
+      // Update the stock with AI results
+      const updatedStocks = stocks.map(s => 
+        s.ticker === stock.ticker 
+          ? { ...s, buySignal, aiAnalyzed: true, analysisTimestamp: new Date().toISOString() }
+          : s
+      );
+
+      // You would update your main state here
+      console.log(`[SUCCESS] AI analysis complete for ${stock.ticker}:`, buySignal);
+      
+    } catch (error) {
+      console.error(`[ERROR] AI analysis failed for ${stock.ticker}:`, error);
+    } finally {
+      setAnalyzingAI(null);
     }
   };
 
@@ -50,7 +163,7 @@ export function NewsTable({ stocks, allArticles }) {
     return sortOrder === 'desc' ? bVal - aVal : aVal - bVal;
   });
 
-  const formatPrice = (price) => price ? `$${price.toFixed(2)}` : 'N/A';
+  const formatPrice = (price) => price ? `${price.toFixed(2)}` : 'N/A';
   const formatPercent = (percent) => percent ? `${percent > 0 ? '+' : ''}${percent.toFixed(2)}%` : 'N/A';
   const formatTime = (minutes) => {
     if (minutes < 60) return `${minutes}m ago`;
@@ -91,38 +204,32 @@ export function NewsTable({ stocks, allArticles }) {
   );
 
   return (
-    <div className="bg-gray-800 rounded-lg overflow-hidden">
+    <div className="bg-gray-800 rounded-lg overflow-hidden relative">
       {/* Table Header */}
       <div className="bg-gray-700 px-6 py-4 border-b border-gray-600">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-white">Stock Analysis Results</h3>
-            <p className="text-sm text-gray-400">{stocks.length} stocks • {stocks.filter(s => s.buySignal).length} AI analyzed</p>
+            <p className="text-sm text-gray-400">
+              {stocks.length} stocks • {stocks.filter(s => s.buySignal).length} AI analyzed • 
+              <span className="text-purple-400 ml-1">Hover for charts • Click AI for analysis</span>
+            </p>
           </div>
           <div className="text-sm text-gray-400">
-            Sorted by: <span className="font-medium text-white">
-              {sortBy === 'buySignal' ? 'AI Buy Signal' : 
-               sortBy === 'latestNews' ? 'Latest News' : 
-               sortBy === 'newsCount' ? 'News Count' :
-               sortBy === 'changePercent' ? 'Price Change' :
-               sortBy === 'currentPrice' ? 'Price' :
-               sortBy}
-            </span>
-            {sortBy === 'latestNews' && sortOrder === 'asc' ? ' (Newest First)' :
-             sortOrder === 'desc' ? ' (High to Low)' : ' (Low to High)'}
+            Chart Data: <span className="font-medium text-white">{Object.keys(chartData).length}</span>
           </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto relative">
         <table className="w-full">
           <thead className="bg-gray-700 border-b border-gray-600">
             <tr>
               <SortHeader field="ticker">Stock</SortHeader>
               <SortHeader field="currentPrice">Price</SortHeader>
               <SortHeader field="newsCount">News</SortHeader>
-              <SortHeader field="buySignal">AI Buy Signal</SortHeader>
+              <SortHeader field="buySignal">AI Signal</SortHeader>
               <SortHeader field="latestNews">Latest News</SortHeader>
             </tr>
           </thead>
@@ -130,10 +237,13 @@ export function NewsTable({ stocks, allArticles }) {
             {sortedStocks.map((stock) => (
               <tr 
                 key={stock.ticker}
-                className="hover:bg-gray-700 transition-colors"
+                className="hover:bg-gray-700 cursor-pointer transition-colors relative"
+                onClick={() => setSelectedStock(stock)}
+                onMouseEnter={() => handleStockHover(stock)}
+                onMouseLeave={handleStockLeave}
               >
                 {/* Stock Info */}
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 whitespace-nowrap relative">
                   <div className="flex items-center space-x-2">
                     <div>
                       <div className="font-medium text-white">{stock.ticker}</div>
@@ -142,7 +252,72 @@ export function NewsTable({ stocks, allArticles }) {
                     {stock.buySignal && (
                       <Brain className="w-4 h-4 text-purple-400" title="AI Analyzed" />
                     )}
+                    {chartData[stock.ticker] && (
+                      <div className="w-2 h-2 bg-green-400 rounded-full" title="Chart data loaded" />
+                    )}
                   </div>
+
+                  {/* Hover Chart */}
+                  {hoveredStock === stock.ticker && (
+                    <div 
+                      className="absolute left-full top-0 z-50 ml-2"
+                      onMouseEnter={() => handleChartHover(stock.ticker)}
+                      onMouseLeave={handleStockLeave}
+                    >
+                      <div className="bg-gray-900 border border-gray-600 rounded-lg p-4 shadow-2xl min-w-[400px]">
+                        {loadingChart === stock.ticker ? (
+                          <div className="flex items-center justify-center h-48">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+                            <span className="ml-2 text-gray-400">Loading chart...</span>
+                          </div>
+                        ) : chartData[stock.ticker] ? (
+                          <div>
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="text-white font-medium">{stock.ticker} - 1 Hour Chart</h4>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAIAnalysis(stock);
+                                }}
+                                disabled={analyzingAI === stock.ticker}
+                                className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1 rounded flex items-center space-x-1"
+                              >
+                                <Brain className="w-3 h-3" />
+                                <span>{analyzingAI === stock.ticker ? 'Analyzing...' : 'AI Analyze'}</span>
+                              </button>
+                            </div>
+                            
+                            <StockChart 
+                              data={chartData[stock.ticker]} 
+                              height={200}
+                              showNewsLine={true}
+                            />
+                            
+                            {/* Quick Stats */}
+                            <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
+                              <div>
+                                <span className="text-gray-400">Price Move:</span>
+                                <span className={`ml-1 font-medium ${chartData[stock.ticker].summary.priceMove > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                  {formatPercent(chartData[stock.ticker].summary.priceMove)}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-gray-400">Data Points:</span>
+                                <span className="ml-1 text-white">{chartData[stock.ticker].summary.dataPoints}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center h-48 text-gray-400">
+                            <div className="text-center">
+                              <div className="text-2xl mb-2">📊</div>
+                              <p>Chart data not available</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </td>
 
                 {/* Price */}
@@ -178,13 +353,24 @@ export function NewsTable({ stocks, allArticles }) {
                           {stock.buySignal.signal.replace('_', ' ')}
                         </div>
                       </div>
-                      {stock.priceAction?.volumeSpike && (
-                        <Zap className="w-4 h-4 text-yellow-400" title="Volume Spike" />
+                      {analyzingAI === stock.ticker && (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400"></div>
                       )}
                     </div>
                   ) : (
                     <div className="text-gray-400 text-sm">
-                      Pending analysis
+                      {chartData[stock.ticker] ? 
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAIAnalysis(stock);
+                          }}
+                          className="text-purple-400 hover:text-purple-300"
+                        >
+                          Click AI Analyze
+                        </button>
+                        : 'Need chart data'
+                      }
                     </div>
                   )}
                 </td>
@@ -203,9 +389,9 @@ export function NewsTable({ stocks, allArticles }) {
                           {stock.latestNews ? formatTime(stock.latestNews.minutesAgo) : 'N/A'}
                         </span>
                       </div>
-                      {stock.newsAnalysis && (
-                        <div className="text-purple-300">
-                          AI: {Math.round(stock.newsAnalysis.confidence * 100)}%
+                      {stock.aiAnalyzed && (
+                        <div className="text-purple-300 text-xs">
+                          🤖 AI Complete
                         </div>
                       )}
                     </div>
