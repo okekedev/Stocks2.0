@@ -1,7 +1,30 @@
-import React from 'react';
-import { Filter, TrendingUp, Brain, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Filter, TrendingUp, Brain, Clock } from 'lucide-react';
 
 export function FilteringStats({ newsData, loading }) {
+  const [countdown, setCountdown] = useState(300); // 5 minutes in seconds
+
+  // Countdown timer effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          return 300; // Reset to 5 minutes
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Format countdown as MM:SS
+  const formatCountdown = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   if (loading || !newsData) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -31,10 +54,9 @@ export function FilteringStats({ newsData, loading }) {
               {newsData.totalArticles || 0}
             </p>
           </div>
-          <CheckCircle className="w-8 h-8 text-green-400 opacity-50" />
         </div>
         <div className="text-xs text-green-300 mt-1">
-          Robinhood exchanges only
+          Polygon filtered
         </div>
       </div>
 
@@ -44,13 +66,12 @@ export function FilteringStats({ newsData, loading }) {
           <div>
             <h3 className="text-sm text-gray-400">Tradeable Stocks</h3>
             <p className="text-2xl font-bold text-blue-400">
-              {newsData.robinhoodStocks || 0}
+              {newsData.stocks?.length || 0}
             </p>
           </div>
-          <TrendingUp className="w-8 h-8 text-blue-400 opacity-50" />
         </div>
         <div className="text-xs text-blue-300 mt-1">
-          With positive news
+          With news + prices
         </div>
       </div>
 
@@ -63,26 +84,27 @@ export function FilteringStats({ newsData, loading }) {
               {aiAnalyzedCount}
             </p>
           </div>
-          <Brain className="w-8 h-8 text-purple-400 opacity-50" />
         </div>
         <div className="text-xs text-purple-300 mt-1">
-          Full content analysis
+          With buy signals
         </div>
       </div>
 
-      {/* Buy Signals */}
-      <div className="bg-gray-800 p-4 rounded-lg border border-yellow-500/20">
+      {/* Next Sync Countdown */}
+      <div className="bg-gray-800 p-4 rounded-lg border border-orange-500/20">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm text-gray-400">Trading Signals</h3>
-            <p className="text-2xl font-bold text-yellow-400">
-              {newsData.aiSignals?.length || 0}
+            <h3 className="text-sm text-gray-400 flex items-center">
+              <Clock className="w-4 h-4 mr-1" />
+              Next Sync
+            </h3>
+            <p className="text-2xl font-bold text-orange-400">
+              {formatCountdown(countdown)}
             </p>
           </div>
-          <div className="text-2xl">🎯</div>
         </div>
-        <div className="text-xs text-yellow-300 mt-1">
-          40%+ confidence
+        <div className="text-xs text-orange-300 mt-1">
+          Auto-refresh
         </div>
       </div>
     </div>

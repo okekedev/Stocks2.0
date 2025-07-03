@@ -1,17 +1,14 @@
-// src/components/NewsTable.jsx - Updated with persistent logs and better positioning
-import React, { useState, useRef } from 'react';
+// src/components/NewsTable.jsx - Click to analyze instead of hover
+import React, { useState } from 'react';
 import { TrendingUp, TrendingDown, Clock, MessageSquare, Brain, Zap, ChevronUp, ChevronDown, CheckCircle } from 'lucide-react';
 import { AIWorker } from './AIWorker';
 
-export function NewsTable({ stocks, allArticles }) {
+export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
   const [selectedStock, setSelectedStock] = useState(null);
   const [sortBy, setSortBy] = useState('buySignal');
   const [sortOrder, setSortOrder] = useState('desc');
-  const [hoveredStock, setHoveredStock] = useState(null);
-  const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
-  const [stockAnalyses, setStockAnalyses] = useState({}); // Store complete analysis results with logs
+  const [stockAnalyses, setStockAnalyses] = useState({});
   const [analyzingStocks, setAnalyzingStocks] = useState(new Set());
-  const hoverTimeoutRef = useRef(null);
 
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -22,43 +19,17 @@ export function NewsTable({ stocks, allArticles }) {
     }
   };
 
-  // Enhanced hover handler with position tracking
-  const handleStockHover = (stock, event) => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-    }
-    
-    // Get mouse position relative to viewport
-    const rect = event.currentTarget.getBoundingClientRect();
-    setHoverPosition({
-      x: rect.right + 10, // Position to the right of the row
-      y: rect.top + (rect.height / 2) // Center vertically on the row
-    });
-    
-    setHoveredStock(stock.ticker);
-  };
-
-  const handleStockLeave = () => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-    }
-    
-    hoverTimeoutRef.current = setTimeout(() => {
-      setHoveredStock(null);
-    }, 150); // Slightly longer delay for better UX
-  };
-
-  const handleTerminalHover = () => {
-    // Keep terminal open when hovering over it
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
+  // Click to open/close analysis terminal
+  const handleStockClick = (stock) => {
+    if (selectedStock?.ticker === stock.ticker) {
+      setSelectedStock(null); // Close if same stock clicked
+    } else {
+      setSelectedStock(stock); // Open new stock analysis
     }
   };
 
-  const handleTerminalLeave = () => {
-    hoverTimeoutRef.current = setTimeout(() => {
-      setHoveredStock(null);
-    }, 100);
+  const closeTerminal = () => {
+    setSelectedStock(null);
   };
 
   // AI Worker callbacks with persistent log storage
@@ -67,12 +38,11 @@ export function NewsTable({ stocks, allArticles }) {
   };
 
   const handleWorkerComplete = (ticker, result) => {
-    // Store the complete result including logs for persistence
     setStockAnalyses(prev => ({
       ...prev,
       [ticker]: {
         ...result,
-        savedLogs: result.savedLogs || [], // Ensure logs are saved
+        savedLogs: result.savedLogs || [],
         completedAt: new Date().toISOString()
       }
     }));
@@ -182,11 +152,33 @@ export function NewsTable({ stocks, allArticles }) {
               <h3 className="text-lg font-semibold text-white">AI Stock Analysis</h3>
               <p className="text-sm text-gray-400">
                 {stocks.length} stocks • {Object.keys(stockAnalyses).length} AI analyzed • 
-                <span className="text-purple-400 ml-1">Hover for AI terminal</span>
+                <span className="text-purple-400 ml-1">Click rows to analyze</span>
               </p>
             </div>
-            <div className="text-sm text-gray-400">
-              Live Analysis: <span className="font-medium text-white">{analyzingStocks.size} running</span>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-400">
+                Live Analysis: <span className="font-medium text-white">{analyzingStocks.size} running</span>
+              </div>
+              <button
+                onClick={() => {
+                  // Get unanalyzed stocks
+                  const unanalyzedStocks = stocks.filter(stock => 
+                    !stockAnalyses[stock.ticker] && 
+                    !analyzingStocks.has(stock.ticker) &&
+                    stock.latestNews?.minutesAgo < 120 && 
+                    stock.currentPrice
+                  );
+                  
+                  if (unanalyzedStocks.length > 0 && onAnalyzeAll) {
+                    onAnalyzeAll(unanalyzedStocks);
+                  }
+                }}
+                disabled={analyzingStocks.size > 0}
+                className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
+              >
+                <Brain className="w-4 h-4" />
+                <span>Analyze All</span>
+              </button>
             </div>
           </div>
         </div>
@@ -207,16 +199,18 @@ export function NewsTable({ stocks, allArticles }) {
               {sortedStocks.map((stock) => (
                 <tr 
                   key={stock.ticker}
-                  className="hover:bg-gray-700 cursor-pointer transition-colors"
-                  onMouseEnter={(e) => handleStockHover(stock, e)}
-                  onMouseLeave={handleStockLeave}
+                  className={`transition-colors ${
+                    selectedStock?.ticker === stock.ticker 
+                      ? 'bg-purple-900/30 border-purple-500' 
+                      : 'hover:bg-gray-700'
+                  }`}
                 >
                   {/* Stock Info */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center space-x-2">
                       <div>
                         <div className="font-medium text-white">{stock.ticker}</div>
-                        <div className="text-sm text-gray-400">{stock.exchange}</div>
+                        <div className="text-sm text-gray-400">{stock.companyName || stock.ticker}</div>
                       </div>
                       {stock.isAnalyzing && (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400" />
@@ -226,9 +220,6 @@ export function NewsTable({ stocks, allArticles }) {
                       )}
                       {stock.hasSavedLogs && (
                         <div className="w-2 h-2 bg-purple-400 rounded-full" title="Has saved analysis" />
-                      )}
-                      {stock.buySignal && !stock.hasCustomAnalysis && (
-                        <Brain className="w-4 h-4 text-purple-400" title="Pre-analyzed" />
                       )}
                     </div>
                   </td>
@@ -253,8 +244,11 @@ export function NewsTable({ stocks, allArticles }) {
                     </div>
                   </td>
 
-                  {/* AI Buy Signal */}
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  {/* AI Buy Signal - Clickable */}
+                  <td 
+                    className="px-6 py-4 whitespace-nowrap cursor-pointer hover:bg-gray-600 transition-colors"
+                    onClick={() => handleStockClick(stock)}
+                  >
                     {stock.buySignal ? (
                       <div className="flex items-center space-x-2">
                         <span className="text-2xl">{getBuySignalIcon(stock.buySignal.buyPercentage)}</span>
@@ -271,12 +265,15 @@ export function NewsTable({ stocks, allArticles }) {
                         )}
                       </div>
                     ) : (
-                      <div className="text-gray-400 text-sm">
-                        {stock.isAnalyzing ? (
-                          <span className="text-purple-400">Analyzing...</span>
-                        ) : (
-                          <span>Hover to analyze</span>
-                        )}
+                      <div className="flex items-center space-x-2">
+                        <Brain className="w-5 h-5 text-gray-400" />
+                        <div className="text-gray-400 text-sm">
+                          {stock.isAnalyzing ? (
+                            <span className="text-purple-400">Analyzing...</span>
+                          ) : (
+                            <span className="hover:text-purple-400">Click to analyze</span>
+                          )}
+                        </div>
                       </div>
                     )}
                   </td>
@@ -295,9 +292,9 @@ export function NewsTable({ stocks, allArticles }) {
                             {stock.latestNews ? formatTime(stock.latestNews.minutesAgo) : 'N/A'}
                           </span>
                         </div>
-                        {stock.hasCustomAnalysis && (
+                        {selectedStock?.ticker === stock.ticker && (
                           <div className="text-purple-300 text-xs">
-                            🤖 Live AI
+                            🔍 Viewing
                           </div>
                         )}
                       </div>
@@ -319,26 +316,17 @@ export function NewsTable({ stocks, allArticles }) {
         )}
       </div>
 
-      {/* Fixed Position AI Worker Terminal */}
-      {hoveredStock && (
-        <div
-          style={{
-            position: 'fixed',
-            left: `${hoverPosition.x}px`,
-            top: `${hoverPosition.y}px`,
-            zIndex: 1000,
-            pointerEvents: 'auto'
-          }}
-          onMouseEnter={handleTerminalHover}
-          onMouseLeave={handleTerminalLeave}
-        >
+      {/* Click-Triggered AI Worker Terminal */}
+      {selectedStock && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <AIWorker
-            stock={sortedStocks.find(s => s.ticker === hoveredStock)}
+            stock={selectedStock}
             isActive={true}
             onAnalysisStart={handleWorkerStart}
             onAnalysisComplete={handleWorkerComplete}
-            savedLogs={stockAnalyses[hoveredStock]?.savedLogs || null}
-            savedResult={stockAnalyses[hoveredStock] || null}
+            onClose={closeTerminal}
+            savedLogs={stockAnalyses[selectedStock.ticker]?.savedLogs || null}
+            savedResult={stockAnalyses[selectedStock.ticker] || null}
           />
         </div>
       )}

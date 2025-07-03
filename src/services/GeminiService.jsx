@@ -1,4 +1,4 @@
-// src/services/GeminiService.js
+// src/services/GeminiService.js - Simplified for testing
 class GeminiService {
   constructor() {
     this.apiKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -53,194 +53,100 @@ class GeminiService {
     }
   }
 
-  // Analyze full article content for trading sentiment
-  async analyzeFullArticle(article, fullContent) {
+  // Simplified analysis - just article text and basic stock info
+  async analyzeStock(stock) {
+    const newsText = stock.latestNews?.description || stock.latestNews?.title || 'No news available';
+    const currentPrice = stock.currentPrice || 100;
+    const changePercent = stock.changePercent || 0;
+    
     const prompt = `
-You are a professional stock trading analyst. Analyze this financial news article for immediate trading signals.
-
-ARTICLE DETAILS:
-Ticker(s): ${article.tickers.join(', ')}
-Title: ${article.title}
-Publisher: ${article.publisher}
-Published: ${new Date(article.publishedUtc).toLocaleString()}
-
-FULL ARTICLE CONTENT:
-${fullContent.content}
-
-Analyze this article and return ONLY a JSON object with this exact format:
-{
-  "sentiment": 0.7,
-  "confidence": 0.85,
-  "tradingSignal": "bullish",
-  "keyTopics": ["earnings", "guidance"],
-  "urgency": 0.8,
-  "priceImpact": "positive",
-  "timeHorizon": "immediate",
-  "reasoning": "Company exceeded earnings expectations with strong guidance"
-}
-
-Where:
-- sentiment: -1 (very negative) to 1 (very positive)
-- confidence: 0 to 1 (how confident you are in this analysis)
-- tradingSignal: "bullish", "bearish", or "neutral"
-- keyTopics: array of key topics ["earnings", "fda", "merger", "partnership", etc.]
-- urgency: 0 to 1 (how time-sensitive this news is for trading)
-- priceImpact: "positive", "negative", or "neutral"
-- timeHorizon: "immediate" (minutes/hours), "short" (days), "medium" (weeks), "long" (months+)
-- reasoning: brief explanation (max 25 words)
-
-Focus on immediate trading implications, not long-term investment value.
-Consider the credibility of the source and specificity of the information.
-`;
-
-    try {
-      const response = await this.makeRequest(prompt);
-      const cleanResponse = response.replace(/```json\n?|\n?```/g, '').trim();
-      return JSON.parse(cleanResponse);
-      
-    } catch (error) {
-      console.error('[ERROR] Failed to analyze article:', error);
-      return {
-        sentiment: 0.3,
-        confidence: 0.2,
-        tradingSignal: 'neutral',
-        keyTopics: ['unknown'],
-        urgency: 0.3,
-        priceImpact: 'neutral',
-        timeHorizon: 'medium',
-        reasoning: 'AI analysis failed - using conservative estimate'
-      };
-    }
-  }
-
-  // Generate buy signal from news + price action
-  async generateBuySignal(newsAnalysis, priceAction, stock) {
-    const prompt = `
-You are an expert day trader analyzing a potential BUY signal. Combine news sentiment with recent price action to determine buy confidence.
+You are a professional stock trading analyst. Analyze this stock for immediate trading signals.
 
 STOCK: ${stock.ticker}
-CURRENT PRICE: $${stock.currentPrice}
-TODAY'S CHANGE: ${stock.changePercent}%
+CURRENT PRICE: $${currentPrice.toFixed(2)}
+TODAY'S CHANGE: ${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%
+NEWS COUNT: ${stock.newsCount}
 
-NEWS ANALYSIS:
-- Sentiment: ${newsAnalysis.sentiment} (-1 to 1)
-- Trading Signal: ${newsAnalysis.tradingSignal}
-- Key Topics: ${newsAnalysis.keyTopics.join(', ')}
-- Urgency: ${newsAnalysis.urgency}
-- Price Impact: ${newsAnalysis.priceImpact}
-- Confidence: ${newsAnalysis.confidence}
-- Reasoning: ${newsAnalysis.reasoning}
+LATEST NEWS:
+${newsText}
 
-PRICE ACTION (Last 30 minutes):
-- Trend: ${priceAction.trend}
-- Price Change: ${priceAction.priceChange}%
-- Volume Spike: ${priceAction.volumeSpike ? 'YES' : 'NO'}
-- Volume Ratio: ${priceAction.volumeRatio}x normal
-- Momentum: ${priceAction.momentum}
-- Bars Analyzed: ${priceAction.barsAnalyzed}
-
-Return ONLY a JSON object:
+Based on this information, return ONLY a JSON object with this format:
 {
-  "buyPercentage": 75,
-  "signal": "strong_buy",
-  "reasoning": "Positive FDA news + 3% price spike + 4x volume confirms bullish momentum",
+  "buyPercentage": 65,
+  "signal": "buy",
+  "reasoning": "Positive earnings news with momentum",
   "riskLevel": "medium",
-  "timeHorizon": "short_term",
-  "keyFactors": ["positive_news", "volume_spike", "price_momentum"],
-  "entryPrice": 125.50,
-  "stopLoss": 120.25,
-  "targetPrice": 135.00
+  "confidence": 0.75
 }
 
 Where:
 - buyPercentage: 0-100 (confidence in buying NOW)
 - signal: "strong_buy" (80+), "buy" (60-79), "hold" (40-59), "avoid" (<40)
-- reasoning: brief explanation (max 35 words)
+- reasoning: brief explanation (max 20 words)
 - riskLevel: "low", "medium", "high"
-- timeHorizon: "immediate" (minutes), "short_term" (hours), "medium_term" (days)
-- keyFactors: array of driving factors
-- entryPrice: suggested entry price
-- stopLoss: suggested stop loss (5-10% below entry)
-- targetPrice: suggested target (10-20% above entry)
+- confidence: 0-1 decimal
 
-SCORING EXAMPLES:
-- Positive FDA approval + stock up 3% + volume spike = 85-90%
-- Strong earnings beat + flat price + normal volume = 45-55%
-- Partnership news + stock down 1% = 25-35% (possible overreaction)
-- Positive news + stock already up 10% = 20-30% (may be too late)
-
-Key Question: Does the price action CONFIRM the positive news sentiment?
+Consider:
+- Is the news positive or negative?
+- Is the stock price moving in the right direction?
+- How recent is the news?
+- Overall market sentiment
 `;
 
     try {
+      console.log(`[INFO] Analyzing ${stock.ticker} with Gemini...`);
       const response = await this.makeRequest(prompt);
       const cleanResponse = response.replace(/```json\n?|\n?```/g, '').trim();
       const result = JSON.parse(cleanResponse);
       
-      // Validate and constrain values
-      result.buyPercentage = Math.max(0, Math.min(100, result.buyPercentage));
-      result.entryPrice = result.entryPrice || stock.currentPrice;
-      result.stopLoss = result.stopLoss || (stock.currentPrice * 0.95);
-      result.targetPrice = result.targetPrice || (stock.currentPrice * 1.15);
-      
-      return result;
+      // Validate and add defaults
+      return {
+        buyPercentage: Math.max(0, Math.min(100, result.buyPercentage || 50)),
+        signal: result.signal || 'hold',
+        reasoning: result.reasoning || 'Analysis completed',
+        riskLevel: result.riskLevel || 'medium',
+        confidence: Math.max(0, Math.min(1, result.confidence || 0.5)),
+        entryPrice: currentPrice,
+        targetPrice: currentPrice * 1.1,
+        stopLoss: currentPrice * 0.95,
+        analysisTimestamp: new Date().toISOString()
+      };
       
     } catch (error) {
-      console.error('[ERROR] Failed to generate buy signal:', error);
+      console.error(`[ERROR] Failed to analyze ${stock.ticker}:`, error);
       return {
         buyPercentage: 30,
         signal: 'hold',
-        reasoning: 'AI analysis failed - conservative recommendation',
+        reasoning: 'AI analysis failed - conservative estimate',
         riskLevel: 'high',
-        timeHorizon: 'unknown',
-        keyFactors: ['analysis_error'],
-        entryPrice: stock.currentPrice,
-        stopLoss: stock.currentPrice * 0.95,
-        targetPrice: stock.currentPrice * 1.10
+        confidence: 0.2,
+        entryPrice: currentPrice,
+        targetPrice: currentPrice * 1.05,
+        stopLoss: currentPrice * 0.95,
+        analysisTimestamp: new Date().toISOString()
       };
     }
   }
 
-  // Batch analyze multiple stocks efficiently
-  async batchAnalyzeStocks(stocksWithNews, maxConcurrent = 2) {
+  // Simple batch analysis
+  async batchAnalyzeStocks(stocks, maxConcurrent = 2) {
     const results = [];
     
-    console.log(`[INFO] AI batch analyzing ${stocksWithNews.length} stocks...`);
+    console.log(`[INFO] AI batch analyzing ${stocks.length} stocks...`);
     
     // Process in small batches to respect rate limits
-    for (let i = 0; i < stocksWithNews.length; i += maxConcurrent) {
-      const batch = stocksWithNews.slice(i, i + maxConcurrent);
+    for (let i = 0; i < stocks.length; i += maxConcurrent) {
+      const batch = stocks.slice(i, i + maxConcurrent);
       
       const batchPromises = batch.map(async (stock) => {
         try {
-          if (stock.newsAnalysis && stock.priceAction) {
-            console.log(`[INFO] Generating buy signal for ${stock.ticker}...`);
-            
-            const buySignal = await this.generateBuySignal(
-              stock.newsAnalysis,
-              stock.priceAction,
-              stock
-            );
-            
-            return {
-              ...stock,
-              buySignal,
-              aiAnalyzed: true
-            };
-          } else {
-            return {
-              ...stock,
-              buySignal: {
-                buyPercentage: 25,
-                signal: 'avoid',
-                reasoning: 'Insufficient data for analysis',
-                riskLevel: 'high',
-                timeHorizon: 'none',
-                keyFactors: ['insufficient_data']
-              },
-              aiAnalyzed: false
-            };
-          }
+          const buySignal = await this.analyzeStock(stock);
+          
+          return {
+            ...stock,
+            buySignal,
+            aiAnalyzed: true
+          };
         } catch (error) {
           console.error(`[ERROR] Failed to analyze ${stock.ticker}:`, error);
           return {
@@ -250,8 +156,7 @@ Key Question: Does the price action CONFIRM the positive news sentiment?
               signal: 'avoid',
               reasoning: 'Analysis failed',
               riskLevel: 'high',
-              timeHorizon: 'none',
-              keyFactors: ['error']
+              confidence: 0.1
             },
             aiAnalyzed: false
           };
@@ -262,7 +167,7 @@ Key Question: Does the price action CONFIRM the positive news sentiment?
       results.push(...batchResults);
       
       // Delay between batches (Gemini rate limiting)
-      if (i + maxConcurrent < stocksWithNews.length) {
+      if (i + maxConcurrent < stocks.length) {
         console.log('[INFO] Waiting before next batch...');
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
