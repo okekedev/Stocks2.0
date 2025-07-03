@@ -1,4 +1,4 @@
-// src/services/NewsProcessor.js - Uses API company names
+// src/services/NewsProcessor.js - Fixed company name handling
 import { polygonService } from './PolygonService';
 
 class NewsProcessor {
@@ -60,12 +60,15 @@ class NewsProcessor {
         
         processedArticles.push(processedArticle);
         
-        // Add to each ticker with API company name
+        // Add to each ticker with proper company name handling
         tickers.forEach(ticker => {
           if (!stocksWithNews.has(ticker)) {
+            const apiCompanyName = companyNames.get(ticker);
+            
             stocksWithNews.set(ticker, {
               ticker,
-              companyName: companyNames.get(ticker) || ticker, // Use API company name
+              // Only show company name if it's different from ticker and actually exists
+              companyName: (apiCompanyName && apiCompanyName !== ticker) ? apiCompanyName : null,
               articles: [],
               newsCount: 0
             });

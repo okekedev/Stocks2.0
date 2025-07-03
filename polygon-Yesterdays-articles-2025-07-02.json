@@ -1,0 +1,4011 @@
+{
+  "results": [
+    {
+      "id": "5914ced7de23360d5f60aa35fc6996f450740836ccd39a920cb9929468b94417",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Hims & Hers Health, Inc. (HIMS) Faces Securities Class Actions After Novo Nordisk Cancels Partnership Over “Deceptive” Marketing of Wegovy– Hagens Berman",
+      "author": "Hagens Berman",
+      "published_utc": "2025-07-02T22:36:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109600/32716/en/Hims-Hers-Health-Inc-HIMS-Faces-Securities-Class-Actions-After-Novo-Nordisk-Cancels-Partnership-Over-Deceptive-Marketing-of-Wegovy-Hagens-Berman.html",
+      "tickers": [
+        "HIMS"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/51670c91-d369-4a8c-8102-d393de9f6d19",
+      "description": "Hims & Hers Health faces two securities class action lawsuits after Novo Nordisk terminated their collaboration, alleging deceptive marketing of Wegovy and potential patient safety risks.",
+      "keywords": [
+        "securities lawsuit",
+        "telehealth",
+        "weight loss drug",
+        "marketing misconduct"
+      ],
+      "insights": [
+        {
+          "ticker": "HIMS",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Company faces securities class action lawsuit, 30% stock price crash, and partnership termination due to alleged illegal drug marketing practices"
+        }
+      ]
+    },
+    {
+      "id": "11949595b0a8f6af700f89fc6293128a9a2887b83fc3ad6ab5e91f38bd5e38de",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Investing $1,000 Into This Top Dividend Stock in July Could Grow to Over $4,250 by 2035",
+      "author": "Matt Dilallo",
+      "published_utc": "2025-07-02T22:23:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/investing-1000-into-this-top-dividend-stock-in-jul/?source=iedfolrf0000001",
+      "tickers": [
+        "BEPC"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/822791/a-hand-drawing-money-signs-and-an-upward-arrow-on-a-chalkboard.jpg",
+      "description": "Brookfield Renewable offers a promising investment opportunity with a 4.5% dividend yield, strong renewable energy portfolio, and potential to grow a $1,000 investment to over $4,250 by 2035 through consistent dividend growth and operational expansion.",
+      "keywords": [
+        "renewable energy",
+        "dividend stock",
+        "investment",
+        "long-term growth",
+        "power purchase agreements"
+      ],
+      "insights": [
+        {
+          "ticker": "BEPC",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Strong financial performance with 15.6% average annual total returns, stable long-term power purchase agreements, robust growth pipeline, and projected 10% annual funds from operations growth"
+        }
+      ]
+    },
+    {
+      "id": "768460a37f22e80321a75c7dc3b973eb097d69523a0c8dd7d251b5f1646972be",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "1 Dividend Giant Paying Over 7%, With Big Things Coming",
+      "author": "Stefon Walters",
+      "published_utc": "2025-07-02T22:14:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/1-dividend-giant-paying-over-7-with-big-things-com/?source=iedfolrf0000001",
+      "tickers": [
+        "ET",
+        "ETpI",
+        "CVX"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/821062/gettyimages-1457841668.jpg",
+      "description": "Energy Transfer is a midstream energy company offering a high dividend yield of over 5.5% times the S&P 500 average. Despite a 7% stock decline in 2023, the company maintains a strong financial position with extensive pipeline infrastructure and consistent growth strategies.",
+      "keywords": [
+        "dividend",
+        "energy",
+        "midstream",
+        "pipeline",
+        "investment"
+      ],
+      "insights": [
+        {
+          "ticker": "ET",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mixed performance with revenue decrease and dividend fluctuations, but strong infrastructure, stable long-term contracts, and continuous expansion projects suggest potential for consistent returns"
+        },
+        {
+          "ticker": "ETpI",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mixed performance with revenue decrease and dividend fluctuations, but strong infrastructure, stable long-term contracts, and continuous expansion projects suggest potential for consistent returns"
+        },
+        {
+          "ticker": "CVX",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned only in disclosure, no specific analysis provided in the article"
+        }
+      ]
+    },
+    {
+      "id": "c826b96c1714404fde1828e5f296ff571c53c1cb420b27b7d5bd19c262b7e4eb",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "2 Stocks That Could Be Easy Wealth Builders",
+      "author": "John Ballard",
+      "published_utc": "2025-07-02T22:05:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/2-stocks-that-could-be-easy-wealth-builders/?source=iedfolrf0000001",
+      "tickers": [
+        "CAVA"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823415/roblox-logo-on-smartphone.jpg",
+      "description": "The article highlights two promising investment opportunities: Roblox in the gaming industry and Cava Group in the fast-casual dining sector, both showing strong growth potential and expanding user bases.",
+      "keywords": [
+        "gaming",
+        "restaurant",
+        "investment",
+        "growth stocks",
+        "user expansion"
+      ],
+      "insights": [
+        {
+          "ticker": "CAVA",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Impressive financial performance with 10% same-restaurant sales growth, plans to expand to 1,000 locations by 2032, and currently profitable with $142 million profit on $1 billion revenue"
+        }
+      ]
+    },
+    {
+      "id": "6124595edd84ab8d73dfa76cdca7543a0642f1a379886aa36860dba2bea72f9a",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "reAlpha Enhances Mortgage Operations with AI-Powered Loan Officer Assistant",
+      "author": "Jamie Cavanaugh",
+      "published_utc": "2025-07-02T22:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109594/0/en/reAlpha-Enhances-Mortgage-Operations-with-AI-Powered-Loan-Officer-Assistant.html",
+      "tickers": [
+        "AIRE"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/e9f2fd1a-b493-48e3-b933-f97b808adac2",
+      "description": "reAlpha Tech Corp. introduced an AI-powered Loan Officer Assistant designed to streamline mortgage administrative tasks, reducing document preparation time by 60% and potentially enabling loan teams to process 40 additional loans per month.",
+      "keywords": [
+        "AI",
+        "mortgage",
+        "loan processing",
+        "automation",
+        "real estate technology"
+      ],
+      "insights": [
+        {
+          "ticker": "AIRE",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Company is innovating with AI technology to improve operational efficiency, reduce processing time, and potentially increase loan volumes, demonstrating strategic technological advancement"
+        }
+      ]
+    },
+    {
+      "id": "8b26dbd8659f93b4bab2484bd1bdaf4955900616d148706c075edd628d3d73bc",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "$HAREHOLDER ALERT: Class Action Attorney Juan Monteverde Investigates the Merger of Gryphon Digital Mining, Inc. (NASDAQ: GRYP)",
+      "author": "Juan Monteverde",
+      "published_utc": "2025-07-02T21:48:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109588/0/en/HAREHOLDER-ALERT-Class-Action-Attorney-Juan-Monteverde-Investigates-the-Merger-of-Gryphon-Digital-Mining-Inc-NASDAQ-GRYP.html",
+      "tickers": [
+        "GRYP"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/24626dc5-f31d-44f3-bc2e-52e339e1a9d1",
+      "description": "Class action attorney Juan Monteverde is investigating the merger between Gryphon Digital Mining and American Bitcoin Corp, where American Bitcoin shareholders will own approximately 98% of the post-merger company.",
+      "keywords": [
+        "merger",
+        "shareholder",
+        "investigation",
+        "class action"
+      ],
+      "insights": [
+        {
+          "ticker": "GRYP",
+          "sentiment": "negative",
+          "sentiment_reasoning": "The merger appears highly unfavorable to existing Gryphon shareholders, who will retain only 2% ownership after the transaction"
+        }
+      ]
+    },
+    {
+      "id": "056c2306b280e6bd411fc3f7161bfd9b02df3b163650aa531fd1a5623f9442ac",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "$HAREHOLDER ALERT: Class Action Attorney Juan Monteverde Investigates the Merger of Big 5 Sporting Goods Corp. (NASDAQ: BGFV)",
+      "author": "Juan Monteverde",
+      "published_utc": "2025-07-02T21:48:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109587/0/en/HAREHOLDER-ALERT-Class-Action-Attorney-Juan-Monteverde-Investigates-the-Merger-of-Big-5-Sporting-Goods-Corp-NASDAQ-BGFV.html",
+      "tickers": [
+        "BGFV"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/24626dc5-f31d-44f3-bc2e-52e339e1a9d1",
+      "description": "Class action attorney Juan Monteverde is investigating the merger of Big 5 Sporting Goods, which is being sold to a partnership of Worldwide Golf and Capitol Hill for $1.45 per share in cash.",
+      "keywords": [
+        "merger",
+        "shareholder",
+        "investigation",
+        "class action"
+      ],
+      "insights": [
+        {
+          "ticker": "BGFV",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "The investigation suggests potential concerns about the fairness of the merger price, but no definitive negative or positive conclusion is stated"
+        }
+      ]
+    },
+    {
+      "id": "3012b43bd0b816a5c62224caf31f59dedf910852e44d39ec8baeee3af3a60e44",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Why Rigetti Computing Stock Lit Up Today",
+      "author": "Rich Smith",
+      "published_utc": "2025-07-02T21:06:27Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/why-rigetti-computing-stock-lit-up-today/?source=iedfolrf0000001",
+      "tickers": [
+        "GOOG",
+        "GOOGL",
+        "IBM"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823735/spherical-quantum-computing-chip.jpg",
+      "description": "Cantor Fitzgerald initiated coverage of Rigetti Computing with an outperform rating and $15 price target, highlighting quantum computing's potential despite the company's current lack of profitability.",
+      "keywords": [
+        "quantum computing",
+        "stock analysis",
+        "technology investment"
+      ],
+      "insights": [
+        {
+          "ticker": "GOOG",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a major player in quantum computing technology"
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a major player in quantum computing technology"
+        },
+        {
+          "ticker": "IBM",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a major player in quantum computing technology"
+        }
+      ]
+    },
+    {
+      "id": "a7cb41cc0861a1861cfd63e12788672a82ba6aae2b571af9f2be83de31af7278",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "The Herzfeld Caribbean Basin Fund, Inc. Announces Change of Name and NASDAQ Ticker Symbol",
+      "author": "Thomas Morgan",
+      "published_utc": "2025-07-02T20:40:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109553/0/en/The-Herzfeld-Caribbean-Basin-Fund-Inc-Announces-Change-of-Name-and-NASDAQ-Ticker-Symbol.html",
+      "tickers": [
+        "CUBA"
+      ],
+      "image_url": "https://www.globenewswire.com/news-release/2025/07/02/3109553/0/en/The-Herzfeld-Caribbean-Basin-Fund-Inc-Announces-Change-of-Name-and-NASDAQ-Ticker-Symbol.html",
+      "description": "The Herzfeld Caribbean Basin Fund has renamed itself to Herzfeld Credit Income Fund and will shift its investment strategy to focus on CLO equity and junior debt tranches, with stockholder approval obtained on June 17, 2025.",
+      "keywords": [
+        "CLO",
+        "closed-end fund",
+        "investment strategy",
+        "collateralized loan obligations"
+      ],
+      "insights": [
+        {
+          "ticker": "CUBA",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "The fund is making a strategic pivot from its previous investment approach to a new CLO-focused strategy, indicating a neutral repositioning rather than a clearly positive or negative change"
+        }
+      ]
+    },
+    {
+      "id": "b85374a20af6e8e0e224cc49887a2354c0eed75b98c7c471bf69b6208dcb17fe",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Lost Money on Bitfarms Ltd. (BITF)? Join Class Action Suit Seeking Recovery – Contact The Gross Law Firm",
+      "author": "The Gross Law Firm",
+      "published_utc": "2025-07-02T20:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109495/0/en/Lost-Money-on-Bitfarms-Ltd-BITF-Join-Class-Action-Suit-Seeking-Recovery-Contact-The-Gross-Law-Firm.html",
+      "tickers": [
+        "BITF"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/0e447323-403e-415d-a0b4-846f2654a80f",
+      "description": "The Gross Law Firm is seeking shareholders who purchased Bitfarms Ltd. stock between March 21, 2023 and December 9, 2024 to join a class action lawsuit alleging financial reporting irregularities and misleading statements.",
+      "keywords": [
+        "class action",
+        "securities lawsuit",
+        "financial reporting",
+        "shareholder rights"
+      ],
+      "insights": [
+        {
+          "ticker": "BITF",
+          "sentiment": "negative",
+          "sentiment_reasoning": "The lawsuit alleges multiple financial reporting issues including deficient internal controls, incorrect cash flow categorization, overstating remediation efforts, and potentially inaccurate financial statements"
+        }
+      ]
+    },
+    {
+      "id": "1d1abb11bc2dd952ae4bb891bafb319e037a15f852d5e9aa1a51ace3daf9674d",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "BRMK INVESTOR ALERT: Bronstein, Gewirtz & Grossman LLC Announces that Broadmark Realty Capital Inc. Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit",
+      "author": "Bronstein, Gewirtz & Grossman Llc",
+      "published_utc": "2025-07-02T20:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109493/9788/en/BRMK-INVESTOR-ALERT-Bronstein-Gewirtz-Grossman-LLC-Announces-that-Broadmark-Realty-Capital-Inc-Investors-with-Substantial-Losses-Have-Opportunity-to-Lead-Class-Action-Lawsuit.html",
+      "tickers": [
+        "RC",
+        "RCB",
+        "RCC",
+        "RCD",
+        "RCpC",
+        "RCpE"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/1a031130-a9cc-48ff-b281-d1e47c9a91a5",
+      "description": "A class action lawsuit has been filed against Broadmark Realty Capital and Ready Capital, alleging misleading proxy statements regarding financial distress, property market challenges, and inaccurate financial projections related to their merger.",
+      "keywords": [
+        "class action",
+        "securities lawsuit",
+        "merger",
+        "proxy statement",
+        "financial disclosure"
+      ],
+      "insights": [
+        {
+          "ticker": "RC",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Alleged to have understated credit loss reserves, experienced project setbacks, and faced challenges with borrower financial distress"
+        },
+        {
+          "ticker": "RCB",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Alleged to have understated credit loss reserves, experienced project setbacks, and faced challenges with borrower financial distress"
+        },
+        {
+          "ticker": "RCC",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Alleged to have understated credit loss reserves, experienced project setbacks, and faced challenges with borrower financial distress"
+        },
+        {
+          "ticker": "RCD",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Alleged to have understated credit loss reserves, experienced project setbacks, and faced challenges with borrower financial distress"
+        },
+        {
+          "ticker": "RCpC",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Alleged to have understated credit loss reserves, experienced project setbacks, and faced challenges with borrower financial distress"
+        },
+        {
+          "ticker": "RCpE",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Alleged to have understated credit loss reserves, experienced project setbacks, and faced challenges with borrower financial distress"
+        }
+      ]
+    },
+    {
+      "id": "065245a36d8773773c038896024da36f3b8f98780b1de5b0ae53430fecf2e980",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "3D Systems Corporation Sued for Securities Law Violations – Investors Should Contact The Gross Law Firm Before August 12, 2025 to Discuss Your Rights – DDD",
+      "author": "The Gross Law Firm",
+      "published_utc": "2025-07-02T20:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109494/0/en/3D-Systems-Corporation-Sued-for-Securities-Law-Violations-Investors-Should-Contact-The-Gross-Law-Firm-Before-August-12-2025-to-Discuss-Your-Rights-DDD.html",
+      "tickers": [
+        "DDD"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/0e447323-403e-415d-a0b4-846f2654a80f",
+      "description": "3D Systems Corporation faces a class action lawsuit alleging false statements about customer spending and partnership impacts during August 2024 to May 2025, potentially misleading investors about the company's business performance.",
+      "keywords": [
+        "securities lawsuit",
+        "investor claims",
+        "3D printing",
+        "corporate disclosure"
+      ],
+      "insights": [
+        {
+          "ticker": "DDD",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Lawsuit alleges deliberate misrepresentation of financial conditions, understating customer spending challenges and overstating business resilience, which suggests potential corporate misconduct"
+        }
+      ]
+    },
+    {
+      "id": "007eb8d1b8bd5ef67dddb0b317ef62590a47cc527cb29f9663b5ef53e6349fe2",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "LEATT HONORED TWICE AT EUROBIKE 2025",
+      "author": "Prnewswire",
+      "published_utc": "2025-07-02T19:43:00Z",
+      "article_url": "https://www.benzinga.com/pressreleases/25/07/n46232030/leatt-honored-twice-at-eurobike-2025",
+      "tickers": [
+        "LEAT"
+      ],
+      "image_url": "https://www.benzinga.com/next-assets/images/schema-image-default.png",
+      "description": "Leatt Corporation received two awards at Eurobike 2025 for its innovative 5.0 Gravity Helmet and 6.0 HydraDri Jacket, showcasing advanced protective gear for extreme sports and cycling.",
+      "keywords": [
+        "Eurobike",
+        "protective equipment",
+        "cycling",
+        "innovation",
+        "awards"
+      ],
+      "insights": [
+        {
+          "ticker": "LEAT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Company received two prestigious awards at a major industry trade show, highlighting technological innovations in protective sports gear, with CEO expressing pride in the team's achievements"
+        }
+      ]
+    },
+    {
+      "id": "710407e5556e23899134221783d2418c56b47bd34134e7da8f1a6c7c16bb791a",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Why Energy Fuels Stock Lit Up Today",
+      "author": "Rich Smith",
+      "published_utc": "2025-07-02T19:33:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/why-energy-fuels-stock-lit-up-today/?source=iedfolrf0000001",
+      "tickers": [
+        "UUUU"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823740/glowing-green-nuclear-radiation-icon.jpg",
+      "description": "Energy Fuels saw a 10.5% stock surge after Cantor Fitzgerald upgraded its rating, highlighting the company's high-grade uranium production at the Pinyon Plain mine in Arizona with improving efficiency and potential profitability.",
+      "keywords": [
+        "uranium",
+        "mining",
+        "stock upgrade",
+        "Pinyon Plain mine"
+      ],
+      "insights": [
+        {
+          "ticker": "UUUU",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Strong uranium production metrics, potential for future profitability, upgraded investment rating, and promising mine performance with high-grade uranium deposits"
+        }
+      ]
+    },
+    {
+      "id": "2add8da890ae351ee8cda7c6db41e4474714caa58ec981e5cdaf9c23a07a57c2",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Why Target Stock Is Rising Despite Falling Early in Today's Trading",
+      "author": "Keith Noonan",
+      "published_utc": "2025-07-02T19:11:41Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/why-target-stock-is-rising-despite-sinking-early-i/?source=iedfolrf0000001",
+      "tickers": [
+        "TGT"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823733/gettyimages-1248262649.jpg",
+      "description": "Target stock experienced volatility on Wednesday, initially dropping after a weak ADP jobs report but recovering due to a new U.S.-Vietnam trade deal, suggesting potential mitigation of tariff-related challenges.",
+      "keywords": [
+        "jobs report",
+        "trade deal",
+        "tariffs",
+        "stock market",
+        "retail"
+      ],
+      "insights": [
+        {
+          "ticker": "TGT",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Stock experienced initial sell-off but recovered, with potential challenges from weak job market and potential benefits from new trade agreement with Vietnam"
+        }
+      ]
+    },
+    {
+      "id": "faed073667015899fba4a24b48c5184f3748eb31e8e47af4c1470e4d72d6f85b",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "Adobe: Is the Stock's 33% Price Target Cut a Turning Point or an Overreaction?",
+      "author": "Timothy Fries",
+      "published_utc": "2025-07-02T18:15:00Z",
+      "article_url": "https://www.investing.com/analysis/adobe-is-the-stocks-33-price-target-cut-a-turning-point-or-an-overreaction-200663117",
+      "tickers": [
+        "ADBE"
+      ],
+      "amp_url": "https://m.investing.com/analysis/adobe-is-the-stocks-33-price-target-cut-a-turning-point-or-an-overreaction-200663117?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "Adobe's stock tumbled after Redburn-Atlantic downgraded it from Neutral to Sell, cutting the price target by 33% due to concerns about AI eroding the company's competitive advantage in creative software.",
+      "keywords": [
+        "Adobe",
+        "AI",
+        "generative AI",
+        "creative software",
+        "stock downgrade"
+      ],
+      "insights": [
+        {
+          "ticker": "ADBE",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Significant price target reduction from $420 to $280, concerns about AI disrupting core business model, projected slowdown in free cash flow growth, and underperformance relative to market indices"
+        }
+      ]
+    },
+    {
+      "id": "89cedb8ad927466c76218be30665d494c6823a10c8c4cc98f8e407097c2247cd",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "3 Utility Stocks That Combine Income and Stability",
+      "author": "Chris Markoch",
+      "published_utc": "2025-07-02T18:13:00Z",
+      "article_url": "https://www.investing.com/analysis/3-utility-stocks-that-combine-income-and-stability-200663114",
+      "tickers": [
+        "AEP"
+      ],
+      "amp_url": "https://m.investing.com/analysis/3-utility-stocks-that-combine-income-and-stability-200663114?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "The article highlights three utility stocks offering steady income and stability in 2025, focusing on NextEra Energy, American Electric Power, and Dominion Energy, which provide reliable dividends and exposure to long-term energy transitions.",
+      "keywords": [
+        "utility stocks",
+        "dividends",
+        "renewable energy",
+        "income investing",
+        "energy transition"
+      ],
+      "insights": [
+        {
+          "ticker": "AEP",
+          "sentiment": "positive",
+          "sentiment_reasoning": "90% regulated revenue, stable operations, renewable energy investment, 15-year dividend growth, projected 7% earnings growth"
+        }
+      ]
+    },
+    {
+      "id": "1f1dfb9cf351e2078c4d76b6a851865f01f5573ac854a4c0c87116c1723f90ef",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "MiLi Gears Up for Amazon Prime Day with Exclusive Deals on the MiTag Duo & LiTag Duo for Travel Gadgets Up To 30% Off",
+      "author": "Mili",
+      "published_utc": "2025-07-02T18:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109448/0/en/MiLi-Gears-Up-for-Amazon-Prime-Day-with-Exclusive-Deals-on-the-MiTag-Duo-LiTag-Duo-for-Travel-Gadgets-Up-To-30-Off.html",
+      "tickers": [
+        "AMZN",
+        "AAPL",
+        "GOOG",
+        "GOOGL"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/b526758c-621b-4315-9ce2-afcc12ada0d9",
+      "description": "MiLi is preparing for Amazon Prime Day (July 8-11, 2025) by offering discounts up to 30% on its MiTag Duo and LiTag Duo tracking devices across 15 countries, targeting travelers and pet owners with Bluetooth-enabled trackers compatible with Apple and Google tracking platforms.",
+      "keywords": [
+        "tracking devices",
+        "Prime Day",
+        "Bluetooth trackers",
+        "travel tech",
+        "location tracking"
+      ],
+      "insights": [
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Serving as a marketplace platform for MiLi's product sales during Prime Day event"
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a compatible platform for MiLi's tracking devices"
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a compatible platform for MiLi's tracking devices"
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a compatible platform for MiLi's tracking devices"
+        }
+      ]
+    },
+    {
+      "id": "94f3d0233454c62c2ecbdc68e5bed8a228566d3ac9e07819d39f0d9dd4ca78b7",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "CREDIT AGRICOLE NORD DE FRANCE : AVIS DE MISE A DISPOSITION DU BILAN SEMESTRIEL DU CONTRAT DE LIQUIDITE",
+      "author": "Anne-Sophie Joly",
+      "published_utc": "2025-07-02T17:36:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109443/0/fr/CREDIT-AGRICOLE-NORD-DE-FRANCE-AVIS-DE-MISE-A-DISPOSITION-DU-BILAN-SEMESTRIEL-DU-CONTRAT-DE-LIQUIDITE.html",
+      "tickers": [
+        "CRARY"
+      ],
+      "image_url": "https://ml-eu.globenewswire.com/Resource/Download/ad35f1db-5137-47c3-8236-10a79d9d7db1",
+      "description": "Credit Agricole Nord de France has released its semi-annual liquidity contract report for 2025, which is now publicly available on their corporate website.",
+      "keywords": [
+        "bilan semestriel",
+        "contrat de liquidité",
+        "financial reporting",
+        "Oddo Corporate Finance"
+      ],
+      "insights": [
+        {
+          "ticker": "CRARY",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Standard routine financial reporting with no explicit positive or negative indicators in the press release"
+        }
+      ]
+    },
+    {
+      "id": "4148afc45ff9b29be80a57462d803bfb134a3fc0a2c7c162ef6042c91bbe7b43",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "3 Stocks With Near-Unanimous Buys That Could Rally Higher",
+      "author": "Nathan Reiff",
+      "published_utc": "2025-07-02T17:36:00Z",
+      "article_url": "https://www.investing.com/analysis/3-stocks-with-nearunanimous-buys-that-could-rally-higher-200663102",
+      "tickers": [
+        "BKSY",
+        "BKSY.WS",
+        "AMBA"
+      ],
+      "amp_url": "https://m.investing.com/analysis/3-stocks-with-nearunanimous-buys-that-could-rally-higher-200663102?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "The article highlights three stocks with strong analyst ratings: BlackSky Technology, Core Scientific, and Ambarella, each experiencing significant share price rallies and potential growth opportunities in their respective industries.",
+      "keywords": [
+        "stocks",
+        "analyst ratings",
+        "technology",
+        "AI",
+        "cryptocurrency",
+        "satellite imaging"
+      ],
+      "insights": [
+        {
+          "ticker": "BKSY",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Secured a $24 million contract with National Geospatial-Intelligence Agency, expanding satellite constellation, but continues to experience quarterly losses"
+        },
+        {
+          "ticker": "BKSY.WS",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Secured a $24 million contract with National Geospatial-Intelligence Agency, expanding satellite constellation, but continues to experience quarterly losses"
+        },
+        {
+          "ticker": "CORZ",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Potential acquisition by CoreWeave, market cap over $5 billion, signed infrastructure agreements, and demonstrated higher intrinsic value"
+        },
+        {
+          "ticker": "CORZW",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Potential acquisition by CoreWeave, market cap over $5 billion, signed infrastructure agreements, and demonstrated higher intrinsic value"
+        },
+        {
+          "ticker": "CORZZ",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Potential acquisition by CoreWeave, market cap over $5 billion, signed infrastructure agreements, and demonstrated higher intrinsic value"
+        },
+        {
+          "ticker": "AMBA",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Dominant in Edge AI SOCs, potential sale speculation, analyst consensus suggests 28% upside potential, and recovering from challenging 2024"
+        }
+      ]
+    },
+    {
+      "id": "e8183aeb5a1f6dfc5992df1a6e39e4e1ade2c62781273e7634e3be22e3251d11",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "S&P 500 Tops Record Highs, Bitcoin Rallies As Traders Raise Rate Cut Bets: What's Moving Markets Wednesday?",
+      "author": "Piero Cingari",
+      "published_utc": "2025-07-02T17:35:53Z",
+      "article_url": "https://www.benzinga.com/markets/equities/25/07/46228695/wall-street-today-sp500-bitcoin-price-trump-vietnam",
+      "tickers": [
+        "ADBE",
+        "FSLR",
+        "STZ",
+        "IONQ",
+        "IONQ.WS"
+      ],
+      "image_url": "https://cdn.benzinga.com/files/images/story/2025/07/02/Stock-Market.jpeg?width=1200&height=800&fit=crop",
+      "description": "U.S. stocks reached record highs after weak private payrolls data increased expectations of Federal Reserve rate cuts. The S&P 500 surpassed 6,200 points, while Bitcoin rallied and markets anticipated potential monetary policy easing.",
+      "keywords": [
+        "S&P 500",
+        "Federal Reserve",
+        "rate cuts",
+        "Bitcoin",
+        "employment",
+        "market volatility"
+      ],
+      "insights": [
+        {
+          "ticker": "ADBE",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Stock fell 4.1% after Rothschild & Co Redburn downgraded from Neutral to Sell and reduced price target"
+        },
+        {
+          "ticker": "FSLR",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Surged 8% following potential positive impact from U.S.-Vietnam trade deal"
+        },
+        {
+          "ticker": "STZ",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Rose 4.5% despite weaker-than-expected earnings, maintained full-year guidance"
+        },
+        {
+          "ticker": "IONQ",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Stock rose 2.4% after receiving Overweight rating from Cantor Fitzgerald"
+        },
+        {
+          "ticker": "IONQ.WS",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Stock rose 2.4% after receiving Overweight rating from Cantor Fitzgerald"
+        }
+      ]
+    },
+    {
+      "id": "57d2535dc0da72c890710306975151e2b756b68f6d5585e3397b22671acea00a",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Performance Shipping Inc. Announces Successful Placement of $100 Million Bond Offering",
+      "author": "Performance Shipping Inc.",
+      "published_utc": "2025-07-02T17:35:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109442/14069/en/Performance-Shipping-Inc-Announces-Successful-Placement-of-100-Million-Bond-Offering.html",
+      "tickers": [
+        "PSHG"
+      ],
+      "image_url": "https://www.globenewswire.com/news-release/2025/07/02/3109442/14069/en/Performance-Shipping-Inc-Announces-Successful-Placement-of-100-Million-Bond-Offering.html",
+      "description": "Performance Shipping Inc. successfully placed $100 million in bonds in the Nordic market, maturing in July 2029 with a 9.875% fixed coupon. The bonds are secured by first priority mortgages on two unencumbered tanker vessels and will be used for tanker acquisitions or bond repurchases.",
+      "keywords": [
+        "bonds",
+        "Nordic market",
+        "tanker vessels",
+        "financing"
+      ],
+      "insights": [
+        {
+          "ticker": "PSHG",
+          "sentiment": "positive",
+          "sentiment_reasoning": "The company successfully raised significant capital through bond placement, demonstrating financial strength and strategic positioning for future growth through potential vessel acquisitions"
+        }
+      ]
+    },
+    {
+      "id": "435a83a2e44e37cbef53084906237bd26dff71ae507a896226fd976987435bc5",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "S&P 500 First-Half Recap: Why Value Fizzled and Growth Stocks Roared Back",
+      "author": "Dave Kovaleski",
+      "published_utc": "2025-07-02T17:35:00Z",
+      "article_url": "https://www.investing.com/analysis/sp-500-firsthalf-recap-why-value-fizzled-and-growth-stocks-roared-back-200663109",
+      "tickers": [
+        "NRG",
+        "PLTR",
+        "UNH",
+        "CRM",
+        "AAPL"
+      ],
+      "amp_url": "https://m.investing.com/analysis/sp-500-firsthalf-recap-why-value-fizzled-and-growth-stocks-roared-back-200663109?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "The first half of 2025 saw volatile market conditions with growth stocks rebounding strongly after initial challenges. Industrials and communication services performed best, while some major tech and healthcare stocks experienced significant declines.",
+      "keywords": [
+        "S&P 500",
+        "market performance",
+        "growth stocks",
+        "value stocks",
+        "sector performance"
+      ],
+      "insights": [
+        {
+          "ticker": "NRG",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Returned 72.6% in first half, doubled natural gas generation capacity, relatively cheap valuation with potential 21% upside"
+        },
+        {
+          "ticker": "PLTR",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Up 65.5% in first half, gained 58.8% in Q2, signed large government contracts, though extremely expensive"
+        },
+        {
+          "ticker": "UNH",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Dropped 37% in first half, but considered cheap with potential 11.3% return"
+        },
+        {
+          "ticker": "CRM",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Down 20% in first half, but analysts see potential 32% growth"
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Down 20% year-to-date, but analysts suggest potential 13% return"
+        }
+      ]
+    },
+    {
+      "id": "80e8589d1522ab33019a9bed182469a4bda5028ffa2553fc53e19c102b3e7fec",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Why Greenbrier Shares Are Up Big Today",
+      "author": "Lou Whiteman",
+      "published_utc": "2025-07-02T17:22:30Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/why-greenbrier-shares-are-up-big-today/?source=iedfolrf0000001",
+      "tickers": [
+        "GBX"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823712/gettyimages-177805648.jpg",
+      "description": "Railcar manufacturer Greenbrier exceeded earnings expectations by leveraging cost efficiencies and strategic investments during a challenging economic environment for railroads, raising full-year guidance and demonstrating resilience.",
+      "keywords": [
+        "railcar",
+        "earnings",
+        "cost management",
+        "economic uncertainty",
+        "railroad industry"
+      ],
+      "insights": [
+        {
+          "ticker": "GBX",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Company delivered earnings surprise of $1.86 per share versus $0.98 expected, raised full-year guidance, demonstrated operational efficiency, and maintained strategic focus during difficult market conditions"
+        }
+      ]
+    },
+    {
+      "id": "ede87d4a0b2f395607e2e6ad38723a218c5192764101aaa3e862f0c087ca3711",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Figma's Crypto Playbook Revealed Ahead Of IPO: $69 Million In Bitcoin ETFs, $30 Million More Coming Soon",
+      "author": "Chris Katje",
+      "published_utc": "2025-07-02T17:02:45Z",
+      "article_url": "https://www.benzinga.com/crypto/cryptocurrency/25/07/46227742/figmas-crypto-playbook-revealed-ahead-of-ipo-69-million-in-bitcoin-etfs-30-million-more-com",
+      "tickers": [
+        "ADBE",
+        "COIN",
+        "BWEB"
+      ],
+      "image_url": "https://cdn.benzinga.com/files/images/story/2025/07/02/Figma-Ai.jpeg?width=1200&height=800&fit=crop",
+      "description": "Figma filed for its IPO and disclosed significant Bitcoin ETF investments, holding $69.5 million in Bitwise Bitcoin ETF and planning an additional $30 million Bitcoin investment through USD Coin.",
+      "keywords": [
+        "IPO",
+        "Bitcoin",
+        "ETF",
+        "cryptocurrency",
+        "investment"
+      ],
+      "insights": [
+        {
+          "ticker": "ADBE",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Blocked from acquiring Figma, no direct negative/positive impact mentioned"
+        },
+        {
+          "ticker": "COIN",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Showed enthusiasm about Figma's Bitcoin and USD Coin holdings"
+        },
+        {
+          "ticker": "BWEB",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Received significant investment from Figma, indicating market confidence"
+        }
+      ]
+    },
+    {
+      "id": "4e2ed90e0001e420e46ad4b5ad6a79e37ef61908533e031926e40d3b87d91233",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Point of Care Testing Market Valuation is Set to Surpass US$ 85.55 Billion By 2033 | Astute Analytica",
+      "author": "Astute Analytica",
+      "published_utc": "2025-07-02T16:30:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109413/0/en/Point-of-Care-Testing-Market-Valuation-is-Set-to-Surpass-US-85-55-Billion-By-2033-Astute-Analytica.html",
+      "tickers": [
+        "ABT"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/a77988df-ad1a-4619-9a4e-367c858dc70e",
+      "description": "The global point-of-care testing market is projected to grow from $46.48 billion in 2024 to $85.55 billion by 2033, driven by aging populations, technological advances, and increasing demand for rapid diagnostics across various medical sectors.",
+      "keywords": [
+        "point-of-care testing",
+        "medical diagnostics",
+        "healthcare technology",
+        "rapid testing",
+        "microfluidics"
+      ],
+      "insights": [
+        {
+          "ticker": "ABT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Highlighted for innovative testing technologies like ID NOW analyzer, with 45,000 units active across 70 countries"
+        }
+      ]
+    },
+    {
+      "id": "a1ba5c8ac8474fcd036928158cb7bb400a4fb7a0aebe05abbe3c09183c84fe95",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "Is Mobileye Being Undervalued Amid Renewed Focus on Driverless Tech?",
+      "author": "Dan Schmidt",
+      "published_utc": "2025-07-02T16:06:00Z",
+      "article_url": "https://www.investing.com/analysis/is-mobileye-being-undervalued-amid-renewed-focus-on-driverless-tech-200663112",
+      "tickers": [
+        "AEVA",
+        "AEVAW"
+      ],
+      "amp_url": "https://m.investing.com/analysis/is-mobileye-being-undervalued-amid-renewed-focus-on-driverless-tech-200663112?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "The autonomous vehicle market is evolving with Waymo and Tesla leading driverless taxi services. LiDAR technology is crucial for precise navigation, with companies like Aeva and Mobileye developing advanced systems for autonomous vehicles.",
+      "keywords": [
+        "autonomous vehicles",
+        "LiDAR",
+        "driverless technology",
+        "robotaxi",
+        "AI"
+      ],
+      "insights": [
+        {
+          "ticker": "AEVA",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Stock up 1,400% in 12 months, developing advanced 4D LiDAR technology with velocity measurement, expecting 70-100% revenue growth in 2025"
+        },
+        {
+          "ticker": "AEVAW",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Stock up 1,400% in 12 months, developing advanced 4D LiDAR technology with velocity measurement, expecting 70-100% revenue growth in 2025"
+        }
+      ]
+    },
+    {
+      "id": "f8b49c30246bc5213a8a2926e4d3465e212c055750980de140b11995dfb765b1",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Deadline Alert: MicroStrategy Incorporated (MSTR) Investors Who Lost Money Urged To Contact Glancy Prongay & Murray LLP About Securities Fraud Lawsuit",
+      "author": "Glancy Prongay & Murray Llp",
+      "published_utc": "2025-07-02T16:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109385/34548/en/Deadline-Alert-MicroStrategy-Incorporated-MSTR-Investors-Who-Lost-Money-Urged-To-Contact-Glancy-Prongay-Murray-LLP-About-Securities-Fraud-Lawsuit.html",
+      "tickers": [
+        "MSTR",
+        "STRD",
+        "STRF",
+        "STRK"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/dca1d463-f40e-41ea-a1d6-f8a47b633445",
+      "description": "MicroStrategy faces a class action lawsuit alleging misleading statements about its bitcoin investment strategy, with investors urged to file a lead plaintiff motion by July 15, 2025, following a $5.91 billion unrealized loss on digital assets.",
+      "keywords": [
+        "securities fraud",
+        "bitcoin",
+        "digital assets",
+        "class action",
+        "financial disclosure"
+      ],
+      "insights": [
+        {
+          "ticker": "MSTR",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Company disclosed significant unrealized losses on digital assets, warned about potential inability to regain profitability, and faces allegations of misleading investors about risks and investment strategy"
+        },
+        {
+          "ticker": "STRD",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Company disclosed significant unrealized losses on digital assets, warned about potential inability to regain profitability, and faces allegations of misleading investors about risks and investment strategy"
+        },
+        {
+          "ticker": "STRF",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Company disclosed significant unrealized losses on digital assets, warned about potential inability to regain profitability, and faces allegations of misleading investors about risks and investment strategy"
+        },
+        {
+          "ticker": "STRK",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Company disclosed significant unrealized losses on digital assets, warned about potential inability to regain profitability, and faces allegations of misleading investors about risks and investment strategy"
+        }
+      ]
+    },
+    {
+      "id": "99ccf8a0f597f5141ccaf63444703bdf33ce4aa6359b8891101de2cc164a2367",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Transaction in Own Shares",
+      "author": "Shell Plc",
+      "published_utc": "2025-07-02T16:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109394/0/en/Transaction-in-Own-Shares.html",
+      "tickers": [
+        "SHEL",
+        "BNPZY"
+      ],
+      "image_url": "https://www.globenewswire.com/news-release/2025/07/02/3109394/0/en/Transaction-in-Own-Shares.html",
+      "description": "Shell plc announced a share buyback program on July 2, 2025, purchasing shares across multiple trading venues. Additionally, the company filed amendments to its 2023 and 2024 Form 20-Fs with the SEC due to EY's non-compliance with audit partner rotation rules.",
+      "keywords": [
+        "share buyback",
+        "Form 20-F",
+        "audit compliance",
+        "EY"
+      ],
+      "insights": [
+        {
+          "ticker": "SHEL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "The company is proactively managing its share buyback program and addressing audit compliance issues transparently, without significant negative implications"
+        },
+        {
+          "ticker": "BNPZY",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as the executing broker for Shell's share buyback program with independent trading decisions"
+        }
+      ]
+    },
+    {
+      "id": "068fe5f50ef1a1fd0dbbd1fc91627195d27961053a1ff49eb9e27dcbe3b4f3c4",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "DEADLINE ALERT: Faruqi & Faruqi, LLP Investigates Claims on Behalf of Investors of West Pharmaceutical Services",
+      "author": "James (Josh) Wilson",
+      "published_utc": "2025-07-02T16:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109386/683/en/DEADLINE-ALERT-Faruqi-Faruqi-LLP-Investigates-Claims-on-Behalf-of-Investors-of-West-Pharmaceutical-Services.html",
+      "tickers": [
+        "WST"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/8628babf-2ea4-4b8a-a60b-260db109bfa2",
+      "description": "Faruqi & Faruqi is investigating potential securities law violations by West Pharmaceutical Services, alleging false statements about customer demand, product margins, and business prospects, which led to a significant stock price drop in February 2025.",
+      "keywords": [
+        "securities litigation",
+        "class action",
+        "investor losses",
+        "financial disclosure"
+      ],
+      "insights": [
+        {
+          "ticker": "WST",
+          "sentiment": "negative",
+          "sentiment_reasoning": "The article details alleged fraudulent statements about business performance, revealing significant margin pressures, loss of major customers, and weak revenue forecasts that caused a 38% stock price decline"
+        }
+      ]
+    },
+    {
+      "id": "774d983ce51ad89a9f9b4328597fbed8536b69e441944ddd6c8da137c9a9bce0",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "3 Stocks Riding the AI and Crypto Waves to New Highs",
+      "author": "Dave Kovaleski",
+      "published_utc": "2025-07-02T15:51:00Z",
+      "article_url": "https://www.investing.com/analysis/the-top-3-stocks-in-june-200663110",
+      "tickers": [
+        "COIN",
+        "ORCL",
+        "MU"
+      ],
+      "amp_url": "https://m.investing.com/analysis/the-top-3-stocks-in-june-200663110?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "Three technology stocks - Coinbase, Oracle, and Micron - experienced significant gains in June, driven by cryptocurrency regulations, AI data center investments, and semiconductor manufacturing expansion.",
+      "keywords": [
+        "AI",
+        "cryptocurrency",
+        "technology stocks",
+        "semiconductor",
+        "data centers"
+      ],
+      "insights": [
+        {
+          "ticker": "COIN",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Stock rose 41% in June, primarily due to the passage of the GENIUS Act creating a regulatory framework for stablecoins, which could expand the cryptocurrency market"
+        },
+        {
+          "ticker": "ORCL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Stock rose 32% after strong earnings and positive outlook, particularly around AI data center partnerships and expansion"
+        },
+        {
+          "ticker": "MU",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Stock gained 31% following announcement of significant investments in U.S. memory chip manufacturing, totaling approximately $230 billion in domestic manufacturing and R&D"
+        }
+      ]
+    },
+    {
+      "id": "11a24af06e1e08c3f90f29721f7296b2111a69699adb0f34c0121a57c9b1c6b0",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "This Magnificent 7 Stock Is Absurdly Cheap – It Probably Won't Stay That Way For Long",
+      "author": "Piero Cingari",
+      "published_utc": "2025-07-02T15:48:02Z",
+      "article_url": "https://www.benzinga.com/markets/tech/25/07/46225431/alphabet-stock-google-analysis-valuations-outlook",
+      "tickers": [
+        "GOOG",
+        "GOOGL"
+      ],
+      "image_url": "https://cdn.benzinga.com/files/images/story/2025/07/02/Alphabet.jpeg?width=1200&height=800&fit=crop",
+      "description": "Alphabet is trading at a historically low price-to-earnings ratio of 19.6x, significantly below its 20-year average of 32x. Historical data suggests that such low valuations have preceded substantial stock rallies, with potential 24-month returns averaging 65.9%.",
+      "keywords": [
+        "Magnificent 7",
+        "P/E ratio",
+        "stock valuation",
+        "tech stocks",
+        "investment strategy"
+      ],
+      "insights": [
+        {
+          "ticker": "GOOG",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Trading at a historically low P/E ratio of 19.6x, which has previously signaled potential for significant stock price appreciation. Past instances of low P/E ratios have led to average 24-month returns of 65.9%, indicating a potentially undervalued stock with strong future growth potential."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Trading at a historically low P/E ratio of 19.6x, which has previously signaled potential for significant stock price appreciation. Past instances of low P/E ratios have led to average 24-month returns of 65.9%, indicating a potentially undervalued stock with strong future growth potential."
+        }
+      ]
+    },
+    {
+      "id": "15fe8d7d2aa66b2784da8db3aa20e277dfbb43d2a963bc018fb4ad1dd767fb08",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "VAYK Discloses More Insider Buying Approaching 15 Million",
+      "author": "Prnewswire",
+      "published_utc": "2025-07-02T15:46:00Z",
+      "article_url": "https://www.benzinga.com/pressreleases/25/07/n46225343/vayk-discloses-more-insider-buying-approaching-15-million",
+      "tickers": [
+        "VAYK"
+      ],
+      "image_url": "https://www.benzinga.com/next-assets/images/schema-image-default.png",
+      "description": "Vaycaychella Inc. reported an insider purchasing significant amounts of company stock, increasing holdings from 4.2 million shares in December 2024 to 14.6 million shares by June 2025, with potential for further purchases.",
+      "keywords": [
+        "insider trading",
+        "stock purchase",
+        "transparency",
+        "small cap"
+      ],
+      "insights": [
+        {
+          "ticker": "VAYK",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "The company is transparently disclosing insider stock purchases without endorsing the action, maintaining a neutral stance about potential investor implications"
+        }
+      ]
+    },
+    {
+      "id": "087bc8be01eed61bf5aa815cb862b7780cbfd35cbd2a9c8c3e7a8b115d3c7d7f",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "Microsoft’s $5 Trillion Target Rests on an AI and Cloud Spending Boom",
+      "author": "Chris Markoch",
+      "published_utc": "2025-07-02T15:42:00Z",
+      "article_url": "https://www.investing.com/analysis/microsofts-5-trillion-target-rests-on-an-ai-and-cloud-spending-boom-200663100",
+      "tickers": [
+        "AMZN"
+      ],
+      "amp_url": "https://m.investing.com/analysis/microsofts-5-trillion-target-rests-on-an-ai-and-cloud-spending-boom-200663100?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "Wall Street analyst Dan Ives predicts Microsoft could reach a $5 trillion market cap within 18 months, driven by AI and cloud computing growth, particularly through Azure platform and OpenAI partnership.",
+      "keywords": [
+        "AI",
+        "cloud computing",
+        "Microsoft",
+        "Azure",
+        "market cap",
+        "enterprise technology"
+      ],
+      "insights": [
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Projected significant market cap growth, strong AI and cloud computing positioning, 33% Azure revenue growth, potential $1 trillion enterprise IT budget shift towards cloud and AI infrastructure"
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a competitor challenging Microsoft's Azure momentum in cloud computing market"
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a competitor challenging Microsoft's Azure momentum in cloud computing market"
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a competitor challenging Microsoft's Azure momentum in cloud computing market"
+        }
+      ]
+    },
+    {
+      "id": "3b58c9e86780bec6f40f4c3d305455e95890fab2ac15120ca07ff4c9de6d5e62",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Coface SA: Coface finalises the acquisition of Cedar Rose Group",
+      "author": "Globe Newswire",
+      "published_utc": "2025-07-02T15:35:00Z",
+      "article_url": "https://www.benzinga.com/pressreleases/25/07/g46224932/coface-sa-coface-finalises-the-acquisition-of-cedar-rose-group",
+      "tickers": [
+        "CFACY"
+      ],
+      "image_url": "https://www.benzinga.com/next-assets/images/schema-image-default.png",
+      "description": "Coface SA has completed the acquisition of Cedar Rose Group, a leading information services provider in the Middle East and Africa, to enhance its data capabilities and strategic growth objectives.",
+      "keywords": [
+        "acquisition",
+        "information services",
+        "Middle East",
+        "business information",
+        "strategic growth"
+      ],
+      "insights": [
+        {
+          "ticker": "CFACY",
+          "sentiment": "positive",
+          "sentiment_reasoning": "The company is expanding its information production capabilities through a strategic acquisition that aligns with its Power the Core strategic plan, focusing on data excellence"
+        }
+      ]
+    },
+    {
+      "id": "05b4b4d4b1df5e9aed3229075f2a5dcf14c1805d6b17659609ff81da141ea466",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Meet the Monster Quantum Computing Stock That Continues to Crush IonQ, Rigetti Computing, and Nvidia",
+      "author": "Adam Spatacco",
+      "published_utc": "2025-07-02T15:27:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/meet-the-outperforming-quantum-computing-stock/?source=iedfolrf0000001",
+      "tickers": [
+        "AMZN"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823389/quantum-computing-1347310377-4.jpg",
+      "description": "D-Wave Quantum has outperformed other quantum computing stocks in 2023, gaining 67% year-to-date. Despite impressive revenue growth, the company's high valuation and speculative nature raise concerns about its long-term investment potential.",
+      "keywords": [
+        "quantum computing",
+        "AI",
+        "technology stocks",
+        "investment",
+        "emerging tech"
+      ],
+      "insights": [
+        {
+          "ticker": "QBTS",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Strong stock performance (67% gain) but high valuation, limited revenue, and potential stock dilution create investment uncertainty"
+        },
+        {
+          "ticker": "QBTS.WS",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Strong stock performance (67% gain) but high valuation, limited revenue, and potential stock dilution create investment uncertainty"
+        },
+        {
+          "ticker": "RGTI",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a quantum computing stock without specific performance details"
+        },
+        {
+          "ticker": "RGTIW",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a quantum computing stock without specific performance details"
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Recognized as a major AI and quantum computing technology developer"
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Developing quantum computing technology and considered a major AI player"
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Developing quantum computing technology and considered a major AI player"
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Developing quantum computing technology and considered a major AI player"
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Developing quantum computing technology and considered a major AI player"
+        },
+        {
+          "ticker": "IBM",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Developing quantum computing technology and considered a major AI player"
+        }
+      ]
+    },
+    {
+      "id": "fb3f582595815e98f3ef87ca12fd064b827bf9df019b5e3a5cfdc9611a89e60a",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Elon Musk's 'Stupid' Actions Will Be Tesla's 'Nail In The Coffin,' Ross Gerber Warns",
+      "author": "Erica Kollmann",
+      "published_utc": "2025-07-02T15:04:48Z",
+      "article_url": "https://www.benzinga.com/markets/large-cap/25/07/46223791/elon-musks-stupid-actions-will-be-teslas-nail-in-the-coffin-ross-gerber-warns",
+      "tickers": [
+        "TSLA",
+        "DJT",
+        "DJTWW"
+      ],
+      "image_url": "https://cdn.benzinga.com/files/images/story/2025/07/02/ElonMusk-Tesla.jpeg?width=1200&height=800&fit=crop",
+      "description": "Prominent Tesla investor Ross Gerber criticizes Elon Musk's political feud with Donald Trump, warning that his actions could significantly harm Tesla's business and stock value.",
+      "keywords": [
+        "Tesla",
+        "Elon Musk",
+        "Donald Trump",
+        "political feud",
+        "subsidies"
+      ],
+      "insights": [
+        {
+          "ticker": "TSLA",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Gerber suggests Musk's political involvement is distracting from core business, alienating investors and customers, and potentially causing the stock to drop by half"
+        },
+        {
+          "ticker": "DJT",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in context of political dispute with Elon Musk, no direct business impact discussed"
+        },
+        {
+          "ticker": "DJTWW",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in context of political dispute with Elon Musk, no direct business impact discussed"
+        }
+      ]
+    },
+    {
+      "id": "9a21429fbf3f780d3384cecea3c836e6c680a46315fdfcff97bb8f6290ebf384",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Embark on an Adventure with Remy: Explore Imagination and Magic",
+      "author": "Remy & Naomi Raushel",
+      "published_utc": "2025-07-02T15:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109318/0/en/Embark-on-an-Adventure-with-Remy-Explore-Imagination-and-Magic.html",
+      "tickers": [
+        "AMZN",
+        "BNED"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/45c36834-a9f3-40c6-96ac-934667b00fea",
+      "description": "A children's book that encourages imagination and self-expression, featuring a young boy named Remy and his mother exploring creative scenarios that inspire children to embrace their unique dreams and ideas.",
+      "keywords": [
+        "children's book",
+        "imagination",
+        "creativity",
+        "self-confidence",
+        "parent-child bond"
+      ],
+      "insights": [
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a sales platform for the book with no specific positive or negative context"
+        },
+        {
+          "ticker": "BNED",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a sales platform for the book with no specific positive or negative context"
+        }
+      ]
+    },
+    {
+      "id": "56387883a260564154b2e23843d3c98e1e2d6a89548f0eac871d678d5de7afe1",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Count on Adventure While Learning to Count in New Children’s Book DR. TOAD COUNTS TO TWELVE",
+      "author": "Myra D. Wann",
+      "published_utc": "2025-07-02T15:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109322/0/en/Count-on-Adventure-While-Learning-to-Count-in-New-Children-s-Book-DR-TOAD-COUNTS-TO-TWELVE.html",
+      "tickers": [
+        "AMZN",
+        "BNED"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/db12d183-0121-4a05-bc43-00fcbbafbe1c",
+      "description": "Retired teacher Myra Wann has published a children's counting book featuring Dr. Toad, which introduces early math concepts through an engaging story about counting from one to twelve.",
+      "keywords": [
+        "children's book",
+        "math education",
+        "counting",
+        "early learning"
+      ],
+      "insights": [
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a sales platform for the book"
+        },
+        {
+          "ticker": "BNED",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a sales platform for the book"
+        }
+      ]
+    },
+    {
+      "id": "2ab4cbb56cdc61ee9d657fdb9d5e6f2bb259720a0a8c107f6c0c50909a723a16",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Biofuels Market Size to Exceed USD 326.42 Bn by 2034 Growing Need for Clean Energy is Driving Biofuels Adoption",
+      "author": "Statifacts",
+      "published_utc": "2025-07-02T15:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109323/0/en/Biofuels-Market-Size-to-Exceed-USD-326-42-Bn-by-2034-Growing-Need-for-Clean-Energy-is-Driving-Biofuels-Adoption.html",
+      "tickers": [
+        "ADM"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/01eb1f79-0c67-420b-b423-376619f975cd",
+      "description": "The global biofuels market is projected to grow from USD 110.9 billion in 2025 to USD 326.42 billion by 2034, driven by government initiatives, greenhouse gas reduction efforts, and rising demand for eco-friendly transportation fuels.",
+      "keywords": [
+        "biofuels",
+        "renewable energy",
+        "sustainability",
+        "greenhouse gas emissions",
+        "ethanol",
+        "biodiesel"
+      ],
+      "insights": [
+        {
+          "ticker": "ADM",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Described as a global leader in agricultural processing and nutrition with strong market positioning"
+        }
+      ]
+    },
+    {
+      "id": "70fdae8a476323f141e3ca30bcc8d268d9f893c1eab2e57f7b4ac4254ae19380",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "JPMorgan Stock Is Trending Wednesday: What's Happening?",
+      "author": "Adam Eckert",
+      "published_utc": "2025-07-02T14:12:34Z",
+      "article_url": "https://www.benzinga.com/trading-ideas/movers/25/07/46221744/jpmorgan-stock-is-trending-wednesday-whats-happening",
+      "tickers": [
+        "AMJB"
+      ],
+      "image_url": "https://cdn.benzinga.com/files/images/story/2025/07/02/JPMorgan-Exec-Demands-More-Hustle-As-Off.jpeg?width=1200&height=800&fit=crop",
+      "description": "JPMorgan announced a dividend increase from $1.40 to $1.50 per share and a $50 billion share repurchase program. The bank's stress test resulted in lowered capital requirements, signaling financial strength.",
+      "keywords": [
+        "dividend",
+        "share repurchase",
+        "stress test",
+        "capital requirements"
+      ],
+      "insights": [
+        {
+          "ticker": "AMJB",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Increased dividend, new share buyback program, lowered capital requirements, and CEO Jamie Dimon's confident statement about the bank's financial strength indicate a positive outlook"
+        },
+        {
+          "ticker": "JPM",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Increased dividend, new share buyback program, lowered capital requirements, and CEO Jamie Dimon's confident statement about the bank's financial strength indicate a positive outlook"
+        },
+        {
+          "ticker": "JPMpC",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Increased dividend, new share buyback program, lowered capital requirements, and CEO Jamie Dimon's confident statement about the bank's financial strength indicate a positive outlook"
+        },
+        {
+          "ticker": "JPMpD",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Increased dividend, new share buyback program, lowered capital requirements, and CEO Jamie Dimon's confident statement about the bank's financial strength indicate a positive outlook"
+        },
+        {
+          "ticker": "JPMpJ",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Increased dividend, new share buyback program, lowered capital requirements, and CEO Jamie Dimon's confident statement about the bank's financial strength indicate a positive outlook"
+        },
+        {
+          "ticker": "JPMpK",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Increased dividend, new share buyback program, lowered capital requirements, and CEO Jamie Dimon's confident statement about the bank's financial strength indicate a positive outlook"
+        },
+        {
+          "ticker": "JPMpL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Increased dividend, new share buyback program, lowered capital requirements, and CEO Jamie Dimon's confident statement about the bank's financial strength indicate a positive outlook"
+        },
+        {
+          "ticker": "JPMpM",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Increased dividend, new share buyback program, lowered capital requirements, and CEO Jamie Dimon's confident statement about the bank's financial strength indicate a positive outlook"
+        }
+      ]
+    },
+    {
+      "id": "f373e3a1c8502a34700766a5991af208ff73a334045a7a194c759cbe614c1c19",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Cyber Crisis Management Market Size to Surpass USD 7.3 Billion by 2032, Owing to Surging Cyber Threats and the Shift Toward AI-Powered Security Frameworks | SNS Insider",
+      "author": "Sns Insider",
+      "published_utc": "2025-07-02T14:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109270/0/en/Cyber-Crisis-Management-Market-Size-to-Surpass-USD-7-3-Billion-by-2032-Owing-to-Surging-Cyber-Threats-and-the-Shift-Toward-AI-Powered-Security-Frameworks-SNS-Insider.html",
+      "tickers": [
+        "IBM",
+        "CSCO",
+        "PANW",
+        "CRWD"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/d6272c2e-d204-41b8-b545-a6e2e24f85c2",
+      "description": "The cyber crisis management market is projected to expand from $3.9 billion in 2024 to $7.3 billion by 2032, driven by increasing cyber threats, AI-powered security frameworks, and digital transformation across industries.",
+      "keywords": [
+        "cybersecurity",
+        "cyber crisis management",
+        "market growth",
+        "AI security",
+        "digital transformation"
+      ],
+      "insights": [
+        {
+          "ticker": "IBM",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Listed as a major player in a rapidly growing cybersecurity market with strong potential for expansion"
+        },
+        {
+          "ticker": "CSCO",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Positioned as a key player in an expanding cyber crisis management market with increasing demand for advanced security solutions"
+        },
+        {
+          "ticker": "PANW",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Highlighted for recent platform enhancements with AI-powered security features, indicating technological innovation"
+        },
+        {
+          "ticker": "CRWD",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Mentioned as a major player in a market experiencing significant growth due to rising cyber threats"
+        }
+      ]
+    },
+    {
+      "id": "22fdecfbd17fee594527a24184cf653977804271384ee10315701e5e767c3f86",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Cellular Vehicle-to-Everything Market Expands at 41.81% CAGR from 2025 to 2034: AI, 5G, and V2X Tech",
+      "author": "Towards Automotive",
+      "published_utc": "2025-07-02T14:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109269/0/en/Cellular-Vehicle-to-Everything-Market-Expands-at-41-81-CAGR-from-2025-to-2034-AI-5G-and-V2X-Tech.html",
+      "tickers": [
+        "QCOM",
+        "NXPI"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/01eb1f79-0c67-420b-b423-376619f975cd",
+      "description": "The global C-V2X market is expected to grow from $2.43 billion in 2025 to $56.44 billion by 2034, driven by 5G integration, smart city initiatives, autonomous vehicle demand, and government support for improved road safety technologies.",
+      "keywords": [
+        "C-V2X",
+        "autonomous vehicles",
+        "5G",
+        "smart cities",
+        "road safety",
+        "vehicle communication"
+      ],
+      "insights": [
+        {
+          "ticker": "QCOM",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Global leader in CV2X chipset development, providing 5G and LTE-based communication platforms for connected vehicles"
+        },
+        {
+          "ticker": "NXPI",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Delivering secure and scalable CV2X chipsets enabling low-latency communication for vehicles"
+        }
+      ]
+    },
+    {
+      "id": "bb437bddb7e28b6e8a3f567a2fdc87384cd48ca335780289bcbd79c2f6b08130",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "Global Portfolio Returns May Be Entering a Lower-Growth Phase",
+      "author": "James Picerno",
+      "published_utc": "2025-07-02T13:37:00Z",
+      "article_url": "https://www.investing.com/analysis/global-portfolio-returns-may-be-entering-a-lowergrowth-phase-200663095",
+      "tickers": [
+        "AAPL",
+        "TSLA",
+        "SPY"
+      ],
+      "amp_url": "https://m.investing.com/analysis/global-portfolio-returns-may-be-entering-a-lowergrowth-phase-200663095?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "The Global Market Index (GMI) forecasts a moderate decline in long-term investment returns, with an expected annualized return of 7.3%, which is below its 10-year performance of 8.2%. US equities are expected to be the primary underperforming asset class.",
+      "keywords": [
+        "portfolio returns",
+        "investment forecast",
+        "Global Market Index",
+        "asset allocation"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in market movers section without specific performance analysis in the main article"
+        },
+        {
+          "ticker": "TSLA",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in market movers section without specific performance analysis in the main article"
+        },
+        {
+          "ticker": "SPY",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Referenced as part of benchmark index analysis, with expectations of moderate return softening"
+        }
+      ]
+    },
+    {
+      "id": "ea281758a2e2b71323e3ee74e84d8e5ff0e0f1218bafb98ee00d6366ae46a67b",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Buy These 3 Cheap Stocks Now",
+      "author": "Mark Roussin",
+      "published_utc": "2025-07-02T13:24:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/buy-these-3-cheap-stocks-now/?source=iedfolrf0000001",
+      "tickers": [
+        "ASML"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823238/gettyimages-1358049785.jpg",
+      "description": "The article discusses current stock market conditions, highlighting potential investment opportunities in stocks with low valuations, particularly focusing on AI-related stocks like ASML Holding.",
+      "keywords": [
+        "stocks",
+        "investing",
+        "AI",
+        "market analysis",
+        "valuations"
+      ],
+      "insights": [
+        {
+          "ticker": "ASML",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Identified as a potential investment opportunity, specifically in the artificial intelligence sector with potential for growth and attractive valuation"
+        },
+        {
+          "ticker": "PYPL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in the disclosure, but no specific investment analysis provided in the article"
+        },
+        {
+          "ticker": "OKTA",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in the disclosure, but no specific investment analysis provided in the article"
+        }
+      ]
+    },
+    {
+      "id": "03799d683dc7a3687b9c336db7c8f719bfc1a4abab71ab18e1f116ccf81bf4e0",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "Small Business Momentum Could Lift This 8.8% Dividend Play",
+      "author": "Brett Owens",
+      "published_utc": "2025-07-02T13:23:00Z",
+      "article_url": "https://www.investing.com/analysis/small-business-momentum-could-lift-this-88-dividend-play-200663084",
+      "tickers": [
+        "ARCC",
+        "BIZD"
+      ],
+      "amp_url": "https://m.investing.com/analysis/small-business-momentum-could-lift-this-88-dividend-play-200663084?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "The article discusses how small business optimism is rising, driven by AI tools like ChatGPT, and highlights two Business Development Companies (BDCs) that could benefit from this trend: Ares Capital and Main Street Capital.",
+      "keywords": [
+        "small business",
+        "AI",
+        "BDC",
+        "dividend",
+        "ChatGPT"
+      ],
+      "insights": [
+        {
+          "ticker": "ARCC",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Largest BDC with $22 billion in assets, low non-performing loan rate (1.5%), generates strong net investment income, and offers an 8.8% dividend yield"
+        },
+        {
+          "ticker": "MAIN",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Diversified portfolio across 190 companies, consistent dividend growth (174% increase in 15 years), pays a 7.2% dividend yield with monthly and supplemental payouts"
+        },
+        {
+          "ticker": "BIZD",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Used as an industry benchmark, with Main Street Capital outperforming it historically"
+        }
+      ]
+    },
+    {
+      "id": "068ad2268abd5951135aae80b7e7c999208ecaace93afba67e364dcd24ba9b9b",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "3 Reasons to Buy BULZ, and 4 Reasons Not To",
+      "author": "James Brumley",
+      "published_utc": "2025-07-02T13:22:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/3-reasons-to-buy-bulz-and-4-reasons-not-to/?source=iedfolrf0000001",
+      "tickers": [
+        "AMZN",
+        "AVGO"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/822049/accountant-with-calculator.jpg",
+      "description": "The MicroSectors Solactive FANG Innovation 3x Leveraged ETN is a high-risk, high-reward investment instrument that provides 3x daily performance of top tech stocks, including FANG companies and their peers. While potentially lucrative, the ETN comes with significant volatility and requires active management.",
+      "keywords": [
+        "FANG stocks",
+        "leveraged ETN",
+        "technology",
+        "investment",
+        "risk management"
+      ],
+      "insights": [
+        {
+          "ticker": "AMZN",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Highlighted as a key component of high-performing tech stocks with strong market potential"
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Included in top-performing tech stocks driving market gains"
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Included in top-performing tech stocks driving market gains"
+        },
+        {
+          "ticker": "META",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Part of the innovative tech stocks with significant market influence"
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Recognized as a key player in high-demand technology sectors like AI"
+        },
+        {
+          "ticker": "PLTR",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as part of the innovative tech group, but with cautionary investment advice"
+        },
+        {
+          "ticker": "AVGO",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a tech peer without extensive commentary"
+        }
+      ]
+    },
+    {
+      "id": "cfd00ce72ca084dfa722ecd176cdb47825cb66d2662f4b7f2e0b36a7419b7818",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "Capitalize on Volatility: 3 Finance Stocks Thriving in 2025",
+      "author": "Chris Markoch",
+      "published_utc": "2025-07-02T13:05:00Z",
+      "article_url": "https://www.investing.com/analysis/capitalize-on-volatility-3-finance-stocks-thriving-in-2025-200663106",
+      "tickers": [
+        "CME",
+        "GS",
+        "GSpA",
+        "GSpC",
+        "GSpD",
+        "MKTX"
+      ],
+      "amp_url": "https://m.investing.com/analysis/capitalize-on-volatility-3-finance-stocks-thriving-in-2025-200663106?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "The article highlights three finance stocks positioned to benefit from market volatility in 2025, focusing on derivatives trading, investment banking, and electronic bond trading platforms.",
+      "keywords": [
+        "volatility",
+        "finance stocks",
+        "derivatives",
+        "trading",
+        "market uncertainty"
+      ],
+      "insights": [
+        {
+          "ticker": "CME",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Up 40% in 12 months, benefiting from record derivatives trading and expected interest rate cuts, with technical indicators suggesting potential for further growth"
+        },
+        {
+          "ticker": "GS",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Up 23.8% in 2025, leveraging market volatility through expanded trading operations, M&A transactions, and strong balance sheet positioning"
+        },
+        {
+          "ticker": "GSpA",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Up 23.8% in 2025, leveraging market volatility through expanded trading operations, M&A transactions, and strong balance sheet positioning"
+        },
+        {
+          "ticker": "GSpC",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Up 23.8% in 2025, leveraging market volatility through expanded trading operations, M&A transactions, and strong balance sheet positioning"
+        },
+        {
+          "ticker": "GSpD",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Up 23.8% in 2025, leveraging market volatility through expanded trading operations, M&A transactions, and strong balance sheet positioning"
+        },
+        {
+          "ticker": "MKTX",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Currently down 1.5% in 2025 but showing potential for breakout, with analyst price target suggesting 8.4% potential gain and anticipated earnings growth"
+        }
+      ]
+    },
+    {
+      "id": "7ef1954915607ad2b6bc112549fe969c343e78ef5ed11efac57c2cabfa64afea",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Fatburger Accelerates Florida Growth with 40-Unit Development Deal",
+      "author": "Fat Brands Inc.",
+      "published_utc": "2025-07-02T13:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109191/0/en/Fatburger-Accelerates-Florida-Growth-with-40-Unit-Development-Deal.html",
+      "tickers": [
+        "FAT",
+        "FATBB",
+        "FATBP",
+        "FATBW"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/532d0033-1189-4cb8-a23e-33335b4a4f17",
+      "description": "Fatburger plans to open 40 new locations across Florida over the next 10 years, with existing franchisee Whole Factor Inc. leading the expansion into new markets like Jacksonville.",
+      "keywords": [
+        "restaurant expansion",
+        "franchise",
+        "Florida",
+        "burger chain"
+      ],
+      "insights": [
+        {
+          "ticker": "FAT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Demonstrating strategic growth through franchise development and expanding restaurant brands across multiple markets"
+        },
+        {
+          "ticker": "FATBB",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Demonstrating strategic growth through franchise development and expanding restaurant brands across multiple markets"
+        },
+        {
+          "ticker": "FATBP",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Demonstrating strategic growth through franchise development and expanding restaurant brands across multiple markets"
+        },
+        {
+          "ticker": "FATBW",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Demonstrating strategic growth through franchise development and expanding restaurant brands across multiple markets"
+        }
+      ]
+    },
+    {
+      "id": "72bcf5718ca9011751c7a31bcfb62b09e85e676fae1b46ba2f5cb323f54bf21b",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Community Bank & Trust Wins Top Honors for Second Consecutive Year",
+      "author": "Hannah Conley",
+      "published_utc": "2025-07-02T13:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109190/0/en/Community-Bank-Trust-Wins-Top-Honors-for-Second-Consecutive-Year.html",
+      "tickers": [
+        "FCBC"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/92544b19-8c2a-41a3-a8e5-67c3ee50f7d8",
+      "description": "Community Bank & Trust was named Best Bank, Best Overall Business, and Best Banker (Bill Stump) in Troup County for 2025, marking their second consecutive year of winning these awards from LaGrange Daily News.",
+      "keywords": [
+        "banking",
+        "awards",
+        "community banking",
+        "local business"
+      ],
+      "insights": [
+        {
+          "ticker": "FCBC",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Parent company mentioned but no specific details or performance indicators provided"
+        }
+      ]
+    },
+    {
+      "id": "6807b3daf0619c1d2cffe27355c20108053fee4741622a5ed43d09b17b5fb33c",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Fortinet to Announce Second Quarter 2025 Financial Results",
+      "author": "Fortinet, Inc.",
+      "published_utc": "2025-07-02T13:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109187/0/en/Fortinet-to-Announce-Second-Quarter-2025-Financial-Results.html",
+      "tickers": [
+        "FTNT"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/5ff95cf2-3889-43ac-b81c-1d5cffe84868",
+      "description": "Fortinet will hold a conference call to discuss its second quarter 2025 financial results on August 6, 2025, at 1:30 p.m. Pacific Time. The call will be broadcast live on the company's investor relations website and will include prepared remarks from the CEO and CFO.",
+      "keywords": [
+        "cybersecurity",
+        "financial results",
+        "conference call",
+        "investor relations"
+      ],
+      "insights": [
+        {
+          "ticker": "FTNT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "The company is proactively communicating financial results, highlighting its market leadership in cybersecurity with over half a million customers and an extensive product portfolio"
+        }
+      ]
+    },
+    {
+      "id": "52db7cd8a58fc4575068f84efbc77450d3cb76b710348a05945f2abf1f6f2ba6",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Alibaba.com and Wix Announce Strategic Partnership to Accelerate Global Growth for SMEs",
+      "author": "Not Specified",
+      "published_utc": "2025-07-02T13:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109185/0/en/Alibaba-com-and-Wix-Announce-Strategic-Partnership-to-Accelerate-Global-Growth-for-SMEs.html",
+      "tickers": [
+        "BBAAY",
+        "WIX"
+      ],
+      "image_url": "https://ml-eu.globenewswire.com/Resource/Download/95dcaf0e-7265-4818-8c58-8df1db4484d9",
+      "description": "Alibaba.com and Wix have formed a strategic partnership to help digital entrepreneurs expand global trade capabilities, enabling Wix merchants to become global suppliers and Alibaba.com sellers to create direct-to-consumer storefronts.",
+      "keywords": [
+        "B2B",
+        "e-commerce",
+        "digital entrepreneurship",
+        "global trade",
+        "partnership"
+      ],
+      "insights": [
+        {
+          "ticker": "BBAAY",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Expanding global trade opportunities, offering new tools for merchants to reach international markets"
+        },
+        {
+          "ticker": "WIX",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Providing enhanced global commerce capabilities for entrepreneurs, integrating AI and commerce tools"
+        }
+      ]
+    },
+    {
+      "id": "6b12d609c1d0f7bf5a773d67b08feaef5ed00d177e290da04acda9e41a84f2ba",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Sixth Street Completes Acquisition of Enstar",
+      "author": "Globe Newswire",
+      "published_utc": "2025-07-02T12:39:57Z",
+      "article_url": "https://www.benzinga.com/pressreleases/25/07/g46218151/sixth-street-completes-acquisition-of-enstar",
+      "tickers": [
+        "ESGR",
+        "ESGRO",
+        "ESGRP",
+        "TSLX"
+      ],
+      "image_url": "https://www.benzinga.com/next-assets/images/schema-image-default.png",
+      "description": "Sixth Street has completed its $5.1 billion acquisition of Enstar Group Limited, taking the company private at $338.00 per ordinary share. The transaction was approved by Enstar shareholders and will result in Enstar continuing operations as a privately held company.",
+      "keywords": [
+        "acquisition",
+        "private equity",
+        "insurance",
+        "merger"
+      ],
+      "insights": [
+        {
+          "ticker": "ESGR",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "The company is being acquired at a premium, but will lose its public listing status, indicating a strategic transition rather than a purely positive or negative outcome"
+        },
+        {
+          "ticker": "ESGRO",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "The company is being acquired at a premium, but will lose its public listing status, indicating a strategic transition rather than a purely positive or negative outcome"
+        },
+        {
+          "ticker": "ESGRP",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "The company is being acquired at a premium, but will lose its public listing status, indicating a strategic transition rather than a purely positive or negative outcome"
+        },
+        {
+          "ticker": "TSLX",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Successfully completed a major acquisition of a global insurance group, expanding their investment portfolio"
+        }
+      ]
+    },
+    {
+      "id": "b8852e88cddc0bc0268e08e4349043deffbc4fdb35f56b16491e8e6bde960785",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Every SoFi Investor Should Keep an Eye on This Number",
+      "author": "Matt Frankel",
+      "published_utc": "2025-07-02T12:37:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/every-sofi-investor-should-keep-an-eye-on-this-num/?source=iedfolrf0000001",
+      "tickers": [
+        "ACN"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823172/mobile-payment-2025.jpg",
+      "description": "SoFi reported record member growth of 800,000 in Q1 2024 and achieved its first full profitable year. The company has significant potential in home loans and loan origination, but needs to improve cross-selling products to its 10.92 million members.",
+      "keywords": [
+        "SoFi",
+        "fintech",
+        "banking",
+        "member growth",
+        "cross-selling"
+      ],
+      "insights": [
+        {
+          "ticker": "SOFI",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Strong member growth, first profitable year, expanding product offerings, and potential for increased cross-selling of financial products"
+        },
+        {
+          "ticker": "ACN",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in context of a banking product study, no direct commentary on company performance"
+        }
+      ]
+    },
+    {
+      "id": "fca941c9996fe930aeae5f81576bf66b00bdf89a448caf298836b3352ff0ba82",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "Centene’s $8.3B Wipeout Signals Deep Structural Risks in US Health Markets",
+      "author": "Timothy Fries",
+      "published_utc": "2025-07-02T12:36:00Z",
+      "article_url": "https://www.investing.com/analysis/centenes-83b-wipeout-signals-deep-structural-risks-in-us-health-markets-200663099",
+      "tickers": [
+        "CNC"
+      ],
+      "amp_url": "https://m.investing.com/analysis/centenes-83b-wipeout-signals-deep-structural-risks-in-us-health-markets-200663099?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "Healthcare provider Centene experienced a dramatic 28.96% stock sell-off after withdrawing 2025 financial guidance due to worse-than-expected marketplace conditions, revealing significant challenges in government-sponsored healthcare programs.",
+      "keywords": [
+        "healthcare",
+        "market risks",
+        "medical costs",
+        "insurance marketplace",
+        "Medicaid"
+      ],
+      "insights": [
+        {
+          "ticker": "CNC",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Stock plummeted 28.96%, lost $8.3B in market cap, withdrew 2025 financial guidance, experienced higher medical costs, and showed poor performance with negative returns over multiple time periods"
+        }
+      ]
+    },
+    {
+      "id": "a7cfeebdd0666ed78b963591136a0c4558a7df3ac723b9597bb303ad7ae6c113",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "EXCLUSIVE: Prairie Expands DJ Basin Footprint With $12.5 Million Edge Energy Deal",
+      "author": "Anusuya Lahiri",
+      "published_utc": "2025-07-02T12:31:56Z",
+      "article_url": "https://www.benzinga.com/m-a/25/07/46218019/exclusive-prairie-expands-dj-basin-footprint-with-12-5-million-edge-energy-deal",
+      "tickers": [
+        "PROP"
+      ],
+      "image_url": "https://cdn.benzinga.com/files/images/story/2025/07/02/Refinery-Plant-Equipment-For-Pump-Pipeli.jpeg?width=1200&height=800&fit=crop",
+      "description": "Prairie Operating acquired certain assets from Edge Energy II for $12.5 million, adding approximately 11,000 net acres to its DJ Basin footprint, expanding to around 60,000 net acres. The acquisition is non-dilutive and funded through the company's credit facility.",
+      "keywords": [
+        "acquisition",
+        "DJ Basin",
+        "oil assets",
+        "strategic expansion"
+      ],
+      "insights": [
+        {
+          "ticker": "PROP",
+          "sentiment": "positive",
+          "sentiment_reasoning": "The company is strategically expanding its asset base, enhancing production potential, and executing a non-dilutive transaction that supports future growth"
+        }
+      ]
+    },
+    {
+      "id": "81aff752b631655d10855e27e378a278199e2806814cbd1601cf195fa09af650",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "Toast Stock: A Fast-Growing Mid-Cap Eyeing Further Upside",
+      "author": "Ryan Hasson",
+      "published_utc": "2025-07-02T12:31:00Z",
+      "article_url": "https://www.investing.com/analysis/toast-stock-a-fastgrowing-midcap-eyeing-further-upside-200663098",
+      "tickers": [
+        "TOST",
+        "XLK",
+        "MDY"
+      ],
+      "amp_url": "https://m.investing.com/analysis/toast-stock-a-fastgrowing-midcap-eyeing-further-upside-200663098?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "Toast Inc., a cloud-based restaurant management platform, reported strong Q1 2025 earnings with 24.7% revenue growth and positive institutional investment, positioning itself as an attractive mid-cap technology stock with potential for further upside.",
+      "keywords": [
+        "restaurant technology",
+        "cloud software",
+        "mid-cap stocks",
+        "earnings growth",
+        "institutional investment"
+      ],
+      "insights": [
+        {
+          "ticker": "TOST",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Strong Q1 earnings with 24.7% revenue growth, 167% YoY EPS increase, 31% ARR growth, enterprise partnerships with Applebee's and Topgolf, raised full-year outlook, and significant institutional investment ($4.5B inflows)"
+        },
+        {
+          "ticker": "XLK",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Trading at all-time highs, leading market surge with software sector performance"
+        },
+        {
+          "ticker": "MDY",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Pushing toward a major breakout near $570, indicating broadening market strength for mid-cap stocks"
+        }
+      ]
+    },
+    {
+      "id": "7cf85a49f823890dbfe631697fe8ddd4980a05173c898c223493b50445f90471",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Here's Why Archer Aviation Stock Is a Buy Before Aug. 1",
+      "author": "Reuben Gregg Brewer",
+      "published_utc": "2025-07-02T12:30:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/heres-why-archer-aviation-stock-is-a-buy-before/?source=iedfolrf0000001",
+      "tickers": [
+        "ACHR",
+        "ACHR.WS"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823362/24_04_09-a-pink-rocket-ship-flying-above-a-rising-bar-graph-_gettyimages-1305098938-1201x720-06227a7.jpg",
+      "description": "Archer Aviation is developing an electric vertical takeoff and landing (eVTOL) aircraft called Midnight, aiming to break into the aerospace industry as an air taxi service. The company is progressing through FAA approval and recently completed a key piloted flight test, with strong potential for future revenue.",
+      "keywords": [
+        "eVTOL",
+        "air taxi",
+        "aerospace",
+        "FAA approval",
+        "electric aircraft"
+      ],
+      "insights": [
+        {
+          "ticker": "ACHR",
+          "sentiment": "positive",
+          "sentiment_reasoning": "The company is making steady progress in FAA approval, completed a successful test flight, raised significant capital ($2 billion liquidity), and is moving closer to generating revenue in the emerging air taxi market"
+        },
+        {
+          "ticker": "ACHR.WS",
+          "sentiment": "positive",
+          "sentiment_reasoning": "The company is making steady progress in FAA approval, completed a successful test flight, raised significant capital ($2 billion liquidity), and is moving closer to generating revenue in the emerging air taxi market"
+        }
+      ]
+    },
+    {
+      "id": "f0ca2859c989a109c23688ffc1cfe034e1c02582198ebc61f83a423017fc7fb7",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Sandvik wins major mining equipment order in Mongolia",
+      "author": "Prnewswire",
+      "published_utc": "2025-07-02T12:26:00Z",
+      "article_url": "https://www.benzinga.com/pressreleases/25/07/n46217893/sandvik-wins-major-mining-equipment-order-in-mongolia",
+      "tickers": [
+        "SDVKY",
+        "RIO"
+      ],
+      "image_url": "https://www.benzinga.com/next-assets/images/schema-image-default.png",
+      "description": "Sandvik has secured a SEK 270 million equipment order from Oyu Tolgoi LLC for underground mining equipment to be used at the Oyu Tolgoi copper-gold mine in Mongolia, with deliveries planned from October 2025 to November 2026.",
+      "keywords": [
+        "mining",
+        "equipment",
+        "Mongolia",
+        "copper",
+        "gold",
+        "underground mining"
+      ],
+      "insights": [
+        {
+          "ticker": "SDVKY",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Company won a significant equipment order worth SEK 270 million, expanding its business in Mongolia and continuing a successful relationship with a major mining client"
+        },
+        {
+          "ticker": "RIO",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a joint owner of the Oyu Tolgoi mine with no specific action or performance noted"
+        }
+      ]
+    },
+    {
+      "id": "9fcdc35028263c18761092aade877693a4424b2763176f4ba403380cafcf67d1",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Is Warren Buffett Right About the Stock Market? Here's What Investors Should Know.",
+      "author": "Jennifer Saibil",
+      "published_utc": "2025-07-02T12:15:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/is-warren-buffett-right-about-the-stock-market/?source=iedfolrf0000001",
+      "tickers": [
+        "BRK.A",
+        "BRK.B"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823308/buffett1-tmf.jpg",
+      "description": "Warren Buffett is maintaining a strategic cash position, selectively investing in businesses with strong fundamentals and global brand recognition, while advising investors to be patient and diversified.",
+      "keywords": [
+        "investing",
+        "cash reserves",
+        "stock market",
+        "long-term strategy",
+        "Warren Buffett"
+      ],
+      "insights": [
+        {
+          "ticker": "BRK.A",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Holding significant cash reserves and being cautious about investments, indicating a strategic waiting approach"
+        },
+        {
+          "ticker": "BRK.B",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Holding significant cash reserves and being cautious about investments, indicating a strategic waiting approach"
+        },
+        {
+          "ticker": "POOL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Buffett identified as a strategic purchase, recognized as a global leader in its niche"
+        },
+        {
+          "ticker": "DPZ",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Purchased by Buffett, recognized as the largest global pizza chain with strong brand recognition"
+        }
+      ]
+    },
+    {
+      "id": "953e61343591c4ff25dbc144cd9f6097a7fcdb6e3b16005e2b9e6830f09fb4e8",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Why Nvidia Stock Soared 17% in June",
+      "author": "Jennifer Saibil",
+      "published_utc": "2025-07-02T12:11:08Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/why-nvidia-stock-soared-17/?source=iedfolrf0000001",
+      "tickers": [
+        "AMZN"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823645/person-watching-money-grow.jpg",
+      "description": "Nvidia experienced a 17% stock jump in June, driven by strong earnings and its dominant position in AI semiconductor market, with significant growth in data center and other technology segments.",
+      "keywords": [
+        "Nvidia",
+        "AI",
+        "semiconductor",
+        "data centers",
+        "stock performance"
+      ],
+      "insights": [
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Strong earnings report, 95% market share in AI semiconductors, robust growth across multiple segments including data centers, gaming, and auto, with projected earnings growth of 39% annually"
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a client of Nvidia's AI technologies, no specific performance details provided"
+        },
+        {
+          "ticker": "META",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a client of Nvidia's AI technologies, no specific performance details provided"
+        }
+      ]
+    },
+    {
+      "id": "fedbe2b7cb96c4375df088fe9351afe1bc389ae4146ef4f9131458e331851306",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Freshworks to Announce Second Quarter 2025 Financial Results on July 29, 2025",
+      "author": "Freshworks Inc.",
+      "published_utc": "2025-07-02T12:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109105/0/en/Freshworks-to-Announce-Second-Quarter-2025-Financial-Results-on-July-29-2025.html",
+      "tickers": [
+        "BRDCY"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/8a3e1d43-2b7b-480b-b8ee-a4912b3fc87f",
+      "description": "Freshworks will announce its Q2 2025 financial results on July 29, 2025, hosting a live audio webcast at 2:00 p.m. Pacific Time to discuss financial performance and business highlights.",
+      "keywords": [
+        "financial results",
+        "webcast",
+        "Q2 2025",
+        "earnings call"
+      ],
+      "insights": [
+        {
+          "ticker": "FRSH",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Standard financial results announcement with no explicit positive or negative indicators about company performance"
+        },
+        {
+          "ticker": "BRDCY",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a customer reference with no specific context about performance"
+        },
+        {
+          "ticker": "NUE",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a customer reference with no specific context about performance"
+        },
+        {
+          "ticker": "SPGI",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a customer reference with no specific context about performance"
+        }
+      ]
+    },
+    {
+      "id": "c58c8a52c4378df5e39455c8e9b4e39eb1bf575d0355763c95a5948834feca1c",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Cycurion Announces a Strategic Partnership with AgileBlue to Deliver Advanced AI-Powered Cybersecurity Operations Across North America",
+      "author": "Globe Newswire",
+      "published_utc": "2025-07-02T12:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109100/0/en/Cycurion-Announces-a-Strategic-Partnership-with-AgileBlue-to-Deliver-Advanced-AI-Powered-Cybersecurity-Operations-Across-North-America.html",
+      "tickers": [
+        "CYCU",
+        "CYCUW"
+      ],
+      "image_url": "https://www.globenewswire.com/news-release/2025/07/02/3109100/0/en/Cycurion-Announces-a-Strategic-Partnership-with-AgileBlue-to-Deliver-Advanced-AI-Powered-Cybersecurity-Operations-Across-North-America.html",
+      "description": "Cycurion has partnered with AgileBlue to enhance cybersecurity services, offering AI-powered Security Operations platforms across North America with advanced threat detection and automated response capabilities.",
+      "keywords": [
+        "cybersecurity",
+        "AI",
+        "partnership",
+        "SecOps",
+        "threat monitoring"
+      ],
+      "insights": [
+        {
+          "ticker": "CYCU",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Expanding service capabilities through strategic partnership and integrating advanced AI-driven security solutions"
+        },
+        {
+          "ticker": "CYCUW",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Expanding service capabilities through strategic partnership and integrating advanced AI-driven security solutions"
+        }
+      ]
+    },
+    {
+      "id": "92f0c999f8d4be91b6c06715d544ca919710963042f93ade315db1aae61427cc",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Enphase Energy Launches Next-Generation IQ EV Charger 2 In Australia and New Zealand",
+      "author": "Enphase Energy Press Team",
+      "published_utc": "2025-07-02T12:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109101/20176/en/Enphase-Energy-Launches-Next-Generation-IQ-EV-Charger-2-In-Australia-and-New-Zealand.html",
+      "tickers": [
+        "ENPH"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/8b2a199d-ee69-4421-a9b9-ab23fddce0d4",
+      "description": "Enphase Energy announced production shipments of its IQ EV Charger 2 in Australia and New Zealand, featuring smart solar charging capabilities, intelligent energy management, and potential future bidirectional charging support.",
+      "keywords": [
+        "EV charging",
+        "solar energy",
+        "microinverters",
+        "smart charging",
+        "renewable energy"
+      ],
+      "insights": [
+        {
+          "ticker": "ENPH",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Company is expanding product line with innovative EV charger, demonstrating technological advancement and market growth in renewable energy solutions"
+        }
+      ]
+    },
+    {
+      "id": "429b1273032ec87f07ad283b6bff10b2eab2df70b1586b17f8da22858d9e370c",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "DeFi Development Corp. Announces Upsized $112.5 Million of Convertible Notes",
+      "author": "Defi Development Corp.",
+      "published_utc": "2025-07-02T12:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109099/0/en/DeFi-Development-Corp-Announces-Upsized-112-5-Million-of-Convertible-Notes.html",
+      "tickers": [
+        "DFDV"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/966832fd-a2a8-4663-82a6-11708b322b1c",
+      "description": "DeFi Development Corp. announced a $112.5 million private offering of 5.5% convertible senior notes due in 2030, with plans to use proceeds for a prepaid forward stock purchase transaction and acquiring Solana (SOL).",
+      "keywords": [
+        "convertible notes",
+        "Solana",
+        "private offering",
+        "treasury strategy",
+        "cryptocurrency"
+      ],
+      "insights": [
+        {
+          "ticker": "DFDV",
+          "sentiment": "positive",
+          "sentiment_reasoning": "The company is expanding its financial strategy by raising significant capital through convertible notes, demonstrating growth and strategic investment in cryptocurrency infrastructure"
+        }
+      ]
+    },
+    {
+      "id": "ea8ec2960700fe9f05d5ff3b2ef4ad947887729fc09222d167d7d9a318192100",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Autonomous Vehicles Hit Their 'ChatGPT Moment' — Best Stocks To Watch Now",
+      "author": "Piero Cingari",
+      "published_utc": "2025-07-02T11:48:53Z",
+      "article_url": "https://www.benzinga.com/markets/tech/25/07/46217099/autonomous-vehicles-best-stocks",
+      "tickers": [
+        "APTV"
+      ],
+      "image_url": "https://cdn.benzinga.com/files/images/story/2025/07/02/self-driving-cars-future-ai.png?width=1200&height=800&fit=crop",
+      "description": "Autonomous vehicles are experiencing a breakthrough driven by AI advancements, with commercial potential reaching $1.2 trillion by 2040. The technology is expanding beyond robotaxis into trucks, agriculture, and industrial applications, with significant improvements in learning capabilities and cost reduction.",
+      "keywords": [
+        "autonomous vehicles",
+        "AI",
+        "robotaxis",
+        "self-driving",
+        "transportation technology"
+      ],
+      "insights": [
+        {
+          "ticker": "APTV",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Identified as a key OEM supplier for ADAS sensors and systems"
+        },
+        {
+          "ticker": "QCOM",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Enabling computer vision and ADAS systems in autonomous vehicles"
+        },
+        {
+          "ticker": "MBLY",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Providing critical computer vision technologies for autonomous vehicles"
+        },
+        {
+          "ticker": "TSLA",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Surprisingly absent from Bank of America's recommended autonomous vehicle investment list"
+        }
+      ]
+    },
+    {
+      "id": "ebfa7d0822c0300e872796dcb81313b94341875ab0ea4b55b1fcd9983c25f4a1",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Up More Than 100% in 3 Weeks, Is Hot IPO Stock Circle a Buy Today?",
+      "author": "Jennifer Saibil",
+      "published_utc": "2025-07-02T11:37:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/up-more-than-200-in-2-weeks-is-hot-ipo-stock-circl/?source=iedfolrf0000001",
+      "tickers": [
+        "CRCL"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/822837/2-people-shaking-hands.jpg",
+      "description": "Circle Internet Group recently went public with a stablecoin platform, showing significant growth in USDC circulation and promising partnerships, but facing potential risks from interest rate fluctuations and high valuation.",
+      "keywords": [
+        "stablecoin",
+        "cryptocurrency",
+        "IPO",
+        "fintech",
+        "digital currency"
+      ],
+      "insights": [
+        {
+          "ticker": "CRCL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "While the company shows promising growth and innovative digital currency solutions, high valuation, potential interest rate risks, and uncertain market adoption suggest caution"
+        },
+        {
+          "ticker": "FI",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Mentioned as a payments giant partnering with Circle to develop stablecoin solutions, indicating potential strategic collaboration"
+        }
+      ]
+    },
+    {
+      "id": "510c0702a35ae409a9647eafa283ecffc6d1db069fbb38f0b39ba8b2cec3226a",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "2 Gold Stocks That Are Worth Buying in 2025",
+      "author": "Timothy Fries",
+      "published_utc": "2025-07-02T11:34:00Z",
+      "article_url": "https://www.investing.com/analysis/2-gold-stocks-that-are-worth-buying-in-2025-200663067",
+      "tickers": [
+        "AEM"
+      ],
+      "amp_url": "https://m.investing.com/analysis/2-gold-stocks-that-are-worth-buying-in-2025-200663067?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "Gold prices reached an all-time high of $3,500/oz in April, driven by inflation and geopolitical instability. Two gold mining stocks, Newmont and Agnico Eagle Mines, show strong financial performance and potential for growth in 2025.",
+      "keywords": [
+        "gold",
+        "mining stocks",
+        "inflation",
+        "free cash flow",
+        "stock buybacks"
+      ],
+      "insights": [
+        {
+          "ticker": "NEM",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Record high free cash flow of $1.2 billion, $4.7 billion cash balance, completed $3.8 billion in divestitures, 57% year-to-date stock price increase, and unanimous analyst recommendation to buy"
+        },
+        {
+          "ticker": "AEM",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Low debt of $90 million, $2 billion in undrawn credit, $1.1 billion cash reserves, increased free cash flow to $594 million, 50% year-to-date stock price increase, and strong analyst buy recommendations"
+        }
+      ]
+    },
+    {
+      "id": "5589e82fc2cea27d0421f92650925d09c1991cf907be06f9f028b5ac61f3b4cd",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Valour Launches Eight New ETPs on Spotlight Stock Market, Including Bitcoin Cash (BCH), Unus Sed Leo (LEO), OKB (OKB), Polygon (POL), Algorand (ALGO), Filecoin (FIL), Arbitrum (ARB), and Stacks (STX)",
+      "author": "Prnewswire",
+      "published_utc": "2025-07-02T11:30:00Z",
+      "article_url": "https://www.benzinga.com/pressreleases/25/07/n46216713/valour-launches-eight-new-etps-on-spotlight-stock-market-including-bitcoin-cash-bch-unus-sed-leo-l",
+      "tickers": [
+        "DEFT"
+      ],
+      "image_url": "https://www.benzinga.com/next-assets/images/schema-image-default.png",
+      "description": "Valour Inc., a subsidiary of DeFi Technologies, launched eight new SEK-denominated Exchange Traded Products (ETPs) on Sweden's Spotlight Stock Market, covering cryptocurrencies and blockchain tokens like Bitcoin Cash, Polygon, and Algorand, expanding their digital asset investment offerings.",
+      "keywords": [
+        "ETPs",
+        "cryptocurrency",
+        "blockchain",
+        "digital assets",
+        "Nordic market"
+      ],
+      "insights": [
+        {
+          "ticker": "DEFT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Continuing to bridge traditional capital markets with decentralized finance, demonstrating growth and innovation in digital asset investment"
+        }
+      ]
+    },
+    {
+      "id": "1930b5eef39a0ce297c316f68b231f6b5ee2806c2c98bcd40e8a75f5a9cf691c",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "2 No-Brainer Warren Buffett Stocks to Buy Right Now",
+      "author": "Chris Neiger",
+      "published_utc": "2025-07-02T11:30:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/no-brainer-warren-buffett-stocks-to-buy-now/?source=iedfolrf0000001",
+      "tickers": [
+        "AMZN",
+        "AXP"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823183/gettyimages-1390901685-1200x800-5b2df79.jpg",
+      "description": "The article discusses two standout stocks in Berkshire Hathaway's portfolio: Amazon and American Express, highlighting their strong market positions, growth potential, and resilience in a potentially challenging economic environment.",
+      "keywords": [
+        "Warren Buffett",
+        "investing",
+        "long-term stocks",
+        "e-commerce",
+        "cloud computing",
+        "financial services"
+      ],
+      "insights": [
+        {
+          "ticker": "AMZN",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Dominates e-commerce with 38% market share, strong cloud computing (AWS) with 30% market share, growing advertising segment, and continued revenue growth across multiple business lines"
+        },
+        {
+          "ticker": "AXP",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Strong financial performance with 7% sales growth, profitable earnings, premium customer base with high income and excellent credit profiles, and positive revenue guidance"
+        }
+      ]
+    },
+    {
+      "id": "51f25630ba75381946b7f6000a4b97db9d0a3165ffa626b1bf5e0a0959290076",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Form 8.5 (EPT/RI) - Greencore Group Plc",
+      "author": "Globe Newswire",
+      "published_utc": "2025-07-02T11:22:58Z",
+      "article_url": "https://www.benzinga.com/pressreleases/25/07/g46216644/form-8-5-eptri-greencore-group-plc",
+      "tickers": [
+        "GNCGY"
+      ],
+      "image_url": "https://www.benzinga.com/next-assets/images/schema-image-default.png",
+      "description": "Shore Capital Stockbrokers Ltd disclosed trading activities involving Greencore Group Plc securities on July 1, 2025, reporting purchases and sales of ordinary shares.",
+      "keywords": [
+        "trading disclosure",
+        "stock transaction",
+        "exempt principal trader"
+      ],
+      "insights": [
+        {
+          "ticker": "GNCGY",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "The document is a routine trading disclosure form with no explicit positive or negative commentary about the company's performance or prospects"
+        }
+      ]
+    },
+    {
+      "id": "aa2320ca545abda86ba7b5c4fd7a799b24ae3fd121f2b1375b2f551f9eac29b0",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "These Real Estate Dividend Stocks Are Money-Printing Machines",
+      "author": "Matt Dilallo",
+      "published_utc": "2025-07-02T11:17:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/these-real-estate-dividend-stocks-are-money-printi/?source=iedfolrf0000001",
+      "tickers": [
+        "AMT"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/822920/cash-money-hundred-dollar-bills.jpg",
+      "description": "Four Real Estate Investment Trusts (REITs) are highlighted for their ability to generate substantial cash flow and consistent dividend payments, demonstrating strong potential for passive income investors.",
+      "keywords": [
+        "REITs",
+        "real estate",
+        "dividends",
+        "passive income",
+        "investment"
+      ],
+      "insights": [
+        {
+          "ticker": "AMT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Generated $10.1B in revenue, $4.7B in adjusted FFO, 3% dividend yield, and continues to invest in growth through infrastructure expansion"
+        },
+        {
+          "ticker": "PLD",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Earned $8.2B in revenue, $4.4B in adjusted FFO, nearly 4% dividend yield, and consistently increased dividends at 13% annual rate"
+        },
+        {
+          "ticker": "O",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Generated $5.3B in revenue, 5.5% dividend yield, and has raised dividends 131 times since 1994"
+        },
+        {
+          "ticker": "SPG",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Generated $6B in revenue, over 5% dividend yield, and recently increased dividend payout by 5%"
+        },
+        {
+          "ticker": "SPGpJ",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Generated $6B in revenue, over 5% dividend yield, and recently increased dividend payout by 5%"
+        }
+      ]
+    },
+    {
+      "id": "99709cebbecd5993fd96c096ffb36aceb8785e45e6d80f4a9823e86ebe104b59",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Restaurant, Hotel & Hospitality Industry Almanac 2025: Market Research, Statistics, Trends and Leading Companies",
+      "author": "Plunkett Research Ltd",
+      "published_utc": "2025-07-02T11:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109062/28124/en/Restaurant-Hotel-Hospitality-Industry-Almanac-2025-Market-Research-Statistics-Trends-and-Leading-Companies.html",
+      "tickers": [
+        "MCD",
+        "CCL",
+        "ABNB",
+        "HLT"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/908fb457-7f8e-4a08-9081-5565e3dfb3d7",
+      "description": "A comprehensive market research report analyzing trends in the restaurant, hotel, and hospitality industry, highlighting technological advancements, consumer shifts, and market opportunities for 2025.",
+      "keywords": [
+        "hospitality industry",
+        "market research",
+        "food service",
+        "technology trends",
+        "tourism"
+      ],
+      "insights": [
+        {
+          "ticker": "MCD",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Repositioning to adapt to new consumer tastes and technological trends like robotics and AI"
+        },
+        {
+          "ticker": "CCL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Cruise industry enjoying high occupancy and launching new ships"
+        },
+        {
+          "ticker": "ABNB",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Gaining market share through sharing economy and online platforms"
+        },
+        {
+          "ticker": "HLT",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Expanding globally and adapting to new consumer preferences like localization and targeting younger customers"
+        }
+      ]
+    },
+    {
+      "id": "81022070afe193b173aff3d8ed8d6f4962703b1086cbe8979c957ad9144fc621",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Verkkokauppa.com to publish January-June 2025 Half-year Report on 17 July 2025",
+      "author": "Lauri Kutila",
+      "published_utc": "2025-07-02T11:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109032/0/en/Verkkokauppa-com-to-publish-January-June-2025-Half-year-Report-on-17-July-2025.html",
+      "tickers": [
+        "VERKF"
+      ],
+      "image_url": "https://ml-eu.globenewswire.com/Resource/Download/1add0bfe-8c33-4f5b-9225-66e63b2643af",
+      "description": "Verkkokauppa.com will publish its January-June 2025 Half-year Report on 17 July 2025, with CEO Panu Porkka presenting results in Finnish and English webcasts for analysts, investors, and media.",
+      "keywords": [
+        "half-year report",
+        "webcast",
+        "financial results",
+        "investor relations"
+      ],
+      "insights": [
+        {
+          "ticker": "VERKF",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "The article is a standard financial reporting announcement with no explicit positive or negative indicators, presenting routine information about an upcoming financial report presentation"
+        }
+      ]
+    },
+    {
+      "id": "6e0742bffbfba0fa63cd908ee8f83511cea823e993c9c551a2655a57de1135ea",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Dayforce Empowers Canadian Small and Mid-Sized Businesses with Powerpay by Dayforce",
+      "author": "David Ossip",
+      "published_utc": "2025-07-02T11:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109038/0/en/Dayforce-Empowers-Canadian-Small-and-Mid-Sized-Businesses-with-Powerpay-by-Dayforce.html",
+      "tickers": [
+        "DAY"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/4f431793-10ad-4514-b175-71f1bca24c47",
+      "description": "Dayforce has rebranded its payroll and HR solution for Canadian small and mid-sized businesses as Powerpay, introducing enhanced features to simplify compliance and support business growth.",
+      "keywords": [
+        "payroll",
+        "HR",
+        "SMBs",
+        "compliance",
+        "rebranding"
+      ],
+      "insights": [
+        {
+          "ticker": "DAY",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Company is expanding and improving its product offering, demonstrating strategic growth and commitment to customer needs"
+        }
+      ]
+    },
+    {
+      "id": "c0075e1ec3517ba2b86e3a1419925a3fc77588f76ff5f92f4bdcfeead753f72d",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Dimensional Fund Advisors Ltd. : Form 8.3 - WAREHOUSE REIT PLC - Ordinary Shares",
+      "author": "Globe Newswire",
+      "published_utc": "2025-07-02T10:14:27Z",
+      "article_url": "https://www.benzinga.com/pressreleases/25/07/g46215378/dimensional-fund-advisors-ltd-form-8-3-warehouse-reit-plc-ordinary-shares",
+      "tickers": [
+        "DFIV"
+      ],
+      "image_url": "https://www.benzinga.com/next-assets/images/schema-image-default.png",
+      "description": "Dimensional Fund Advisors Ltd. filed a Form 8.3 disclosure revealing a 0.51% ownership stake in Warehouse REIT PLC, with a purchase of 751 shares at 1.1520 GBP per share.",
+      "keywords": [
+        "Form 8.3",
+        "ownership disclosure",
+        "investment",
+        "REIT"
+      ],
+      "insights": [
+        {
+          "ticker": "DFIV",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Routine investment activity with a small ownership stake, indicating standard investment behavior"
+        }
+      ]
+    },
+    {
+      "id": "70ea6f186d3a58ae0ce11f576f47648e508ee737ada3470315717ea9138f1e0d",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Dimensional Fund Advisors Ltd. : Form 8.3 - UNITE GROUP PLC/THE - Ordinary Shares",
+      "author": "Globe Newswire",
+      "published_utc": "2025-07-02T10:09:12Z",
+      "article_url": "https://www.benzinga.com/pressreleases/25/07/g46215248/dimensional-fund-advisors-ltd-form-8-3-unite-group-plcthe-ordinary-shares",
+      "tickers": [
+        "EPRCY"
+      ],
+      "image_url": "https://www.benzinga.com/next-assets/images/schema-image-default.png",
+      "description": "Dimensional Fund Advisors Ltd. filed a Form 8.3 disclosure regarding its holdings in UNITE Group PLC, reporting ownership of 4,740,907 ordinary shares representing 0.97% of the company's stock.",
+      "keywords": [
+        "Form 8.3",
+        "Disclosure",
+        "Stock Holdings",
+        "Investment"
+      ],
+      "insights": [
+        {
+          "ticker": "EPRCY",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned briefly in the disclosure without additional context"
+        }
+      ]
+    },
+    {
+      "id": "5465e8ff68db32c4cc0951915fbd87f6cbb3f2718411a7d7fe0b7ff02ce75383",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Dimensional Fund Advisors Ltd. : Form 8.3 - TRITAX BIG BOX REIT PLC - Ordinary Shares",
+      "author": "Globe Newswire",
+      "published_utc": "2025-07-02T10:07:47Z",
+      "article_url": "https://www.benzinga.com/pressreleases/25/07/g46215246/dimensional-fund-advisors-ltd-form-8-3-tritax-big-box-reit-plc-ordinary-shares",
+      "tickers": [
+        "DFIV"
+      ],
+      "image_url": "https://www.benzinga.com/next-assets/images/schema-image-default.png",
+      "description": "Dimensional Fund Advisors Ltd. disclosed a 1.15% ownership stake in Tritax Big Box REIT PLC, reporting 28,608,551 ordinary shares as of July 1, 2025, with recent purchase and sale transactions.",
+      "keywords": [
+        "Form 8.3",
+        "ownership disclosure",
+        "investment",
+        "REIT"
+      ],
+      "insights": [
+        {
+          "ticker": "DFIV",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Routine disclosure of investment position without indicating strong positive or negative market sentiment"
+        }
+      ]
+    },
+    {
+      "id": "c5cbe9a3da80ef24aeb55b92710bfd6cd45c061f69d3745faeee541d3ec2bc9e",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Dimensional Fund Advisors Ltd. : Form 8.3 - AMERICAN AXLE & MFG HOLDINGS - Ordinary Shares",
+      "author": "Globe Newswire",
+      "published_utc": "2025-07-02T10:06:35Z",
+      "article_url": "https://www.benzinga.com/pressreleases/25/07/g46215243/dimensional-fund-advisors-ltd-form-8-3-american-axle-mfg-holdings-ordinary-shares",
+      "tickers": [
+        "AXL"
+      ],
+      "image_url": "https://www.benzinga.com/next-assets/images/schema-image-default.png",
+      "description": "Dimensional Fund Advisors Ltd. filed a Form 8.3 disclosure revealing a 5.66% ownership stake in American Axle & Manufacturing Holdings, involving a sale of 45,726 shares at $4.0182 per share.",
+      "keywords": [
+        "Form 8.3",
+        "ownership disclosure",
+        "stock sale",
+        "investment advisor"
+      ],
+      "insights": [
+        {
+          "ticker": "AXL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "The disclosure indicates a routine ownership adjustment without suggesting significant positive or negative implications for the company's performance"
+        }
+      ]
+    },
+    {
+      "id": "7aad677379a7fd7e09c0eae187db485db0f2b433fb5b19fba92373bad6f346a9",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "5 Undervalued Tech Gems to Buy and Hold for H2 2025",
+      "author": "Jesse Cohen",
+      "published_utc": "2025-07-02T10:02:00Z",
+      "article_url": "https://www.investing.com/analysis/5-undervalued-tech-gems-to-buy-and-hold-for-h2-2025-200663088",
+      "tickers": [
+        "CSCO"
+      ],
+      "amp_url": "https://m.investing.com/analysis/5-undervalued-tech-gems-to-buy-and-hold-for-h2-2025-200663088?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "As the Nasdaq enters the second half of 2025 near record highs, five tech stocks emerge as compelling investment opportunities: Cisco, Fortinet, Shopify, Monolithic Power Systems, and Jabil Circuit. These companies offer strong fundamentals, growth potential, and exposure to high-growth sectors like cybersecurity, e-commerce, AI, and networking.",
+      "keywords": [
+        "tech stocks",
+        "Nasdaq",
+        "undervalued",
+        "AI",
+        "cybersecurity",
+        "e-commerce"
+      ],
+      "insights": [
+        {
+          "ticker": "CSCO",
+          "sentiment": "positive",
+          "sentiment_reasoning": "50% year-on-year gain, pivoting towards software and AI-driven networking, undervalued with stable dividend, consistent growth"
+        },
+        {
+          "ticker": "FTNT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "67.9% gain in past year, strong cybersecurity solutions, robust growth prospects, expanding service margins"
+        },
+        {
+          "ticker": "SHOP",
+          "sentiment": "positive",
+          "sentiment_reasoning": "70.5% growth, strong e-commerce platform, robust financial health, AI-powered merchant tools"
+        },
+        {
+          "ticker": "MPWR",
+          "sentiment": "positive",
+          "sentiment_reasoning": "26.7% Q2 return, high-efficiency power solutions, strong AI and automotive sector exposure"
+        },
+        {
+          "ticker": "JBL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "99.6% past year growth, diversified manufacturing expertise, strong demand in AI and electric vehicle sectors"
+        }
+      ]
+    },
+    {
+      "id": "b20a6698f8a5d871ebd9f771a8b33daf092af3c12ad39b9f0a11b6dadb77b341",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Everything Blockchain Inc. Eyes Historic First: Tokenizing OTC Stock After Robinhood’s Market-Defining Shift",
+      "author": "Arthur Rozenberg",
+      "published_utc": "2025-07-02T10:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3108995/0/en/Everything-Blockchain-Inc-Eyes-Historic-First-Tokenizing-OTC-Stock-After-Robinhood-s-Market-Defining-Shift.html",
+      "tickers": [
+        "EBZT",
+        "HOOD"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/d33b4254-f19e-43f3-9de1-d6c6fb6a207a",
+      "description": "Everything Blockchain Inc. plans to become the first U.S. OTC-listed company to tokenize its equity, following Robinhood's market shift, while building a diversified crypto treasury focused on networks like Solana and XRP.",
+      "keywords": [
+        "tokenization",
+        "blockchain",
+        "cryptocurrency",
+        "OTC markets",
+        "stock innovation"
+      ],
+      "insights": [
+        {
+          "ticker": "EBZT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Company is positioning itself as an innovative first-mover in blockchain equity tokenization with strategic plans to diversify crypto holdings"
+        },
+        {
+          "ticker": "HOOD",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Demonstrated market leadership by launching stock tokenization for European investors, validating blockchain equity trends"
+        }
+      ]
+    },
+    {
+      "id": "a4a3cf849323e9b6d88b13d6057959384450fd93eaf407d9c1801122cda8a97c",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Mike Lindell Media Corporation (OTC: MLMC) VOCL Launches Game-Changing Creator Features: Streaming, Go Live, Live Chat, Premieres, Dedicated Shows Feed & Monetization",
+      "author": "Mike Lindell Media Corporation",
+      "published_utc": "2025-07-02T10:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109002/0/en/Mike-Lindell-Media-Corporation-OTC-MLMC-VOCL-Launches-Game-Changing-Creator-Features-Streaming-Go-Live-Live-Chat-Premieres-Dedicated-Shows-Feed-Monetization.html",
+      "tickers": [
+        "MLMC"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/c366448a-0352-46f3-8ebd-e16e59bed87b",
+      "description": "Mike Lindell Media Corporation launched VOCL, a new social media platform designed for creators focused on free speech, offering streaming, live chat, premieres, and monetization tools.",
+      "keywords": [
+        "social media",
+        "creator platform",
+        "free speech",
+        "streaming",
+        "monetization"
+      ],
+      "insights": [
+        {
+          "ticker": "MLMC",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Company is expanding its media platform with new features, targeting creators and emphasizing free speech, indicating growth and strategic development"
+        }
+      ]
+    },
+    {
+      "id": "4f5ee815af15454443d09127524d490d293214991a7a9e74e9d8f0dbdc310892",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Radware Schedules Conference Call for Its Second Quarter 2025 Earnings",
+      "author": "Radware",
+      "published_utc": "2025-07-02T10:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3108996/8980/en/Radware-Schedules-Conference-Call-for-Its-Second-Quarter-2025-Earnings.html",
+      "tickers": [
+        "RDWR"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/651773cc-1089-4fbc-a964-892c3bc5a551",
+      "description": "Radware will announce its second quarter financial results on July 30, 2025, hosting a conference call to discuss performance and outlook for Q3 2025.",
+      "keywords": [
+        "financial results",
+        "conference call",
+        "Q2 2025",
+        "earnings",
+        "investor relations"
+      ],
+      "insights": [
+        {
+          "ticker": "RDWR",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Standard financial reporting announcement with no explicit positive or negative indicators about company performance"
+        }
+      ]
+    },
+    {
+      "id": "fb0f1a68fe4cc48fd9fe85a1e184c4c858a811f1ef7f210e00ddcc5ae82f2469",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "North America Plywood Market Forecast and Company Analysis Report 2025-2033 Featuring Boise Cascade, Weyerhaeuser, West Fraser Timber, BlueLinx, PotlatchDeltic, South Coast Lumber, Hood Industry, and RoyOMartin",
+      "author": "Researchandmarkets.Com",
+      "published_utc": "2025-07-02T09:53:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3108994/28124/en/North-America-Plywood-Market-Forecast-and-Company-Analysis-Report-2025-2033-Featuring-Boise-Cascade-Weyerhaeuser-West-Fraser-Timber-BlueLinx-PotlatchDeltic-South-Coast-Lumber-Hood-.html",
+      "tickers": [
+        "BCC",
+        "WY",
+        "WFG",
+        "BXC",
+        "PCH"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/908fb457-7f8e-4a08-9081-5565e3dfb3d7",
+      "description": "The North American plywood market is projected to grow from $16.82 billion in 2024 to $23.37 billion by 2033, driven by government spending, technological advancements, and eco-friendly building material demand, with a 3.72% CAGR.",
+      "keywords": [
+        "plywood",
+        "construction",
+        "market forecast",
+        "sustainability",
+        "infrastructure"
+      ],
+      "insights": [
+        {
+          "ticker": "BCC",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Identified as a key market leader in the plywood industry with strong growth potential"
+        },
+        {
+          "ticker": "WY",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Recognized as a prominent player in the North American plywood market with continued market leadership"
+        },
+        {
+          "ticker": "WFG",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a key player without specific performance details"
+        },
+        {
+          "ticker": "BXC",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Listed among key market players with no specific performance indicators"
+        },
+        {
+          "ticker": "PCH",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Included in market analysis without distinct positive or negative signals"
+        }
+      ]
+    },
+    {
+      "id": "d021c585765dd90d792c0d4031900dd2b43325d939d7f936c9d9fe5592b9146e",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "A 401(k) Is a Great Retirement Tool, but Is Maxing It Out Overrated?",
+      "author": "Stefon Walters",
+      "published_utc": "2025-07-02T09:37:00Z",
+      "article_url": "https://www.fool.com/retirement/2025/07/02/a-401k-is-a-great-retirement-tool-but-is-maxing-it/?source=iedfolrf0000001",
+      "tickers": [
+        "TSM",
+        "CLOU"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823268/senior-couple-retire-outside-active-retirement-happy-hug.jpg",
+      "description": "The article discusses why maxing out a 401(k) might not be the best retirement strategy, recommending a balanced approach that includes Individual Retirement Accounts (IRAs) for greater investment flexibility and potential benefits.",
+      "keywords": [
+        "retirement",
+        "investing",
+        "401(k)",
+        "IRA",
+        "financial planning"
+      ],
+      "insights": [
+        {
+          "ticker": "TSM",
+          "sentiment": "positive",
+          "sentiment_reasoning": "The author mentions the company as a specific investment example and personally holds a position in the stock, indicating a favorable view"
+        },
+        {
+          "ticker": "CLOU",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as an example of investment flexibility not typically available in 401(k) plans"
+        }
+      ]
+    },
+    {
+      "id": "436b213a9481289bb4aa7c33e570074571cccd72586a3d9a9b542d2afdd7ba2d",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "President Trump's \"Big, Beautiful Bill\" Advances in Senate: 3 Stocks I'm Buying Right Now",
+      "author": "George Budwell",
+      "published_utc": "2025-07-02T09:30:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/president-trumps-big-beautiful-bill-advances-in-se/?source=iedfolrf0000001",
+      "tickers": [
+        "LMT",
+        "AMZN",
+        "CAT"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823556/gettyimages-1714982016.jpg",
+      "description": "The Senate passed an amended version of a bill with significant military spending, border infrastructure funding, and tax cuts, creating potential investment opportunities in defense, e-commerce, and construction sectors.",
+      "keywords": [
+        "military spending",
+        "border infrastructure",
+        "tax cuts",
+        "defense contractors",
+        "infrastructure"
+      ],
+      "insights": [
+        {
+          "ticker": "LMT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Benefits from $150 billion military spending boost, strong global demand for advanced systems, trading at attractive valuation, and demonstrating resilience despite program losses"
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Tax breaks boost consumer discretionary spending, strong advertising and AWS revenue, competitive advantages in e-commerce and cloud infrastructure"
+        },
+        {
+          "ticker": "CAT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Direct beneficiary of $46.5 billion border wall funding, global dealer network, strong operating margins, and positioned for infrastructure demand"
+        }
+      ]
+    },
+    {
+      "id": "13ecb700b170418fa3ce92a359c050922f960ca910df5f8a1b49aa3e9731cddd",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Can Buying the Vanguard S&P 500 ETF Make You a Millionaire?",
+      "author": "Anthony Di Pizio",
+      "published_utc": "2025-07-02T09:25:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/can-buying-vanguard-sp-500-etf-make-millionaire/?source=iedfolrf0000001",
+      "tickers": [
+        "AAPL"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823310/a-gold-bull-and-bear-facing-off-in-front-of-a-large-stock-market-chart.jpg",
+      "description": "The Vanguard S&P 500 ETF offers investors a diversified investment strategy tracking the S&P 500 index, with a historically strong 10.4% annual return and potential to help investors become millionaires through consistent, long-term investing.",
+      "keywords": [
+        "ETF",
+        "investing",
+        "S&P 500",
+        "wealth building",
+        "index fund",
+        "AI"
+      ],
+      "insights": [
+        {
+          "ticker": "VOO",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Low expense ratio of 0.03%, broad market diversification, strong historical performance, and potential for long-term wealth generation"
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "sentiment_reasoning": "One of the largest companies driving AI innovation and market value in the technology sector"
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Top global company with significant market capitalization and AI technology integration"
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "One of the largest companies in the world with substantial market capitalization"
+        }
+      ]
+    },
+    {
+      "id": "b3efff5d02037e8f681c68f0d7330395d38497e11a1ac222208e420c86ddce40",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Will SoundHound AI Be a $100 Stock 10 Years From Now?",
+      "author": "Keithen Drury",
+      "published_utc": "2025-07-02T09:15:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/will-soundhound-ai-be-a-100-stock-10-years-from-no/?source=iedfolrf0000001",
+      "tickers": [
+        "SOUN",
+        "SOUNW"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/822976/team-of-software-engineers-looking-at-a-computer.jpg",
+      "description": "SoundHound AI, a pure-play AI audio recognition technology company, shows potential for significant growth with 151% revenue growth in Q1 and expectations of continued expansion. The stock could potentially reach $100 if it maintains a 26% annual revenue growth rate over the next decade.",
+      "keywords": [
+        "AI",
+        "audio recognition",
+        "technology",
+        "stock analysis",
+        "revenue growth"
+      ],
+      "insights": [
+        {
+          "ticker": "SOUN",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Strong revenue growth (151% in Q1), promising technology in AI audio recognition, potential to reach $1 billion in revenue, and applications across multiple industries like automotive, healthcare, and restaurants"
+        },
+        {
+          "ticker": "SOUNW",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Strong revenue growth (151% in Q1), promising technology in AI audio recognition, potential to reach $1 billion in revenue, and applications across multiple industries like automotive, healthcare, and restaurants"
+        }
+      ]
+    },
+    {
+      "id": "9ee3d57ab0093c4697f013e1381e27a83492358d0fc13aa9282821a0920c6848",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "History Says Now Is the Time to Sell Palantir Stock",
+      "author": "Keithen Drury",
+      "published_utc": "2025-07-02T09:15:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/history-says-now-is-the-time-to-sell-palantir-stoc/?source=iedfolrf0000001",
+      "tickers": [
+        "PLTR",
+        "SNOW"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/822971/shocked-person-looking-at-laptop.jpg",
+      "description": "Palantir's stock has risen 90% in six months, but its revenue growth doesn't justify the current valuation. Historical examples like Zoom and Snowflake suggest the stock is overvalued and likely to correct.",
+      "keywords": [
+        "Palantir",
+        "AI",
+        "stock valuation",
+        "revenue growth",
+        "technology stocks"
+      ],
+      "insights": [
+        {
+          "ticker": "PLTR",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Trading at over 100 times sales with only 39% year-over-year revenue growth, which is unsustainable and historically indicates a potential stock price correction"
+        },
+        {
+          "ticker": "SNOW",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Despite strong historical growth, investors who bought at IPO or during high valuation periods are down approximately 45%"
+        }
+      ]
+    },
+    {
+      "id": "f3b87b0496669e53dd27dbca9e4208a37e93e9fdb433f7e424c3873cdd04f0cd",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Want to Invest in Quantum Computing? 2 Stocks That Are Great Buys Right Now.",
+      "author": "Adria Cimino",
+      "published_utc": "2025-07-02T09:10:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/want-to-invest-in-quantum-computing-2-stocks-that/?source=iedfolrf0000001",
+      "tickers": [
+        "GOOG",
+        "GOOGL",
+        "MSFT"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823492/gettyimages-2179167623-1200x800-5b2df79.jpg",
+      "description": "The article explores quantum computing as a potential transformative technology, highlighting Alphabet and Microsoft as strategic investment options that offer both established tech revenue and emerging quantum computing potential.",
+      "keywords": [
+        "quantum computing",
+        "technology investment",
+        "innovation",
+        "tech stocks"
+      ],
+      "insights": [
+        {
+          "ticker": "GOOG",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Demonstrated quantum computing progress with Willow quantum chip, significant cash reserves ($23B), strong existing business model, and trading at attractive earnings multiple"
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Demonstrated quantum computing progress with Willow quantum chip, significant cash reserves ($23B), strong existing business model, and trading at attractive earnings multiple"
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Developed Majorana 1 quantum chip, launched quantum-ready program, established tech business with innovation potential, and trading at reasonable earnings multiple"
+        }
+      ]
+    },
+    {
+      "id": "6fedf9b7cb750ee070b83481eb56f21c7ac4f73ad56120ecd6685fefd9383cda",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Sampo on jättänyt hakemuksen osittaisen ryhmän sisäisen mallin laajentamisesta",
+      "author": "Sami Taipalus",
+      "published_utc": "2025-07-02T09:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3108979/0/fi/Sampo-on-j%C3%A4tt%C3%A4nyt-hakemuksen-osittaisen-ryhm%C3%A4n-sis%C3%A4isen-mallin-laajentamisesta.html",
+      "tickers": [
+        "IROQ",
+        "SAXPY"
+      ],
+      "image_url": "https://ml-eu.globenewswire.com/Resource/Download/00ed41d0-b0a6-4a8c-b85b-b41e6b5c237f",
+      "description": "Sampo has submitted an application to expand its partial group internal model following the legal merger of If and Topdanmark, expecting potential capital requirement reduction of 60-90 million euros.",
+      "keywords": [
+        "group internal model",
+        "merger",
+        "capital requirement",
+        "financial regulation"
+      ],
+      "insights": [
+        {
+          "ticker": "IROQ",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Part of merger process with no specific negative or positive indicators"
+        },
+        {
+          "ticker": "SAXPY",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Proactively seeking regulatory approval for model expansion with potential financial benefits through capital requirement reduction"
+        }
+      ]
+    },
+    {
+      "id": "2029503c39df2aa765c98863611015fae2611aa7e5e38e4d391e49e5e695b6e8",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Sampo has filed an application to extend the Group’s Partial Internal Model",
+      "author": "Sampo Plc",
+      "published_utc": "2025-07-02T09:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3108979/0/en/Sampo-has-filed-an-application-to-extend-the-Group-s-Partial-Internal-Model.html",
+      "tickers": [
+        "SAXPY"
+      ],
+      "image_url": "https://ml-eu.globenewswire.com/Resource/Download/00ed41d0-b0a6-4a8c-b85b-b41e6b5c237f",
+      "description": "Following the merger of If and Topdanmark, Sampo has filed an application with the Swedish FSA to extend its Partial Internal Model, expecting completion by early 2026 and potential solvency capital requirement reduction of €60-90 million.",
+      "keywords": [
+        "merger",
+        "internal model",
+        "solvency",
+        "regulatory application"
+      ],
+      "insights": [
+        {
+          "ticker": "SAXPY",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Company is proactively seeking regulatory approval for model extension and anticipating potential capital requirement reduction"
+        }
+      ]
+    },
+    {
+      "id": "9d46b24db23b6d28a4b8b96d5d9df7025ee9929abaea25eb6505dcb22ed95f5c",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Cannabis Pharmaceuticals Market Global Forecast to 2030 | Strategic Alignments Boost Cannabinoid Therapies - Insights into Emerging Trends and Opportunities",
+      "author": "Researchandmarkets.Com",
+      "published_utc": "2025-07-02T08:49:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3108978/28124/en/Cannabis-Pharmaceuticals-Market-Global-Forecast-to-2030-Strategic-Alignments-Boost-Cannabinoid-Therapies-Insights-into-Emerging-Trends-and-Opportunities.html",
+      "tickers": [
+        "CGC",
+        "ACB"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/908fb457-7f8e-4a08-9081-5565e3dfb3d7",
+      "description": "The cannabis pharmaceuticals market is projected to grow from $2.04 billion in 2025 to $4.83 billion by 2030, with an 18.80% CAGR, driven by regulatory shifts, strategic collaborations, and advanced delivery technologies.",
+      "keywords": [
+        "cannabis pharmaceuticals",
+        "cannabinoid therapies",
+        "market growth",
+        "medical cannabis",
+        "pharmaceutical innovation"
+      ],
+      "insights": [
+        {
+          "ticker": "JAZZ",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Mentioned as a key player in an expanding cannabis pharmaceuticals market with strong growth potential"
+        },
+        {
+          "ticker": "CGC",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Positioned as a strategic participant in an emerging and rapidly transforming therapeutic market"
+        },
+        {
+          "ticker": "TLRY",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Featured among leading companies in a market experiencing significant regulatory and clinical validation"
+        },
+        {
+          "ticker": "ACB",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Listed as a market participant without specific performance indicators"
+        },
+        {
+          "ticker": "CRON",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in the context of market participants without distinct competitive advantages"
+        }
+      ]
+    },
+    {
+      "id": "9f568d1cf0880ddeb109310841b82aef71938e8419635bf3de2427ba828fd05a",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "INVESTOR DEADLINE: Robbins Geller Rudman & Dowd LLP Files Class Action Lawsuit Against Broadmark Realty Capital Inc., Ready Capital Corporation, Others and Announces Opportunity for Investors with Substantial Losses to Lead Securities Class Action Lawsuit – BRMK; RC",
+      "author": "Robbins Geller Rudman & Dowd Llp",
+      "published_utc": "2025-07-02T08:45:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3108976/0/en/INVESTOR-DEADLINE-Robbins-Geller-Rudman-Dowd-LLP-Files-Class-Action-Lawsuit-Against-Broadmark-Realty-Capital-Inc-Ready-Capital-Corporation-Others-and-Announces-Opportunity-for-Inve.html",
+      "tickers": [
+        "RC",
+        "RCB",
+        "RCC",
+        "RCD",
+        "RCpC",
+        "RCpE"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/a2879a30-a9fa-457e-97f6-7e2cd2528b7b",
+      "description": "A class action lawsuit has been filed against Broadmark Realty Capital and Ready Capital following their May 2023 merger, alleging misleading statements about financial performance and portfolio risks.",
+      "keywords": [
+        "securities lawsuit",
+        "merger",
+        "real estate investment trusts",
+        "financial disclosure"
+      ],
+      "insights": [
+        {
+          "ticker": "RC",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Alleged to have significant portfolio risks including borrower financial distress, market challenges, and a problematic development project with cost overruns and construction delays"
+        },
+        {
+          "ticker": "RCB",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Alleged to have significant portfolio risks including borrower financial distress, market challenges, and a problematic development project with cost overruns and construction delays"
+        },
+        {
+          "ticker": "RCC",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Alleged to have significant portfolio risks including borrower financial distress, market challenges, and a problematic development project with cost overruns and construction delays"
+        },
+        {
+          "ticker": "RCD",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Alleged to have significant portfolio risks including borrower financial distress, market challenges, and a problematic development project with cost overruns and construction delays"
+        },
+        {
+          "ticker": "RCpC",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Alleged to have significant portfolio risks including borrower financial distress, market challenges, and a problematic development project with cost overruns and construction delays"
+        },
+        {
+          "ticker": "RCpE",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Alleged to have significant portfolio risks including borrower financial distress, market challenges, and a problematic development project with cost overruns and construction delays"
+        }
+      ]
+    },
+    {
+      "id": "420836dac0074fca61b4100e949b40a541b9af6ada66a412c031229c5d0cf4e9",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Philippines Tobacco Industry Report 2025 | Excise Tax Hike Deters Cigarette Consumption as Philippines Faces High Living Costs",
+      "author": "Researchandmarkets.Com",
+      "published_utc": "2025-07-02T08:45:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3108975/28124/en/Philippines-Tobacco-Industry-Report-2025-Excise-Tax-Hike-Deters-Cigarette-Consumption-as-Philippines-Faces-High-Living-Costs.html",
+      "tickers": [
+        "PM"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/908fb457-7f8e-4a08-9081-5565e3dfb3d7",
+      "description": "Philippines' tobacco market declines in 2024 due to higher cigarette taxes, rising retail prices, and economic challenges. Economy cigarette brands perform well as consumers manage tight budgets.",
+      "keywords": [
+        "tobacco",
+        "cigarettes",
+        "excise tax",
+        "market decline",
+        "economy brands"
+      ],
+      "insights": [
+        {
+          "ticker": "PM",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Remains category leader in cigarettes and heated tobacco, but facing market decline and challenges"
+        }
+      ]
+    },
+    {
+      "id": "22385ba1f356fe7755b5289558c9ff3b750fd92290226634c6d6f82a15a0de01",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Man Group PLC : Form 8.3 - American Axle & Manufacturing Holdings, Inc.",
+      "author": "Man Group Plc",
+      "published_utc": "2025-07-02T08:33:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3108971/0/en/Man-Group-PLC-Form-8-3-American-Axle-Manufacturing-Holdings-Inc.html",
+      "tickers": [
+        "AXL"
+      ],
+      "image_url": "https://ml-eu.globenewswire.com/Resource/Download/91104804-f792-492b-830c-0b7f53193a71",
+      "description": "Man Group PLC disclosed its interests and short positions in American Axle & Manufacturing Holdings, Inc. and Dowlais Group plc, reporting ownership of 1,049,095 shares (0.89%) and cash-settled derivatives of 1,513,273 shares (1.29%).",
+      "keywords": [
+        "Form 8.3",
+        "Takeover Code",
+        "Position Disclosure",
+        "Derivatives"
+      ],
+      "insights": [
+        {
+          "ticker": "AXL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Disclosure indicates a financial position without explicit positive or negative implications"
+        }
+      ]
+    },
+    {
+      "id": "fa423a79efe2353965c6921b3c2e3492d9f7667e35dba52817dcf72041c0939b",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Man Group PLC : Form 8.3 - Dowlais Group plc",
+      "author": "Globe Newswire",
+      "published_utc": "2025-07-02T08:25:46Z",
+      "article_url": "https://www.benzinga.com/pressreleases/25/07/g46214282/man-group-plc-form-8-3-dowlais-group-plc",
+      "tickers": [
+        "AXL"
+      ],
+      "image_url": "https://www.benzinga.com/next-assets/images/schema-image-default.png",
+      "description": "Man Group PLC filed a Form 8.3 public disclosure regarding interests and dealings in Dowlais Group plc securities, revealing a 1.49% stake through cash-settled derivatives and multiple equity swap transactions.",
+      "keywords": [
+        "Form 8.3",
+        "public disclosure",
+        "equity swap",
+        "takeover",
+        "securities"
+      ],
+      "insights": [
+        {
+          "ticker": "AXL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Company mentioned as another party to the offer without substantive details"
+        }
+      ]
+    },
+    {
+      "id": "fd08b35cd7507f2c3b3e15af03832c4e5cf76dfa2390e8fe08864a9e8ee3728a",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "SCHD Is a Popular Dividend ETF for Passive Income. But Is It the Best?",
+      "author": "Stefon Walters",
+      "published_utc": "2025-07-02T08:10:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/schd-is-a-popular-dividend-etf-for-passive-income/?source=iedfolrf0000001",
+      "tickers": [
+        "AAPL"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/822051/gettyimages-1422023484.jpg",
+      "description": "The Schwab U.S. Dividend Equity ETF (SCHD) offers investors a high-yield dividend strategy focused on consistent, quality companies with a low expense ratio, making it an attractive supplemental investment option.",
+      "keywords": [
+        "dividend",
+        "ETF",
+        "investing",
+        "passive income",
+        "stock market"
+      ],
+      "insights": [
+        {
+          "ticker": "SCHD",
+          "sentiment": "positive",
+          "sentiment_reasoning": "High dividend yield (3.9%), low expense ratio (0.06%), tracks high-quality dividend-paying companies, and provides stable investment option"
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Mentioned as a potential holding and part of the author's personal investment portfolio"
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Mentioned as a potential holding and part of the author's personal investment portfolio"
+        }
+      ]
+    },
+    {
+      "id": "e445e3898c8b8f7f65f3b640e9ec4e4950eb7fd34ef9c912da2fde4cd3547c31",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "This AI Stock Is One of the Most Popular Among Billionaires Right Now (Hint: It's Not Nvidia)",
+      "author": "Adria Cimino",
+      "published_utc": "2025-07-02T08:10:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/this-ai-stock-is-one-of-the-most-popular-among-bil/?source=iedfolrf0000001",
+      "tickers": [
+        "AMZN"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823340/gettyimages-happy-people-gather-around-a-computer.jpg",
+      "description": "Billionaire investors like Chase Coleman, Philippe Laffont, and Stephen Mandel Jr. are increasingly investing in Amazon as a strong AI play, highlighting its potential in cloud computing and e-commerce through AI technologies.",
+      "keywords": [
+        "AI",
+        "billionaire investors",
+        "cloud computing",
+        "e-commerce",
+        "technology stocks"
+      ],
+      "insights": [
+        {
+          "ticker": "AMZN",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Strong AI potential in cloud services (AWS), efficient e-commerce operations, broad AI product offerings, and recognized by billionaire investors as a strategic AI investment"
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Leading AI chip designer with strong market position, but some billionaires are shifting focus to alternative AI investments"
+        }
+      ]
+    },
+    {
+      "id": "c2c7c8e2c614b454665c5a0b08a0d83c467f4b56f923aa4e9140565691c431e6",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Quantexa Named a Luminary in Everest Group’s Innovation Watch Report",
+      "author": "Quantexa",
+      "published_utc": "2025-07-02T08:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3108931/0/en/Quantexa-Named-a-Luminary-in-Everest-Group-s-Innovation-Watch-Report.html",
+      "tickers": [
+        "ACN"
+      ],
+      "image_url": "https://ml-eu.globenewswire.com/Resource/Download/66aa781f-ed10-4376-a60a-b3eee5a3f3a7",
+      "description": "Quantexa has been recognized by Everest Group as a Luminary for its innovative Q Assist generative AI solution, which transforms financial crime compliance by providing context-aware, intelligent insights across complex datasets.",
+      "keywords": [
+        "generative AI",
+        "financial crime",
+        "decision intelligence",
+        "compliance",
+        "AI innovation"
+      ],
+      "insights": [
+        {
+          "ticker": "ACN",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a strategic collaboration partner without specific details of engagement"
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a strategic collaboration partner without specific details of engagement"
+        }
+      ]
+    }
+  ],
+  "status": "OK",
+  "request_id": "32d0106d75c42fd8aed6074acdedcc9e",
+  "count": 100,
+  "next_url": "https://api.polygon.io/v2/reference/news?cursor=YXA9MjAyNS0wNy0wMlQwOCUzQTAwJTNBMDBaJmFzPWMyYzdjOGUyYzYxNGI0NTQ2NjVjNWEwYjA4YTBkODNjNDY3ZjRiNTZmOTIzYWE0ZTkxNDA1NjU2OTFjNDMxZTYmbGltaXQ9MTAwJm9yZGVyPWRlc2NlbmRpbmcmcHVibGlzaGVkX3V0Yz0yMDI1LTA3LTAy"
+}

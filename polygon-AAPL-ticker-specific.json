@@ -1,0 +1,843 @@
+{
+  "results": [
+    {
+      "id": "dc265559511f5efac13ec7a8246a37178be0e2602aa41a6e1a657028b513fab5",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "S&P 500: Jobs Data, Tariff Risks Put Bullish Conviction to the Test",
+      "author": "Fawad Razaqzada",
+      "published_utc": "2025-07-03T13:33:00Z",
+      "article_url": "https://www.investing.com/analysis/sp-500-jobs-data-tariff-risks-put-bullish-conviction-to-the-test-200663151",
+      "tickers": [
+        "AAPL",
+        "AMZN"
+      ],
+      "amp_url": "https://m.investing.com/analysis/sp-500-jobs-data-tariff-risks-put-bullish-conviction-to-the-test-200663151?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "The S&P 500 is hovering near record highs, with investors awaiting the crucial US non-farm payrolls report and potential tariff risks. The market remains bullish but faces potential challenges from jobs data and upcoming trade negotiations.",
+      "keywords": [
+        "S&P 500",
+        "jobs report",
+        "tariffs",
+        "Federal Reserve",
+        "rate cuts"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in market movers list with minimal commentary, no specific positive or negative signals"
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in market movers list with minimal commentary, no specific positive or negative signals"
+        }
+      ]
+    },
+    {
+      "id": "2225d1fc70e89e69b2b1569d7710ef0f839ddf0d481281bfd0646e899d81b656",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "Top S&P 500 Stocks to Watch as Golden Cross Signals More Upside",
+      "author": "David Wagner",
+      "published_utc": "2025-07-03T13:32:00Z",
+      "article_url": "https://www.investing.com/analysis/top-sp-500-stocks-to-watch-as-golden-cross-signals-more-upside-200663152",
+      "tickers": [
+        "AAPL",
+        "AMZN"
+      ],
+      "amp_url": "https://m.investing.com/analysis/top-sp-500-stocks-to-watch-as-golden-cross-signals-more-upside-200663152?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "The S&P 500 reached new all-time highs, signaling potential market momentum. A 'Golden Cross' technical indicator suggests bullish trends, with analysts identifying top stocks for potential investment based on price targets, valuation, and financial health.",
+      "keywords": [
+        "S&P 500",
+        "Golden Cross",
+        "market momentum",
+        "stock analysis",
+        "technical indicators"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in market movers list with minimal price movement (+0.46%)"
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Demonstrated price growth of +1.27% and significant trading volume"
+        }
+      ]
+    },
+    {
+      "id": "c825161ad214d21eefb91f11f2ad26479f4418e6259160f9e23fffa6265beaf4",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Nike is Back in the Race",
+      "author": "Andy Cross And Jason Hall",
+      "published_utc": "2025-07-03T12:33:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/03/nike-is-back-in-the-race/?source=iedfolrf0000001",
+      "tickers": [
+        "AAPL"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823684/nike-is-back-in-the-race.jpg",
+      "description": "Nike reported challenging quarterly earnings but shows signs of turnaround under new CEO Elliott Hill. Home Depot acquired GMS for $5.5 billion, expanding its distribution network. Apple continues investing in high-quality content with F1 movie starring Brad Pitt.",
+      "keywords": [
+        "Nike",
+        "Home Depot",
+        "Apple",
+        "earnings",
+        "acquisition",
+        "streaming",
+        "distribution"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Investing in high-quality content for ecosystem growth, but facing challenges with slowing innovation and potential AI competition"
+        }
+      ]
+    },
+    {
+      "id": "6cb515461d8b867d5e603dd83334e7e106f622e7544d3aaa3fe39f4d00718aeb",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "This Is the Best Vanguard ETF to Buy Right Now, and It's Not Even Close",
+      "author": "George Budwell",
+      "published_utc": "2025-07-03T09:30:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/03/this-is-the-best-vanguard-etf-to-buy-right-now-and/?source=iedfolrf0000001",
+      "tickers": [
+        "VGT",
+        "AAPL",
+        "MSFT",
+        "NVDA",
+        "PLTR",
+        "AMD"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823701/growth-curve.jpg",
+      "description": "The Vanguard Information Technology ETF offers significant investment potential, delivering 20.3% annual returns over 10 years compared to the S&P 500's 11.1%, driven by technological transformation and the emergence of AI and digital infrastructure.",
+      "keywords": [
+        "technology",
+        "ETF",
+        "AI",
+        "digital transformation",
+        "investment strategy"
+      ],
+      "insights": [
+        {
+          "ticker": "VGT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Demonstrated superior performance, broad tech ecosystem exposure, and potential for future growth in emerging technologies"
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Key component of tech ecosystem, defines user interaction with technology, trading at premium valuation"
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Powers cloud infrastructure, part of digital transformation leaders, strong forward earnings"
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Enables AI technology, critical in chip manufacturing, high growth potential"
+        },
+        {
+          "ticker": "PLTR",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Emerging data strategy company with potential for strategic advantage"
+        },
+        {
+          "ticker": "AMD",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Challenging industry incumbents, part of technological innovation landscape"
+        }
+      ]
+    },
+    {
+      "id": "80534833ce53be136c47c0fe59cc5bf94750dee69f6f8af1b9d815e6be4ac1e3",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "Can US Equities Extend Record Run as Broader Market Joins the Rally?",
+      "author": "Kelvin Wong",
+      "published_utc": "2025-07-03T08:41:00Z",
+      "article_url": "https://www.investing.com/analysis/can-us-equities-extend-record-run-as-broader-market-joins-the-rally-200663138",
+      "tickers": [
+        "AAPL",
+        "AMZN"
+      ],
+      "amp_url": "https://m.investing.com/analysis/can-us-equities-extend-record-run-as-broader-market-joins-the-rally-200663138?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "US equities continued their strong performance with the S&P 500 reaching a new record at 6,227, driven by small-cap stocks. The market rally broadened beyond mega-cap tech, while Asian markets faced challenges due to weak economic indicators and potential trade tensions.",
+      "keywords": [
+        "US equities",
+        "S&P 500",
+        "small-cap stocks",
+        "market rally",
+        "trade tensions"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Stock price increased by 2.22% during the trading session"
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Stock price slightly declined by 0.24%"
+        }
+      ]
+    },
+    {
+      "id": "1f1dfb9cf351e2078c4d76b6a851865f01f5573ac854a4c0c87116c1723f90ef",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "MiLi Gears Up for Amazon Prime Day with Exclusive Deals on the MiTag Duo & LiTag Duo for Travel Gadgets Up To 30% Off",
+      "author": "Mili",
+      "published_utc": "2025-07-02T18:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3109448/0/en/MiLi-Gears-Up-for-Amazon-Prime-Day-with-Exclusive-Deals-on-the-MiTag-Duo-LiTag-Duo-for-Travel-Gadgets-Up-To-30-Off.html",
+      "tickers": [
+        "AMZN",
+        "AAPL",
+        "GOOG",
+        "GOOGL"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/b526758c-621b-4315-9ce2-afcc12ada0d9",
+      "description": "MiLi is preparing for Amazon Prime Day (July 8-11, 2025) by offering discounts up to 30% on its MiTag Duo and LiTag Duo tracking devices across 15 countries, targeting travelers and pet owners with Bluetooth-enabled trackers compatible with Apple and Google tracking platforms.",
+      "keywords": [
+        "tracking devices",
+        "Prime Day",
+        "Bluetooth trackers",
+        "travel tech",
+        "location tracking"
+      ],
+      "insights": [
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Serving as a marketplace platform for MiLi's product sales during Prime Day event"
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a compatible platform for MiLi's tracking devices"
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a compatible platform for MiLi's tracking devices"
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as a compatible platform for MiLi's tracking devices"
+        }
+      ]
+    },
+    {
+      "id": "435a83a2e44e37cbef53084906237bd26dff71ae507a896226fd976987435bc5",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "S&P 500 First-Half Recap: Why Value Fizzled and Growth Stocks Roared Back",
+      "author": "Dave Kovaleski",
+      "published_utc": "2025-07-02T17:35:00Z",
+      "article_url": "https://www.investing.com/analysis/sp-500-firsthalf-recap-why-value-fizzled-and-growth-stocks-roared-back-200663109",
+      "tickers": [
+        "NRG",
+        "PLTR",
+        "UNH",
+        "CRM",
+        "AAPL"
+      ],
+      "amp_url": "https://m.investing.com/analysis/sp-500-firsthalf-recap-why-value-fizzled-and-growth-stocks-roared-back-200663109?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "The first half of 2025 saw volatile market conditions with growth stocks rebounding strongly after initial challenges. Industrials and communication services performed best, while some major tech and healthcare stocks experienced significant declines.",
+      "keywords": [
+        "S&P 500",
+        "market performance",
+        "growth stocks",
+        "value stocks",
+        "sector performance"
+      ],
+      "insights": [
+        {
+          "ticker": "NRG",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Returned 72.6% in first half, doubled natural gas generation capacity, relatively cheap valuation with potential 21% upside"
+        },
+        {
+          "ticker": "PLTR",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Up 65.5% in first half, gained 58.8% in Q2, signed large government contracts, though extremely expensive"
+        },
+        {
+          "ticker": "UNH",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Dropped 37% in first half, but considered cheap with potential 11.3% return"
+        },
+        {
+          "ticker": "CRM",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Down 20% in first half, but analysts see potential 32% growth"
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Down 20% year-to-date, but analysts suggest potential 13% return"
+        }
+      ]
+    },
+    {
+      "id": "bb437bddb7e28b6e8a3f567a2fdc87384cd48ca335780289bcbd79c2f6b08130",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "Global Portfolio Returns May Be Entering a Lower-Growth Phase",
+      "author": "James Picerno",
+      "published_utc": "2025-07-02T13:37:00Z",
+      "article_url": "https://www.investing.com/analysis/global-portfolio-returns-may-be-entering-a-lowergrowth-phase-200663095",
+      "tickers": [
+        "AAPL",
+        "TSLA",
+        "SPY"
+      ],
+      "amp_url": "https://m.investing.com/analysis/global-portfolio-returns-may-be-entering-a-lowergrowth-phase-200663095?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "The Global Market Index (GMI) forecasts a moderate decline in long-term investment returns, with an expected annualized return of 7.3%, which is below its 10-year performance of 8.2%. US equities are expected to be the primary underperforming asset class.",
+      "keywords": [
+        "portfolio returns",
+        "investment forecast",
+        "Global Market Index",
+        "asset allocation"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in market movers section without specific performance analysis in the main article"
+        },
+        {
+          "ticker": "TSLA",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in market movers section without specific performance analysis in the main article"
+        },
+        {
+          "ticker": "SPY",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Referenced as part of benchmark index analysis, with expectations of moderate return softening"
+        }
+      ]
+    },
+    {
+      "id": "13ecb700b170418fa3ce92a359c050922f960ca910df5f8a1b49aa3e9731cddd",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Can Buying the Vanguard S&P 500 ETF Make You a Millionaire?",
+      "author": "Anthony Di Pizio",
+      "published_utc": "2025-07-02T09:25:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/can-buying-vanguard-sp-500-etf-make-millionaire/?source=iedfolrf0000001",
+      "tickers": [
+        "AAPL"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823310/a-gold-bull-and-bear-facing-off-in-front-of-a-large-stock-market-chart.jpg",
+      "description": "The Vanguard S&P 500 ETF offers investors a diversified investment strategy tracking the S&P 500 index, with a historically strong 10.4% annual return and potential to help investors become millionaires through consistent, long-term investing.",
+      "keywords": [
+        "ETF",
+        "investing",
+        "S&P 500",
+        "wealth building",
+        "index fund",
+        "AI"
+      ],
+      "insights": [
+        {
+          "ticker": "VOO",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Low expense ratio of 0.03%, broad market diversification, strong historical performance, and potential for long-term wealth generation"
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "sentiment_reasoning": "One of the largest companies driving AI innovation and market value in the technology sector"
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Top global company with significant market capitalization and AI technology integration"
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "One of the largest companies in the world with substantial market capitalization"
+        }
+      ]
+    },
+    {
+      "id": "fd08b35cd7507f2c3b3e15af03832c4e5cf76dfa2390e8fe08864a9e8ee3728a",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "SCHD Is a Popular Dividend ETF for Passive Income. But Is It the Best?",
+      "author": "Stefon Walters",
+      "published_utc": "2025-07-02T08:10:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/02/schd-is-a-popular-dividend-etf-for-passive-income/?source=iedfolrf0000001",
+      "tickers": [
+        "AAPL"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/822051/gettyimages-1422023484.jpg",
+      "description": "The Schwab U.S. Dividend Equity ETF (SCHD) offers investors a high-yield dividend strategy focused on consistent, quality companies with a low expense ratio, making it an attractive supplemental investment option.",
+      "keywords": [
+        "dividend",
+        "ETF",
+        "investing",
+        "passive income",
+        "stock market"
+      ],
+      "insights": [
+        {
+          "ticker": "SCHD",
+          "sentiment": "positive",
+          "sentiment_reasoning": "High dividend yield (3.9%), low expense ratio (0.06%), tracks high-quality dividend-paying companies, and provides stable investment option"
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Mentioned as a potential holding and part of the author's personal investment portfolio"
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Mentioned as a potential holding and part of the author's personal investment portfolio"
+        }
+      ]
+    },
+    {
+      "id": "7e0fdc8d6ce1dceb1c946b61174bd30ad737eedf4d5577599936d8250deb8045",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "S&P 500: Market Rotation Sends Mixed Technical Signals Across Indexes",
+      "author": "Michael Kramer",
+      "published_utc": "2025-07-02T07:18:00Z",
+      "article_url": "https://www.investing.com/analysis/sp-500-market-rotation-sends-mixed-technical-signals-across-indexes-200663061",
+      "tickers": [
+        "AAPL"
+      ],
+      "amp_url": "https://m.investing.com/analysis/sp-500-market-rotation-sends-mixed-technical-signals-across-indexes-200663061?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "Market experienced a rotation with Nasdaq falling while equal-weight S&P 500 rose, potentially indicating a technical pattern suggesting possible market pullback around 5,660 level.",
+      "keywords": [
+        "market rotation",
+        "technical signals",
+        "S&P 500",
+        "Nasdaq",
+        "volatility"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Stock showed modest gain of 1.29%, indicating stable performance"
+        }
+      ]
+    },
+    {
+      "id": "832d2f87b8e229ea53c19c63277868857610f9bf64b6a3983518efcc8ab51eee",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Apple Sues Ex-Engineer Over Alleged Theft Of Vision Pro Secrets As Snap Prepares AR Glasses Launch",
+      "author": "Erica Kollmann",
+      "published_utc": "2025-07-01T23:30:23Z",
+      "article_url": "https://www.benzinga.com/markets/tech/25/07/46210955/apple-sues-ex-engineer-over-alleged-theft-of-vision-pro-secrets-as-snap-prepares-ar-glasses-launch",
+      "tickers": [
+        "AAPL",
+        "SNAP"
+      ],
+      "image_url": "https://cdn.benzinga.com/files/images/story/2025/07/01/Apple-VisionPro-CourtesyAppl.png?width=1200&height=800&fit=crop",
+      "description": "Apple filed a lawsuit against former senior design engineer Di Liu, alleging he stole confidential Vision Pro project files before joining Snap. Liu reportedly downloaded thousands of sensitive documents during his final days at Apple, potentially benefiting Snap's augmented reality product development.",
+      "keywords": [
+        "Vision Pro",
+        "AR glasses",
+        "intellectual property",
+        "lawsuit",
+        "technology secrets"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Experiencing potential intellectual property breach and taking legal action to protect proprietary information"
+        },
+        {
+          "ticker": "SNAP",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Denies involvement in alleged information theft and continues developing AR glasses, but facing potential legal scrutiny"
+        }
+      ]
+    },
+    {
+      "id": "8c349e4b4ee75e1e14c0a69fce6f64876951f4e5d3403164cb19b552d6412c6f",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "AAPL INVESTOR ALERT: Bronstein, Gewirtz & Grossman LLC Announces that Apple Inc. Investors with Substantial Losses Have Opportunity to Lead Class Action Lawsuit",
+      "author": "Bronstein, Gewirtz & Grossman Llc",
+      "published_utc": "2025-07-01T20:00:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/01/3108757/9788/en/AAPL-INVESTOR-ALERT-Bronstein-Gewirtz-Grossman-LLC-Announces-that-Apple-Inc-Investors-with-Substantial-Losses-Have-Opportunity-to-Lead-Class-Action-Lawsuit.html",
+      "tickers": [
+        "AAPL"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/1a031130-a9cc-48ff-b281-d1e47c9a91a5",
+      "description": "A class action lawsuit has been filed against Apple alleging false statements about AI-based Siri features for the iPhone 16, potentially misrepresenting the company's technological capabilities and financial prospects.",
+      "keywords": [
+        "class action",
+        "lawsuit",
+        "Apple",
+        "Siri",
+        "AI",
+        "iPhone 16",
+        "securities fraud"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "negative",
+          "sentiment_reasoning": "The lawsuit alleges Apple made misleading statements about AI feature integration, potentially overstating business prospects and misrepresenting product capabilities, which could negatively impact investor confidence and stock performance"
+        }
+      ]
+    },
+    {
+      "id": "09b33e306d81f8f8fb2b011d177d5135415417831d34ed43b64f19197fc31dcc",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "Semiconductor Index and the Wave Count Puzzle: Final Rally or Reversal?",
+      "author": "Dr. Arnout Ter Schure",
+      "published_utc": "2025-07-01T19:12:00Z",
+      "article_url": "https://www.investing.com/analysis/semiconductor-index-and-the-wave-count-puzzle-final-rally-or-reversal-200663054",
+      "tickers": [
+        "AAPL"
+      ],
+      "amp_url": "https://m.investing.com/analysis/semiconductor-index-and-the-wave-count-puzzle-final-rally-or-reversal-200663054?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "The article analyzes the Semiconductor Index (SOX) using Elliott Wave Principle, suggesting a potential final rally to around $5,745 in the near term, with technical indicators tracking potential market movements and wave patterns.",
+      "keywords": [
+        "semiconductor",
+        "Elliott Wave",
+        "market analysis",
+        "technical indicators",
+        "wave count"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned with a +1.37% price change, showing minimal market movement"
+        }
+      ]
+    },
+    {
+      "id": "cbb55fd17be1f8be6afd905c22c6d865e9fda5b239d06d607f9e1134b12d0bdf",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "S&P 500 Eyes 6,500 as Analysts Warn on Stretch Valuations",
+      "author": "Dave Kovaleski",
+      "published_utc": "2025-07-01T18:34:00Z",
+      "article_url": "https://www.investing.com/analysis/sp-500-eyes-6500-as-analysts-warn-on-stretch-valuations-200663048",
+      "tickers": [
+        "AAPL",
+        "AMZN"
+      ],
+      "amp_url": "https://m.investing.com/analysis/sp-500-eyes-6500-as-analysts-warn-on-stretch-valuations-200663048?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "The S&P 500 rose 10.6% in Q2 2025, reaching an all-time high of 6,205. Analysts from Morgan Stanley and Goldman Sachs predict the index could reach 6,500 by year-end, suggesting potential continued growth despite concerns about stretched valuations.",
+      "keywords": [
+        "S&P 500",
+        "stock market",
+        "Q2 performance",
+        "market valuations",
+        "tech stocks"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Mentioned in trending stocks list with a 1.31% gain"
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned without significant positive or negative context"
+        }
+      ]
+    },
+    {
+      "id": "20c6abae7bc4d51928c351aecfd3bc2bba2ebf7548f3ce053e0a4ac6ab6a3ac8",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Should You Forget Apple and Buy These 2 Millionaire-Maker Stocks Instead?",
+      "author": "Jake Lerch",
+      "published_utc": "2025-07-01T17:05:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/01/should-you-forget-apple-and-buy-these-2-millionair/?source=iedfolrf0000001",
+      "tickers": [
+        "AAPL",
+        "MELI"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823188/rklb-rocket-lab-usa-stock-market-investment.jpg",
+      "description": "The article discusses Apple's disappointing stock performance and suggests two alternative investment opportunities: MercadoLibre and Rocket Lab, highlighting their growth potential and unique market positions in e-commerce and space launch services.",
+      "keywords": [
+        "Apple",
+        "MercadoLibre",
+        "Rocket Lab",
+        "e-commerce",
+        "space launches",
+        "investing"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Stock has fallen nearly 20% this year, underperforming among the 'Magnificent Seven' tech stocks"
+        },
+        {
+          "ticker": "MELI",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Strong financial performance with 37% revenue growth, 44% net income surge, and expanding e-commerce and fintech presence in Latin America"
+        }
+      ]
+    },
+    {
+      "id": "0c0bf958b491103b6222cc0626a45699cb88b3b6a532816e62ba10fcddf522ec",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "S&P 500: What History Says About the Second Half",
+      "author": "Adam Turquist",
+      "published_utc": "2025-07-01T16:45:00Z",
+      "article_url": "https://www.investing.com/analysis/sp-500-what-history-says-about-the-second-half-200663040",
+      "tickers": [
+        "AAPL"
+      ],
+      "amp_url": "https://m.investing.com/analysis/sp-500-what-history-says-about-the-second-half-200663040?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "Historical data suggests the S&P 500 could continue its positive momentum in the second half of the year, with an average gain of 6.1% following a strong first half performance, though market pullbacks are still expected.",
+      "keywords": [
+        "S&P 500",
+        "market performance",
+        "stock market",
+        "investment",
+        "historical trends"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in market movers list with a slight positive price movement (+0.99%), but no specific analysis in the article"
+        }
+      ]
+    },
+    {
+      "id": "ce187ba1bc476d4e0b1dde6485e4bf6d317afb68aaa32f1597e3688dd49f8627",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Apple Stock Had A Nightmare Year — But It May Be Nearing A Turning Point",
+      "author": "Piero Cingari",
+      "published_utc": "2025-07-01T13:14:42Z",
+      "article_url": "https://www.benzinga.com/news/25/07/46194043/apple-stock-analysis-july-sp500-seasonality",
+      "tickers": [
+        "AAPL"
+      ],
+      "image_url": "https://cdn.benzinga.com/files/images/story/2025/07/01/Apple-Hong-Kong.jpeg?width=1200&height=800&fit=crop",
+      "description": "Apple's stock has struggled in 2025 due to trade tensions, product innovation delays, and AI challenges, but historical July performance suggests a potential market rebound.",
+      "keywords": [
+        "Apple",
+        "stock performance",
+        "trade tensions",
+        "AI",
+        "July seasonality"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Down 18% year-to-date, facing challenges in China and AI innovation, but historical July performance indicates potential recovery"
+        }
+      ]
+    },
+    {
+      "id": "e81c55d76c8893ed8e2d679bf189513ab95e79bd726317b19502e12f3fa7683b",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "1 No-Brainer S&P Index Fund to Buy Right Now for Less Than $1,000",
+      "author": "David Butler",
+      "published_utc": "2025-07-01T10:26:00Z",
+      "article_url": "https://www.fool.com/investing/2025/07/01/1-no-brainer-sp-index-fund-buy-right-now-for-less-/?source=iedfolrf0000001",
+      "tickers": [
+        "AAPL",
+        "MSFT",
+        "AMZN",
+        "JNJ",
+        "TSLA"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823221/etf.jpg",
+      "description": "The iShares Core S&P 500 ETF (IVV) offers investors a low-cost, diversified way to invest in the U.S. stock market by tracking the S&P 500 index, providing steady long-term growth with minimal risk.",
+      "keywords": [
+        "ETF",
+        "S&P 500",
+        "investing",
+        "portfolio",
+        "diversification"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Mentioned as an industry leader within the S&P 500 index, suggesting strong market position"
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Mentioned as an industry leader within the S&P 500 index, suggesting strong market position"
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Mentioned as an industry leader within the S&P 500 index, suggesting strong market position"
+        },
+        {
+          "ticker": "JNJ",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned as part of the S&P 500 index without specific performance commentary"
+        },
+        {
+          "ticker": "TSLA",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Described as a 'flashy' stock with potential for dramatic short-term returns, but also higher risk"
+        }
+      ]
+    },
+    {
+      "id": "78fcd59306a1ce48fe663d98ac85ad045dcc21695c3873a3c182e5649791b4f1",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Smart Healthcare Market Report 2025-2029: IoT and Big Data Lead the Charge in Industry Expansion",
+      "author": "Researchandmarkets.Com",
+      "published_utc": "2025-07-01T08:59:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/01/3108118/28124/en/Smart-Healthcare-Market-Report-2025-2029-IoT-and-Big-Data-Lead-the-Charge-in-Industry-Expansion.html",
+      "tickers": [
+        "ABT",
+        "AAPL",
+        "CSCO"
+      ],
+      "image_url": "https://ml.globenewswire.com/Resource/Download/908fb457-7f8e-4a08-9081-5565e3dfb3d7",
+      "description": "The global smart healthcare market is expected to grow by USD 151.3 billion from 2024-2029, driven by remote health monitoring, wearable technology adoption, and increased patient engagement.",
+      "keywords": [
+        "smart healthcare",
+        "remote monitoring",
+        "wearables",
+        "telehealth",
+        "IoT"
+      ],
+      "insights": [
+        {
+          "ticker": "ABT",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Mentioned as a prominent vendor in a growing market with significant projected expansion"
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Highlighted as a key player in wearable technology and smart healthcare market"
+        },
+        {
+          "ticker": "CSCO",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Recognized as a notable vendor in the emerging smart healthcare ecosystem"
+        }
+      ]
+    }
+  ],
+  "status": "OK",
+  "request_id": "1f5214837cb7277a309f19cb1f0a7353",
+  "count": 20,
+  "next_url": "https://api.polygon.io/v2/reference/news?cursor=YXA9MjAyNS0wNy0wMVQwOCUzQTU5JTNBMDBaJmFzPTc4ZmNkNTkzMDZhMWNlNDhmZTY2M2Q5OGFjODVhZDA0NWRjYzIxNjk1YzM4NzNhM2MxODJlNTY0OTc5MWI0ZjEmbGltaXQ9MjAmb3JkZXI9ZGVzY2VuZGluZyZ0aWNrZXI9QUFQTA"
+}

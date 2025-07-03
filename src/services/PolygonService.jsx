@@ -1,4 +1,4 @@
-// src/services/PolygonService.js - Simple version
+// src/services/PolygonService.js - Fixed with getCompanyNames method
 class PolygonService {
   constructor() {
     this.apiKey = import.meta.env.VITE_POLYGON_API_KEY;
@@ -66,6 +66,39 @@ class PolygonService {
       console.error('[ERROR] Failed to get market data:', error);
       return [];
     }
+  }
+
+  // Get company names for tickers (MISSING METHOD - NOW ADDED)
+  async getCompanyNames(tickers) {
+    const companyNames = new Map();
+    
+    try {
+      console.log(`[INFO] Fetching company names for ${tickers.length} tickers...`);
+      
+      // Use the tickers endpoint to get company info
+      const response = await this.makeRequest('/v3/reference/tickers', {
+        ticker: tickers.join(','),
+        market: 'stocks',
+        active: true,
+        limit: 1000
+      });
+      
+      if (response.results) {
+        response.results.forEach(result => {
+          if (result.ticker && result.name) {
+            companyNames.set(result.ticker, result.name);
+          }
+        });
+      }
+      
+      console.log(`[INFO] Found company names for ${companyNames.size} tickers`);
+      
+    } catch (error) {
+      console.error('[ERROR] Failed to fetch company names:', error);
+      // Return empty map if API fails
+    }
+    
+    return companyNames;
   }
 }
 

@@ -1,4 +1,4 @@
-// src/components/NewsTable.jsx - Click to analyze instead of hover
+// src/components/NewsTable.jsx - Fixed company name display
 import React, { useState } from 'react';
 import { TrendingUp, TrendingDown, Clock, MessageSquare, Brain, Zap, ChevronUp, ChevronDown, CheckCircle } from 'lucide-react';
 import { AIWorker } from './AIWorker';
@@ -205,12 +205,14 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                       : 'hover:bg-gray-700'
                   }`}
                 >
-                  {/* Stock Info */}
+                  {/* Stock Info - FIXED: Only show company name if different from ticker */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center space-x-2">
                       <div>
                         <div className="font-medium text-white">{stock.ticker}</div>
-                        <div className="text-sm text-gray-400">{stock.companyName || stock.ticker}</div>
+                        {stock.companyName && (
+                          <div className="text-sm text-gray-400">{stock.companyName}</div>
+                        )}
                       </div>
                       {stock.isAnalyzing && (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400" />

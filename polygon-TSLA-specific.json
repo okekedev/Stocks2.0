@@ -1,0 +1,215 @@
+{
+  "results": [
+    {
+      "id": "ccfdc4d1b5f637ae84e6cdcfe4d7badea5fb79015307cb3e01a67f2ae091a9ef",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Why Lucid Group Stock Is Jumping Today",
+      "author": "Johnny Rice",
+      "published_utc": "2025-07-03T16:10:13Z",
+      "article_url": "https://www.fool.com/investing/2025/07/03/why-lucid-group-stock-is-jumping-today/?source=iedfolrf0000001",
+      "tickers": [
+        "LCID",
+        "TSLA",
+        "RIVN"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823871/lucid_motors_air_ev_electric_car_source_lucid-1201x800-5b2df79.jpg",
+      "description": "Lucid Group reported record vehicle deliveries in Q2 2025, growing 38% year-over-year with 3,309 vehicles delivered, primarily driven by new Gravity SUV sales. However, the company faces challenges in meeting production targets and scaling to mass-market levels.",
+      "keywords": [
+        "Lucid",
+        "electric vehicles",
+        "EV market",
+        "vehicle deliveries",
+        "Gravity SUV"
+      ],
+      "insights": [
+        {
+          "ticker": "LCID",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mixed performance with record deliveries but underperforming production targets, struggling to scale, and facing broader EV market softening"
+        },
+        {
+          "ticker": "TSLA",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Reported shrinking delivery numbers compared to Lucid's growth"
+        },
+        {
+          "ticker": "RIVN",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Reported shrinking delivery numbers compared to Lucid's growth"
+        }
+      ]
+    },
+    {
+      "id": "fb3f582595815e98f3ef87ca12fd064b827bf9df019b5e3a5cfdc9611a89e60a",
+      "publisher": {
+        "name": "Benzinga",
+        "homepage_url": "https://www.benzinga.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/benzinga.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/benzinga.ico"
+      },
+      "title": "Elon Musk's 'Stupid' Actions Will Be Tesla's 'Nail In The Coffin,' Ross Gerber Warns",
+      "author": "Erica Kollmann",
+      "published_utc": "2025-07-02T15:04:48Z",
+      "article_url": "https://www.benzinga.com/markets/large-cap/25/07/46223791/elon-musks-stupid-actions-will-be-teslas-nail-in-the-coffin-ross-gerber-warns",
+      "tickers": [
+        "TSLA",
+        "DJT",
+        "DJTWW"
+      ],
+      "image_url": "https://cdn.benzinga.com/files/images/story/2025/07/02/ElonMusk-Tesla.jpeg?width=1200&height=800&fit=crop",
+      "description": "Prominent Tesla investor Ross Gerber criticizes Elon Musk's political feud with Donald Trump, warning that his actions could significantly harm Tesla's business and stock value.",
+      "keywords": [
+        "Tesla",
+        "Elon Musk",
+        "Donald Trump",
+        "political feud",
+        "subsidies"
+      ],
+      "insights": [
+        {
+          "ticker": "TSLA",
+          "sentiment": "negative",
+          "sentiment_reasoning": "Gerber suggests Musk's political involvement is distracting from core business, alienating investors and customers, and potentially causing the stock to drop by half"
+        },
+        {
+          "ticker": "DJT",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in context of political dispute with Elon Musk, no direct business impact discussed"
+        },
+        {
+          "ticker": "DJTWW",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in context of political dispute with Elon Musk, no direct business impact discussed"
+        }
+      ]
+    },
+    {
+      "id": "bb437bddb7e28b6e8a3f567a2fdc87384cd48ca335780289bcbd79c2f6b08130",
+      "publisher": {
+        "name": "Investing.com",
+        "homepage_url": "https://www.investing.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/investing.png",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/investing.ico"
+      },
+      "title": "Global Portfolio Returns May Be Entering a Lower-Growth Phase",
+      "author": "James Picerno",
+      "published_utc": "2025-07-02T13:37:00Z",
+      "article_url": "https://www.investing.com/analysis/global-portfolio-returns-may-be-entering-a-lowergrowth-phase-200663095",
+      "tickers": [
+        "AAPL",
+        "TSLA",
+        "SPY"
+      ],
+      "amp_url": "https://m.investing.com/analysis/global-portfolio-returns-may-be-entering-a-lowergrowth-phase-200663095?ampMode=1",
+      "image_url": "https://i-invdn-com.investing.com/redesign/images/seo/investingcom_analysis_og.jpg",
+      "description": "The Global Market Index (GMI) forecasts a moderate decline in long-term investment returns, with an expected annualized return of 7.3%, which is below its 10-year performance of 8.2%. US equities are expected to be the primary underperforming asset class.",
+      "keywords": [
+        "portfolio returns",
+        "investment forecast",
+        "Global Market Index",
+        "asset allocation"
+      ],
+      "insights": [
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in market movers section without specific performance analysis in the main article"
+        },
+        {
+          "ticker": "TSLA",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned in market movers section without specific performance analysis in the main article"
+        },
+        {
+          "ticker": "SPY",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Referenced as part of benchmark index analysis, with expectations of moderate return softening"
+        }
+      ]
+    },
+    {
+      "id": "18316b6ebe1118fcd983811c9e45a204fb17635e8207abca831e53b301ae8c5a",
+      "publisher": {
+        "name": "GlobeNewswire Inc.",
+        "homepage_url": "https://www.globenewswire.com",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/globenewswire.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/globenewswire.ico"
+      },
+      "title": "Ditchit פוצצה את השלט האייקוני של Twitter",
+      "author": "James Deluca",
+      "published_utc": "2025-07-02T04:38:00Z",
+      "article_url": "https://www.globenewswire.com/news-release/2025/07/02/3108887/0/he/Ditchit-%D7%A4%D7%95%D7%A6%D7%A6%D7%94-%D7%90%D7%AA-%D7%94%D7%A9%D7%9C%D7%98-%D7%94%D7%90%D7%99%D7%99%D7%A7%D7%95%D7%A0%D7%99-%D7%A9%D7%9C-Twitter.html",
+      "tickers": [
+        "TSLA"
+      ],
+      "image_url": "https://www.globenewswire.com/news-release/2025/07/02/3108887/0/he/Ditchit-%D7%A4%D7%95%D7%A6%D7%A6%D7%94-%D7%90%D7%AA-%D7%94%D7%A9%D7%9C%D7%98-%D7%94%D7%90%D7%99%D7%99%D7%A7%D7%95%D7%A0%D7%99-%D7%A9%D7%9C-Twitter.html",
+      "description": "Online marketplace Ditchit made a dramatic statement by purchasing and then explosively destroying the original Twitter headquarters sign in Nevada, symbolizing a challenge to traditional tech giants and promoting a community-focused marketplace platform.",
+      "keywords": [
+        "online marketplace",
+        "tech disruption",
+        "community platform",
+        "startup",
+        "marketplace innovation"
+      ],
+      "insights": [
+        {
+          "ticker": "TSLA",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned only as providing Cybertrucks for the event, with no direct commentary on the company"
+        }
+      ]
+    },
+    {
+      "id": "9a40041118073766e7f46ead6c717a70e4e9d8372aa800bb7ae3b930c163e2ed",
+      "publisher": {
+        "name": "The Motley Fool",
+        "homepage_url": "https://www.fool.com/",
+        "logo_url": "https://s3.polygon.io/public/assets/news/logos/themotleyfool.svg",
+        "favicon_url": "https://s3.polygon.io/public/assets/news/favicons/themotleyfool.ico"
+      },
+      "title": "Why Uber Stock Was in the Fast Lane in June",
+      "author": "Lou Whiteman",
+      "published_utc": "2025-07-02T02:22:17Z",
+      "article_url": "https://www.fool.com/investing/2025/07/01/why-uber-stock-was-in-the-fast-lane-in-june/?source=iedfolrf0000001",
+      "tickers": [
+        "UBER",
+        "TSLA",
+        "GOOG"
+      ],
+      "image_url": "https://g.foolcdn.com/editorial/images/823624/gettyimages-937439170.jpg",
+      "description": "Uber is expanding its autonomous rideshare services by partnering with Waymo, offering self-driving rides in Atlanta and Austin without massive technology development costs.",
+      "keywords": [
+        "autonomous driving",
+        "rideshare",
+        "self-driving vehicles",
+        "partnerships"
+      ],
+      "insights": [
+        {
+          "ticker": "UBER",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Stock climbed 10.9% in June, successfully partnering with Waymo to offer autonomous rides in multiple markets without significant technology investment"
+        },
+        {
+          "ticker": "TSLA",
+          "sentiment": "neutral",
+          "sentiment_reasoning": "Mentioned briefly regarding robotaxi launch, but no specific details provided about performance or strategy"
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "positive",
+          "sentiment_reasoning": "Waymo's successful autonomous vehicle deployment and partnership with Uber indicates technological progress"
+        }
+      ]
+    }
+  ],
+  "status": "OK",
+  "request_id": "34bad12ed8b54e641d6461340744a448",
+  "count": 5,
+  "next_url": "https://api.polygon.io/v2/reference/news?cursor=YXA9MjAyNS0wNy0wMlQwMiUzQTIyJTNBMTdaJmFzPTlhNDAwNDExMTgwNzM3NjZlN2Y0NmVhZDZjNzE3YTcwZTRlOWQ4MzcyYWE4MDBiYjdhZTNiOTMwYzE2M2UyZWQmbGltaXQ9NSZvcmRlcj1kZXNjZW5kaW5nJnRpY2tlcj1UU0xB"
+}
