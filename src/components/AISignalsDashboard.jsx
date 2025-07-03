@@ -1,3 +1,4 @@
+// src/components/AISignalsDashboard.jsx - Complete component
 import React from 'react';
 import { TrendingUp, Brain, Zap, AlertTriangle, Clock, Volume2, Target, DollarSign } from 'lucide-react';
 

@@ -1,4 +1,4 @@
-// src/App.jsx
+// src/App.jsx - Fixed clean imports
 import React from 'react';
 import { useNewsData } from './hooks/NewsData';
 import { Header } from './components/Header';
@@ -24,8 +24,6 @@ export default function App() {
     maxPrice,
     setMaxPrice
   } = useNewsData();
-
-  const analysisComplete = newsData?.aiSignals && newsData.aiSignals.length > 0;
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -86,13 +84,13 @@ export default function App() {
               />
             )}
 
-            {/* All Stocks Table */}
+            {/* All Stocks Table with AIWorker on hover */}
             <NewsTable 
               stocks={newsData.stocks}
               allArticles={newsData.articles}
             />
             
-            {/* No Analysis Yet State - Only show if analysis has never been performed */}
+            {/* No Analysis Yet State */}
             {!analysisLoading && !analysisPerformed && newsData.stocks.length > 0 && (
               <div className="bg-gray-800 rounded-lg p-6 text-center mb-6">
                 <div className="text-gray-400 mb-2">🤖</div>
@@ -109,7 +107,7 @@ export default function App() {
               </div>
             )}
 
-            {/* Analysis Complete - No Signals State - Only show if analysis was performed and returned empty results */}
+            {/* Analysis Complete - No Signals State */}
             {!analysisLoading && analysisPerformed && newsData.aiSignals && newsData.aiSignals.length === 0 && (
               <div className="bg-gray-800 rounded-lg p-6 text-center mb-6">
                 <div className="text-gray-400 mb-2">🤖</div>
