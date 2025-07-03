@@ -1,4 +1,4 @@
-// src/hooks/useNewsData.js - Updated to work with optimized system
+// src/hooks/useNewsData.js - Updated to return performAnalysis function
 import { useState, useEffect, useCallback } from 'react';
 import { polygonService } from '../services/PolygonService';
 import { newsProcessor } from '../services/NewsProcessor';
@@ -93,10 +93,14 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
     }
   }, [applyPriceFilters]);
 
-  const performAIAnalysis = async (stocks) => {
+  // ✅ AI Analysis function that App.jsx can call
+  const performAnalysis = useCallback(async (stocksToAnalyze = null) => {
     try {
       setAnalysisLoading(true);
       setAnalysisPerformed(true);
+      
+      // Use provided stocks or default to newsData stocks
+      const stocks = stocksToAnalyze || newsData?.stocks || [];
       
       // Only analyze very recent stocks (last 2 hours)
       const candidateStocks = stocks.filter(stock => 
@@ -106,10 +110,12 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
       );
       
       if (candidateStocks.length === 0) {
+        console.log('[INFO] No candidate stocks for AI analysis');
         setAnalysisLoading(false);
         return;
       }
 
+      console.log(`[INFO] Starting AI analysis of ${candidateStocks.length} stocks...`);
       const stocksWithBuySignals = await geminiService.batchAnalyzeStocks(candidateStocks);
       
       const aiStockMap = new Map(stocksWithBuySignals.map(stock => [stock.ticker, stock]));
@@ -135,13 +141,15 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
         aiSignals,
         timestamp: new Date().toISOString()
       }));
+
+      console.log(`[SUCCESS] AI analysis complete. ${aiSignals.length} trading signals found.`);
       
     } catch (error) {
       console.error('[ERROR] AI analysis failed:', error);
     } finally {
       setAnalysisLoading(false);
     }
-  };
+  }, [newsData?.stocks]);
 
   useEffect(() => {
     fetchNewsData();
@@ -160,7 +168,7 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
     analysisPerformed,
     error,
     refresh: fetchNewsData,
-    performAnalysis: () => performAIAnalysis(newsData?.stocks || []),
+    performAnalysis, // ✅ Now returns the analysis function
     minPrice,
     setMinPrice,
     maxPrice,

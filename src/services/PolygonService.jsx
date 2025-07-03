@@ -1,8 +1,10 @@
-// src/services/PolygonService.js - Add method for individual ticker updates
+// src/services/PolygonService.js - Enhanced for efficient price polling
 class PolygonService {
   constructor() {
     this.apiKey = import.meta.env.VITE_POLYGON_API_KEY;
     this.baseUrl = 'https://api.polygon.io';
+    this.cache = new Map(); // Price cache to reduce API calls
+    this.cacheExpiry = 30000; // 30 seconds cache
     
     if (!this.apiKey) {
       throw new Error('VITE_POLYGON_API_KEY environment variable is required');
@@ -54,27 +56,54 @@ class PolygonService {
     return response;
   }
 
-  // Get market snapshots for pricing (optimized for real-time updates)
+  // ✅ OPTIMIZED: Efficient market data fetching with caching
   async getMarketData(tickers) {
     try {
-      // Split large requests to avoid API limits
-      const chunks = [];
-      for (let i = 0; i < tickers.length; i += 100) {
-        chunks.push(tickers.slice(i, i + 100));
-      }
+      const now = Date.now();
+      const uncachedTickers = [];
+      const result = [];
 
-      const allData = [];
-      for (const chunk of chunks) {
-        const response = await this.makeRequest('/v2/snapshot/locale/us/markets/stocks/tickers', {
-          tickers: chunk.join(',')
-        });
-        
-        if (response.tickers) {
-          allData.push(...response.tickers);
+      // Check cache first
+      tickers.forEach(ticker => {
+        const cached = this.cache.get(ticker);
+        if (cached && (now - cached.timestamp) < this.cacheExpiry) {
+          result.push(cached.data);
+        } else {
+          uncachedTickers.push(ticker);
         }
+      });
+
+      // Fetch uncached tickers
+      if (uncachedTickers.length > 0) {
+        console.log(`[PolygonService] Fetching fresh data for ${uncachedTickers.length} tickers`);
+        
+        // Split large requests to avoid API limits (max 100 per request)
+        const chunks = [];
+        for (let i = 0; i < uncachedTickers.length; i += 100) {
+          chunks.push(uncachedTickers.slice(i, i + 100));
+        }
+
+        for (const chunk of chunks) {
+          const response = await this.makeRequest('/v2/snapshot/locale/us/markets/stocks/tickers', {
+            tickers: chunk.join(',')
+          });
+          
+          if (response.tickers) {
+            response.tickers.forEach(ticker => {
+              // Cache the result
+              this.cache.set(ticker.ticker, {
+                data: ticker,
+                timestamp: now
+              });
+              result.push(ticker);
+            });
+          }
+        }
+      } else {
+        console.log(`[PolygonService] Using cached data for all ${tickers.length} tickers`);
       }
 
-      return allData;
+      return result;
     } catch (error) {
       console.error('[ERROR] Failed to get market data:', error);
       return [];
@@ -124,6 +153,34 @@ class PolygonService {
     }
     
     return companyNames;
+  }
+
+  // ✅ Clear cache manually if needed
+  clearCache() {
+    this.cache.clear();
+    console.log('[PolygonService] Price cache cleared');
+  }
+
+  // ✅ Get cache stats
+  getCacheStats() {
+    const now = Date.now();
+    let validEntries = 0;
+    let expiredEntries = 0;
+
+    this.cache.forEach(entry => {
+      if ((now - entry.timestamp) < this.cacheExpiry) {
+        validEntries++;
+      } else {
+        expiredEntries++;
+      }
+    });
+
+    return {
+      totalEntries: this.cache.size,
+      validEntries,
+      expiredEntries,
+      cacheExpiryMs: this.cacheExpiry
+    };
   }
 }
 

@@ -1,4 +1,4 @@
-// src/components/AIWorker.jsx - Updated for simplified analysis
+// src/components/AIWorker.jsx - Fixed with proper close handler
 import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Terminal, CheckCircle, X } from 'lucide-react';
 import { geminiService } from '../services/GeminiService';
@@ -7,6 +7,8 @@ export function AIWorker({
   stock, 
   onAnalysisComplete, 
   onAnalysisStart,
+  onClose,
+  autoStart = false, // ✅ New prop to auto-start analysis
   isActive = false,
   savedLogs = null,
   savedResult = null
@@ -16,6 +18,17 @@ export function AIWorker({
   const [complete, setComplete] = useState(!!savedResult);
   const [result, setResult] = useState(savedResult);
   const logsEndRef = useRef(null);
+
+  // Auto-start analysis when component mounts (if enabled)
+  useEffect(() => {
+    if (autoStart && !analyzing && !complete && !savedResult) {
+      console.log(`[AIWorker] Auto-starting analysis for ${stock.ticker}`);
+      // Small delay to let the UI settle
+      setTimeout(() => {
+        performRealAIAnalysis();
+      }, 500);
+    }
+  }, [autoStart, stock.ticker, analyzing, complete, savedResult]);
 
   // Load saved logs when component mounts
   useEffect(() => {
@@ -131,10 +144,11 @@ export function AIWorker({
     }
   };
 
-  const closeTerminal = () => {
-    // Close by setting hoveredStock to null in parent
-    // This is a bit hacky but works for now
-    document.body.click();
+  // ✅ Proper close handler
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    }
   };
 
   return (
@@ -160,7 +174,7 @@ export function AIWorker({
         </div>
         
         <div className="flex items-center space-x-2">
-          {!analyzing && !complete && (
+          {!analyzing && !complete && !autoStart && (
             <button
               onClick={performRealAIAnalysis}
               className="bg-purple-600 hover:bg-purple-700 text-white text-sm px-3 py-1 rounded flex items-center space-x-1"
@@ -170,7 +184,7 @@ export function AIWorker({
             </button>
           )}
           
-          {complete && !analyzing && (
+          {(complete || (!analyzing && autoStart)) && (
             <button
               onClick={performRealAIAnalysis}
               className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1 rounded flex items-center space-x-1"
@@ -181,7 +195,7 @@ export function AIWorker({
           )}
 
           <button
-            onClick={closeTerminal}
+            onClick={handleClose}
             className="text-gray-400 hover:text-white"
           >
             <X className="w-4 h-4" />
@@ -207,13 +221,20 @@ export function AIWorker({
         {analyzing && (
           <div className="flex items-center space-x-2 text-blue-400 text-sm">
             <span className="animate-pulse">▋</span>
-            <span>Connecting to Gemini AI...</span>
+            <span>AI Analysis in Progress...</span>
           </div>
         )}
         
-        {logs.length === 0 && !analyzing && (
+        {logs.length === 0 && !analyzing && !autoStart && (
           <div className="text-gray-400 text-sm text-center py-8">
             Click "Analyze with AI" to start real-time analysis using Google Gemini.
+          </div>
+        )}
+
+        {logs.length === 0 && !analyzing && autoStart && (
+          <div className="text-purple-400 text-sm text-center py-8">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-400 mx-auto mb-2"></div>
+            Initializing AI analysis...
           </div>
         )}
         

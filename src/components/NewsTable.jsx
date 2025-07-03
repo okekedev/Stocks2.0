@@ -1,4 +1,4 @@
-// src/components/NewsTable.jsx - Enhanced Modern UI
+// src/components/NewsTable.jsx - Enhanced Modern UI with Trades-Only WebSocket
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   TrendingUp, 
@@ -17,7 +17,7 @@ import {
   Target
 } from 'lucide-react';
 import { AIWorker } from './AIWorker';
-import { useWebSocketPrices } from '../hooks/useWebSocketPrices';
+import { usePricePolling } from '../hooks/usePricePolling';
 
 export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
   const [selectedStock, setSelectedStock] = useState(null);
@@ -30,28 +30,30 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
   // Use ref to track previous prices to avoid infinite loop
   const previousPricesRef = useRef(new Map());
 
-  // WebSocket real-time price updates
-  const { priceData, isConnected, connectionStatus, reconnect } = useWebSocketPrices(stocks);
+  // Price polling for updates (every 1 minute)
+  const { priceData, isPolling, connectionStatus, refresh, getTimeSinceUpdate } = usePricePolling(stocks, 60000);
 
-  // Track price changes for animations - FIXED to prevent infinite loop
+  // Track price changes for animations - Updated for polling
   useEffect(() => {
     const newAnimations = new Map();
     
     priceData.forEach((newPrice, ticker) => {
       const previousPrice = previousPricesRef.current.get(ticker);
       
-      if (previousPrice && newPrice.currentPrice && previousPrice !== newPrice.currentPrice) {
+      // Only animate if we have a previous price and it's actually different
+      if (previousPrice && newPrice.currentPrice && 
+          Math.abs(previousPrice - newPrice.currentPrice) > 0.01) {
         const animation = newPrice.currentPrice > previousPrice ? 'price-up' : 'price-down';
         newAnimations.set(ticker, animation);
         
-        // Clear animation after 1 second
+        // Clear animation after 2 seconds (longer for polling)
         setTimeout(() => {
           setPriceAnimations(prev => {
             const updated = new Map(prev);
             updated.delete(ticker);
             return updated;
           });
-        }, 1000);
+        }, 2000);
       }
       
       // Update previous price
@@ -64,7 +66,7 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
     if (newAnimations.size > 0) {
       setPriceAnimations(newAnimations);
     }
-  }, [priceData]); // Only depend on priceData, not stocks
+  }, [priceData]);
 
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -75,12 +77,20 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
     }
   };
 
-  const handleStockClick = (stock) => {
-    if (selectedStock?.ticker === stock.ticker) {
-      setSelectedStock(null);
-    } else {
-      setSelectedStock(stock);
+  const handleAIAnalyzeClick = (stock) => {
+    // Don't open modal if already analyzing this stock
+    if (analyzingStocks.has(stock.ticker)) {
+      return;
     }
+    
+    // Close any existing modal first
+    setSelectedStock(null);
+    
+    // Small delay to ensure clean state, then open modal and start analysis
+    setTimeout(() => {
+      setSelectedStock(stock);
+      // Analysis will start automatically when AIWorker mounts
+    }, 100);
   };
 
   const closeTerminal = () => {
@@ -108,20 +118,18 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
     });
   };
 
-  // Enhanced stock data with real-time WebSocket prices
+  // Enhanced stock data with real-time WebSocket prices - TRADES ONLY
   const getEnhancedStock = (stock) => {
     const savedAnalysis = stockAnalyses[stock.ticker];
     const realtimeData = priceData.get(stock.ticker);
     
     return {
       ...stock,
-      // Use WebSocket price data if available
+      // Use WebSocket price data if available (trades only)
       currentPrice: realtimeData?.currentPrice || stock.currentPrice,
       changePercent: realtimeData?.changePercent || stock.changePercent,
-      bid: realtimeData?.bid,
-      ask: realtimeData?.ask,
-      spread: realtimeData?.spread,
       lastUpdated: realtimeData?.lastUpdated,
+      // ✅ REMOVED: bid, ask, spread since we only get trade data
       // AI analysis data
       buySignal: savedAnalysis || stock.buySignal,
       isAnalyzing: analyzingStocks.has(stock.ticker),
@@ -189,8 +197,8 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
     switch (connectionStatus) {
       case 'connected':
         return <Wifi className="w-4 h-4 text-green-400" />;
-      case 'connecting':
-        return <WifiOff className="w-4 h-4 text-yellow-400 animate-pulse" />;
+      case 'updating':
+        return <WifiOff className="w-4 h-4 text-blue-400 animate-pulse" />;
       case 'error':
         return <AlertCircle className="w-4 h-4 text-red-400" />;
       default:
@@ -201,11 +209,11 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
   const getConnectionText = () => {
     switch (connectionStatus) {
       case 'connected':
-        return 'Live Data Stream';
-      case 'connecting':
-        return 'Connecting...';
+        return `Price Data (${getTimeSinceUpdate()})`;
+      case 'updating':
+        return 'Updating Prices...';
       case 'error':
-        return 'Connection Error';
+        return 'Update Failed';
       default:
         return 'Disconnected';
     }
@@ -269,16 +277,16 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                     </span>
                     {connectionStatus === 'error' && (
                       <button 
-                        onClick={reconnect}
+                        onClick={refresh}
                         className="text-sm text-blue-400 hover:text-blue-300 underline transition-colors"
                       >
-                        Reconnect
+                        Retry
                       </button>
                     )}
                   </div>
                   <div className="w-px h-4 bg-gray-500"></div>
                   <div className="text-sm text-gray-400">
-                    Interactive Analysis Dashboard
+                    Price Updates Every Minute
                   </div>
                 </div>
               </div>
@@ -367,7 +375,7 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                     </div>
                   </td>
 
-                  {/* Enhanced Real-Time Price */}
+                  {/* Enhanced Real-Time Price - TRADES ONLY */}
                   <td className="px-6 py-5 whitespace-nowrap">
                     <div className="space-y-2">
                       {/* Price with enhanced animation */}
@@ -391,22 +399,9 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                         <span>{formatPercent(stock.changePercent)}</span>
                       </div>
                       
-                      {/* Enhanced live indicator */}
-                      {stock.lastUpdated && (
-                        <div className="text-xs">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-green-900/30 text-green-400 font-medium">
-                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-1"></div>
-                            {formatLastUpdated(stock.lastUpdated)}
-                          </span>
-                        </div>
-                      )}
+                      {/* ✅ REMOVED: API Update indicator - not needed */}
                       
-                      {/* Bid/Ask spread with better styling */}
-                      {stock.bid && stock.ask && (
-                        <div className="text-xs text-gray-500 bg-gray-800/50 rounded px-2 py-1">
-                          Bid: ${stock.bid.toFixed(2)} | Ask: ${stock.ask.toFixed(2)}
-                        </div>
-                      )}
+                      {/* ✅ REMOVED: Bid/Ask spread display since we only get trade data */}
                     </div>
                   </td>
 
@@ -420,13 +415,10 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                     </div>
                   </td>
 
-                  {/* Enhanced AI Signal - Clickable */}
-                  <td 
-                    className="px-6 py-5 whitespace-nowrap cursor-pointer group"
-                    onClick={() => handleStockClick(stock)}
-                  >
+                  {/* Enhanced AI Signal - Clickable for Analysis */}
+                  <td className="px-6 py-5 whitespace-nowrap">
                     {stock.buySignal ? (
-                      <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-700/30 group-hover:bg-gray-600/40 transition-all duration-300">
+                      <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-700/30 transition-all duration-300">
                         <span className="text-3xl">{getBuySignalIcon(stock.buySignal.buyPercentage)}</span>
                         <div className="flex-1">
                           <div className={`font-bold text-xl ${getBuySignalColor(stock.buySignal.buyPercentage)}`}>
@@ -438,18 +430,35 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                         </div>
                         {stock.hasCustomAnalysis && (
                           <div className="p-1 bg-purple-500/20 rounded-full">
-                            <Zap className="w-4 h-4 text-purple-400" title="Live AI Analysis" />
+                            <Zap className="w-4 h-4 text-purple-400" title="AI Analyzed" />
                           </div>
                         )}
+                        {/* Re-analyze button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAIAnalyzeClick(stock);
+                          }}
+                          disabled={stock.isAnalyzing}
+                          className="text-xs bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 px-2 py-1 rounded transition-colors disabled:opacity-50"
+                        >
+                          Re-analyze
+                        </button>
                       </div>
                     ) : (
-                      <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-700/20 group-hover:bg-purple-900/20 transition-all duration-300">
+                      <div 
+                        className="flex items-center space-x-3 p-3 rounded-xl bg-gray-700/20 hover:bg-purple-900/20 transition-all duration-300 cursor-pointer group"
+                        onClick={() => handleAIAnalyzeClick(stock)}
+                      >
                         <Brain className="w-6 h-6 text-gray-400 group-hover:text-purple-400 transition-colors" />
                         <div className="text-gray-400 group-hover:text-purple-400 transition-colors">
                           {stock.isAnalyzing ? (
-                            <span className="text-purple-400 font-medium">Analyzing...</span>
+                            <div className="flex items-center space-x-2">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400"></div>
+                              <span className="text-purple-400 font-medium">Analyzing...</span>
+                            </div>
                           ) : (
-                            <span className="font-medium">Click to analyze</span>
+                            <span className="font-medium">Click to Analyze</span>
                           )}
                         </div>
                       </div>
@@ -499,11 +508,12 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
         )}
       </div>
 
-      {/* Enhanced AI Worker Modal */}
+      {/* Enhanced AI Worker Modal with Auto-Start */}
       {selectedStock && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <AIWorker
             stock={selectedStock}
+            autoStart={true} // ✅ Auto-start analysis when modal opens
             isActive={true}
             onAnalysisStart={handleWorkerStart}
             onAnalysisComplete={handleWorkerComplete}

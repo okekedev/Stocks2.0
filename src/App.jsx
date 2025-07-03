@@ -1,9 +1,8 @@
-// src/App.jsx - Clean Version with No Duplications
+// src/App.jsx - Fixed Version with All Features Working
 import React from 'react';
-import { useNewsData } from './hooks/NewsData';
+import { useNewsData } from './hooks/useNewsData';
 import { Header } from './components/Header';
 import { FilteringStats } from './components/FilteringStats';
-import { AISignalsDashboard } from './components/AISignalsDashboard';
 import { NewsTable } from './components/NewsTable';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ErrorDisplay } from './components/ErrorDisplay';
@@ -17,14 +16,19 @@ export default function App() {
     analysisPerformed,
     error, 
     refresh, 
-    performAnalysis,
-    aiAnalysisEnabled, 
-    setAiAnalysisEnabled,
+    performAnalysis, // ✅ This should be returned from useNewsData
     minPrice,
     setMinPrice,
     maxPrice,
     setMaxPrice
   } = useNewsData();
+
+  // ✅ Handler for batch AI analysis - connects NewsTable to performAnalysis
+  const handleAnalyzeAll = async (stocks) => {
+    if (stocks && stocks.length > 0) {
+      await performAnalysis(stocks);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -61,27 +65,20 @@ export default function App() {
               setMaxPrice={setMaxPrice}
             />
 
-            {/* AI Trading Signals - Only show if we have signals */}
-            {newsData.aiSignals && newsData.aiSignals.length > 0 && (
-              <AISignalsDashboard 
-                aiSignals={newsData.aiSignals} 
-                loading={analysisLoading} 
-              />
-            )}
-
-            {/* All Stocks Table with AIWorker on hover */}
+            {/* All Stocks Table with AIWorker modal and batch analysis */}
             <NewsTable 
               stocks={newsData.stocks}
               allArticles={newsData.articles}
+              onAnalyzeAll={handleAnalyzeAll} // ✅ Now properly connected
             />
 
             {/* Analysis Complete - No Signals State */}
-            {!analysisLoading && analysisPerformed && newsData.aiSignals && newsData.aiSignals.length === 0 && (
+            {!analysisLoading && analysisPerformed && (
               <div className="bg-gray-800 rounded-lg p-6 text-center mb-6">
                 <div className="text-gray-400 mb-2">🤖</div>
                 <h3 className="text-lg font-medium text-gray-300 mb-2">AI Analysis Complete</h3>
                 <p className="text-gray-400">
-                  No high-confidence trading signals found. Check the stocks table above for all available data.
+                  Analysis results are now available in the stocks table above. Click on any stock to see detailed AI insights.
                 </p>
               </div>
             )}
