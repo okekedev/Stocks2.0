@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { ExternalLink, TrendingUp, TrendingDown, Clock, MessageSquare, X, ChevronUp, ChevronDown, Brain, Zap } from 'lucide-react';
-import { StockDetailModal } from './StockDetailModal';
 
 export function NewsTable({ stocks, allArticles }) {
-  const [selectedStock, setSelectedStock] = useState(null);
   const [sortBy, setSortBy] = useState('buySignal'); // Default to AI buy signals
   const [sortOrder, setSortOrder] = useState('desc');
 
@@ -52,7 +50,7 @@ export function NewsTable({ stocks, allArticles }) {
     return sortOrder === 'desc' ? bVal - aVal : aVal - bVal;
   });
 
-  const formatPrice = (price) => price ? `${price.toFixed(2)}` : 'N/A';
+  const formatPrice = (price) => price ? `$${price.toFixed(2)}` : 'N/A';
   const formatPercent = (percent) => percent ? `${percent > 0 ? '+' : ''}${percent.toFixed(2)}%` : 'N/A';
   const formatTime = (minutes) => {
     if (minutes < 60) return `${minutes}m ago`;
@@ -132,8 +130,7 @@ export function NewsTable({ stocks, allArticles }) {
             {sortedStocks.map((stock) => (
               <tr 
                 key={stock.ticker}
-                className="hover:bg-gray-700 cursor-pointer transition-colors"
-                onClick={() => setSelectedStock(stock)}
+                className="hover:bg-gray-700 transition-colors"
               >
                 {/* Stock Info */}
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -187,7 +184,7 @@ export function NewsTable({ stocks, allArticles }) {
                     </div>
                   ) : (
                     <div className="text-gray-400 text-sm">
-                      {stock.latestNews?.minutesAgo > 120 ? 'News too old' : 'Pending analysis'}
+                      Pending analysis
                     </div>
                   )}
                 </td>
@@ -227,14 +224,6 @@ export function NewsTable({ stocks, allArticles }) {
           <h3 className="text-lg font-medium text-gray-300">No stocks found</h3>
           <p className="text-gray-400">Try refreshing or check back later</p>
         </div>
-      )}
-
-      {/* Stock Detail Modal */}
-      {selectedStock && (
-        <StockDetailModal 
-          stock={selectedStock} 
-          onClose={() => setSelectedStock(null)} 
-        />
       )}
     </div>
   );
