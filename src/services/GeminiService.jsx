@@ -1,6 +1,6 @@
-// src/services/GeminiService.js - Pure Mathematical Data Approach
+// src/services/GeminiService.js - Complete file with comprehensive debugging
 import { articleFetcher } from './ArticleFetcher';
-import { intradayTechnicalService } from './IntradayTechnicalService';
+import { technicalService } from './TechnicalService';
 
 class GeminiService {
   constructor() {
@@ -33,7 +33,7 @@ class GeminiService {
             temperature: 0.1,
             topK: 1,
             topP: 1,
-            maxOutputTokens: 800,
+            maxOutputTokens: 600,
           }
         })
       });
@@ -56,142 +56,207 @@ class GeminiService {
     }
   }
 
-  // Pure data analysis - let AI do all correlation
+  // Market expert analysis - get ALL data first, then send one prompt
   async analyzeStock(stock, onProgress = null) {
     try {
-      onProgress?.(`🔢 Collecting pure mathematical data for ${stock.ticker}...`);
+      onProgress?.(`🔄 Collecting all data for ${stock.ticker}...`);
       
-      // Step 1: Get full article content
+      // Step 1: Get raw technical data (no interpretation)
+      console.log(`🔧 [${stock.ticker}] Fetching technical data...`);
+      const technicalData = await technicalService.analyzeStock(stock.ticker);
+      
+      console.log(`🔧 [${stock.ticker}] Technical data result:`, {
+        hasError: !!technicalData.error,
+        errorMessage: technicalData.error,
+        hasTechnicalData: !!technicalData.technicalData,
+        barsAnalyzed: technicalData.barsAnalyzed,
+        currentPrice: technicalData.currentPrice,
+        keys: Object.keys(technicalData)
+      });
+      
+      if (technicalData.error) {
+        onProgress?.(`⚠️ Technical: ${technicalData.error}`);
+      } else if (technicalData.barsAnalyzed === 0) {
+        onProgress?.(`⚠️ Technical: No historical data (likely new IPO)`);
+      } else {
+        onProgress?.(`✅ Technical: ${technicalData.barsAnalyzed || 0} bars analyzed`);
+      }
+
+      // Step 2: Get full article content if available
       let fullArticleContent = null;
       if (stock.latestNews?.articleUrl) {
         try {
-          onProgress?.(`📰 Fetching article content...`);
+          onProgress?.(`📰 Fetching full article...`);
           fullArticleContent = await articleFetcher.fetchArticleContent(stock.latestNews.articleUrl);
-          onProgress?.(`✅ Article: ${fullArticleContent.wordCount || 0} words`);
+          if (fullArticleContent?.success) {
+            onProgress?.(`✅ Article: ${fullArticleContent.wordCount || 0} words`);
+          } else {
+            onProgress?.(`⚠️ Article fetch failed`);
+          }
         } catch (error) {
-          onProgress?.(`⚠️ Using news summary`);
+          onProgress?.(`⚠️ Article error: ${error.message}`);
         }
+      } else {
+        onProgress?.(`📰 Using news summary only`);
       }
       
-      // Step 2: Get pure technical numbers (no interpretation)
-      onProgress?.(`📊 Calculating raw technical data...`);
-      const newsTimestamp = stock.latestNews?.publishedUtc || new Date().toISOString();
-      const technicalData = await intradayTechnicalService.getNewsEventAnalysis(
-        stock.ticker, 
-        newsTimestamp, 
-        2
-      );
+      // Step 3: Build complete prompt with all data
+      onProgress?.(`🛠️ Building comprehensive analysis prompt...`);
+      const prompt = this.buildMarketExpertPrompt(stock, technicalData, fullArticleContent);
       
-      // Step 3: Send raw data + news to AI for correlation
-      onProgress?.(`🤖 Sending pure data to AI for analysis...`);
-      const prompt = this.buildPureDataPrompt(stock, technicalData, fullArticleContent);
+      // Step 4: Send ONE complete request to AI
+      onProgress?.(`🧠 Sending to AI for market expert analysis...`);
       const response = await this.makeRequest(prompt);
       const cleanResponse = response.replace(/```json\n?|\n?```/g, '').trim();
+      
+      console.log(`🤖 [${stock.ticker}] AI Response:`, cleanResponse);
+      
       const result = JSON.parse(cleanResponse);
       
-      return {
+      const finalResult = {
         buyPercentage: Math.max(0, Math.min(100, result.buyPercentage || 50)),
         signal: result.signal || 'hold',
         reasoning: result.reasoning || 'Analysis completed',
         confidence: Math.max(0, Math.min(1, result.confidence || 0.5)),
-        riskLevel: result.riskLevel || 'medium',
         analysisTimestamp: new Date().toISOString(),
-        technicalData: technicalData,
-        hasFullArticle: !!(fullArticleContent?.success)
+        hasTechnicalData: !technicalData.error && technicalData.barsAnalyzed > 0,
+        hasFullArticle: !!(fullArticleContent?.success),
+        technicalBars: technicalData.barsAnalyzed || 0
       };
+      
+      onProgress?.(`✅ Complete: ${finalResult.signal.toUpperCase()} (${finalResult.buyPercentage}%)`);
+      
+      return finalResult;
       
     } catch (error) {
       console.error(`[ERROR] Failed to analyze ${stock.ticker}:`, error);
+      onProgress?.(`❌ Analysis failed: ${error.message}`);
       throw error;
     }
   }
 
-  // Pure data prompt - no pre-analysis, just raw numbers + news
-  buildPureDataPrompt(stock, technicalData, fullArticleContent) {
-    const articleText = fullArticleContent?.success && fullArticleContent?.content 
-      ? fullArticleContent.content 
-      : (stock.latestNews?.description || stock.latestNews?.title || 'No news');
-
-    const t = technicalData.technical;
+  // Simple market expert prompt with comprehensive debugging
+  buildMarketExpertPrompt(stock, technicalData, fullArticleContent) {
+    console.log('\n🔍 ===========================================');
+    console.log('🔍 DEBUGGING PROMPT CONSTRUCTION');
+    console.log('🔍 ===========================================');
     
-    const prompt = `TRADING ANALYSIS: Correlate news with technical data to generate trading signal.
+    // Debug: News text selection
+    const newsText = fullArticleContent?.success && fullArticleContent?.content 
+      ? fullArticleContent.content 
+      : (stock.latestNews?.description || stock.latestNews?.title || 'No recent news');
+    
+    console.log('📰 NEWS TEXT SOURCE:');
+    console.log(`   Full article available: ${!!(fullArticleContent?.success)}`);
+    console.log(`   Full article length: ${fullArticleContent?.content?.length || 0} chars`);
+    console.log(`   Fallback to description: ${!!(stock.latestNews?.description)}`);
+    console.log(`   Fallback to title: ${!!(stock.latestNews?.title)}`);
+    console.log(`   Final news text length: ${newsText.length} chars`);
+    console.log(`   News preview: "${newsText.substring(0, 100)}..."`);
 
-TICKER: ${stock.ticker}
-NEWS PUBLISHED: ${stock.latestNews?.minutesAgo || 'unknown'} minutes ago
+    // Debug: Price data
+    const currentPrice = stock.currentPrice || technicalData.currentPrice;
+    const changePercent = stock.changePercent || 0;
+    
+    console.log('\n💰 PRICE DATA:');
+    console.log(`   Stock current price: ${stock.currentPrice}`);
+    console.log(`   Technical current price: ${technicalData.currentPrice}`);
+    console.log(`   Final current price: ${currentPrice}`);
+    console.log(`   Change percent: ${changePercent}%`);
+    console.log(`   News age: ${stock.latestNews?.minutesAgo || 'unknown'} minutes`);
+    
+    // Debug: Technical data construction
+    let technicalSection = '';
+    console.log('\n📊 TECHNICAL DATA ANALYSIS:');
+    console.log(`   Technical data has error: ${!!technicalData.error}`);
+    console.log(`   Technical data exists: ${!!technicalData.technicalData}`);
+    
+    if (technicalData.error) {
+      console.log(`   ❌ Error: ${technicalData.error}`);
+      technicalSection = 'TECHNICAL DATA: Not available';
+    } else if (!technicalData.technicalData) {
+      console.log(`   ❌ No technicalData object found`);
+      console.log(`   Available keys:`, Object.keys(technicalData));
+      technicalSection = 'TECHNICAL DATA: Not available - no data structure returned';
+    } else {
+      const t = technicalData.technicalData;
+      console.log(`   ✅ Technical data object found`);
+      console.log(`   Available technical keys:`, Object.keys(t));
+      
+      // Debug each technical metric
+      console.log('\n   📈 TECHNICAL METRICS:');
+      console.log(`      VWAP: ${t.priceVsVwap}`);
+      console.log(`      Momentum:`, t.momentum);
+      console.log(`      Volume:`, t.volume);
+      console.log(`      Breakout:`, t.breakout);
+      console.log(`      Levels:`, t.levels);
+      
+      // Check if we have any real data
+      const hasRealData = t.priceVsVwap !== null && t.priceVsVwap !== 0 ||
+                         t.momentum !== null ||
+                         t.volume !== null ||
+                         t.breakout !== null ||
+                         t.levels !== null;
+      
+      if (!hasRealData) {
+        console.log(`   ⚠️ All technical metrics are null/zero - likely new IPO with no history`);
+        technicalSection = `
+TECHNICAL DATA: Limited (New IPO - insufficient historical data)
+• Bars analyzed: ${technicalData.barsAnalyzed || 0}
+• Note: Stock may be too new for meaningful technical analysis`;
+      } else {
+        technicalSection = `
+INTRADAY TECHNICAL DATA (last 4 hours):
+• Price vs VWAP: ${t.priceVsVwap ? t.priceVsVwap.toFixed(2) + '%' : 'N/A'}
+• Momentum: ${t.momentum ? `${t.momentum.direction} ${t.momentum.percentChange.toFixed(2)}% (strength: ${t.momentum.strength.toFixed(2)})` : 'N/A'}
+• Volume: ${t.volume ? `${t.volume.ratio}x average (${t.volume.volumeSpike ? 'SPIKE' : t.volume.isAboveAverage ? 'above avg' : 'normal'})` : 'N/A'}
+• Breakout: ${t.breakout ? `${t.breakout.hasBreakout ? t.breakout.direction + ' ' + t.breakout.strength.toFixed(2) + '%' : 'none'}` : 'N/A'}
+• Support/Resistance: ${t.levels ? `${t.levels.support} / ${t.levels.resistance} (current: ${t.levels.currentPrice})` : 'N/A'}`;
+      }
+    }
+    
+    console.log('\n🔧 TECHNICAL SECTION PREVIEW:');
+    console.log(technicalSection);
 
-NEWS CONTENT:
-"${articleText}"
+    const prompt = `You are a professional market expert and intraday trader. Thoroughly analyze the content and data provided to you below to determine your intraday trading signal for this stock.
 
-RAW TECHNICAL DATA (4-hour window around news):
+STOCK: ${stock.ticker}
+CURRENT PRICE: $${currentPrice?.toFixed(2) || 'N/A'}
+TODAY'S CHANGE: ${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%
+NEWS AGE: ${stock.latestNews?.minutesAgo || 'unknown'} minutes ago
 
-PRICE:
-current_price: ${t.priceAction.currentPrice}
-price_range: ${t.priceAction.priceRange}
-volatility: ${t.priceAction.volatility}
-momentum: ${t.priceAction.momentum}
-recent_momentum_30min: ${t.priceAction.recentMomentum}
-position_in_range: ${t.priceAction.percentOfRange}
+LATEST NEWS:
+${newsText}
 
-MOVING_AVERAGES:
-sma_5: ${t.sma.sma5}
-sma_10: ${t.sma.sma10}
-sma_20: ${t.sma.sma20}
-sma_30: ${t.sma.sma30}
-ema_5: ${t.ema.ema5}
-ema_10: ${t.ema.ema10}
-ema_20: ${t.ema.ema20}
+${technicalSection}
 
-MOMENTUM:
-rsi_14: ${t.rsi.rsi14}
-rsi_7: ${t.rsi.rsi7}
-macd: ${t.macd.macd}
-macd_signal: ${t.macd.signal}
-macd_histogram: ${t.macd.histogram}
+Perform a thorough analysis of the news content and technical data. What is your intraday trading signal for this stock? What is your detailed reasoning?
 
-BOLLINGER:
-bb_upper: ${t.bollinger.upper}
-bb_middle: ${t.bollinger.middle}
-bb_lower: ${t.bollinger.lower}
-bb_bandwidth: ${t.bollinger.bandwidth}
-bb_percent_b: ${t.bollinger.percentB}
-
-VOLUME:
-avg_volume: ${t.volume.averageVolume}
-volume_stddev: ${t.volume.volumeStdDev}
-volume_ratio: ${t.volume.volumeRatio}
-vwap_current: ${t.volume.vwapCurrent}
-vwap_average: ${t.volume.vwapAverage}
-
-MICROSTRUCTURE:
-avg_transactions: ${t.microstructure.averageTransactions}
-avg_bar_size: ${t.microstructure.averageBarSize}
-total_gaps: ${t.microstructure.gapAnalysis.totalGaps}
-largest_gap: ${t.microstructure.gapAnalysis.largestGap}
-gaps_up: ${t.microstructure.gapAnalysis.gapsUp}
-gaps_down: ${t.microstructure.gapAnalysis.gapsDown}
-
-PRICE_ARRAYS (last 20 data points):
-prices: [${technicalData.timeSeries.prices.slice(-20).join(', ')}]
-volumes: [${technicalData.timeSeries.volumes.slice(-20).join(', ')}]
-minutes_from_news: [${technicalData.timeSeries.timestamps.slice(-20).join(', ')}]
-
-Analyze the correlation between news content and technical data. Generate trading signal.
-
-Return JSON only:
+Return only JSON:
 {
   "buyPercentage": 75,
-  "signal": "buy", 
-  "reasoning": "Brief analysis (max 15 words)",
-  "confidence": 0.8,
-  "riskLevel": "medium"
+  "signal": "buy",
+  "reasoning": "Your brief market expert reasoning (max 20 words)",
+  "confidence": 0.8
 }
 
-Signals: strong_buy (80+), buy (60-79), hold (40-59), avoid (0-39)`;
+Signal options: strong_buy (80+%), buy (60-79%), hold (40-59%), avoid (0-39%)`;
+
+    // Debug: Final prompt
+    console.log('\n📝 FINAL PROMPT PREVIEW:');
+    console.log('='.repeat(80));
+    console.log(prompt);
+    console.log('='.repeat(80));
+    console.log(`\n📊 PROMPT STATS:`);
+    console.log(`   Total length: ${prompt.length} characters`);
+    console.log(`   News portion: ${newsText.length} characters`);
+    console.log(`   Technical portion: ${technicalSection.length} characters`);
+    console.log('🔍 ===========================================\n');
 
     return prompt;
   }
 
-  // Simple batch analysis
+  // Batch analysis with progress tracking
   async batchAnalyzeStocks(stocks, options = {}) {
     const { 
       maxConcurrent = 1,
@@ -201,8 +266,8 @@ Signals: strong_buy (80+), buy (60-79), hold (40-59), avoid (0-39)`;
     
     const results = [];
     
-    console.log(`[INFO] Pure data batch analysis: ${stocks.length} stocks...`);
-    onProgress?.(`🔢 Analyzing ${stocks.length} stocks with pure mathematical approach...`);
+    console.log(`[INFO] Market expert batch analysis: ${stocks.length} stocks...`);
+    onProgress?.(`🎯 Market expert analyzing ${stocks.length} stocks...`);
     
     for (let i = 0; i < stocks.length; i += maxConcurrent) {
       const batch = stocks.slice(i, i + maxConcurrent);
@@ -222,7 +287,8 @@ Signals: strong_buy (80+), buy (60-79), hold (40-59), avoid (0-39)`;
           };
           
           onStockComplete?.(stock.ticker, result);
-          onProgress?.(`✅ [${stock.ticker}] ${buySignal.signal.toUpperCase()} (${buySignal.buyPercentage}%)`);
+          const signalText = (buySignal.signal || 'hold').toUpperCase();
+          onProgress?.(`✅ [${stock.ticker}] ${signalText} (${buySignal.buyPercentage}%) - ${buySignal.reasoning}`);
           return result;
           
         } catch (error) {
@@ -233,8 +299,7 @@ Signals: strong_buy (80+), buy (60-79), hold (40-59), avoid (0-39)`;
             buySignal: {
               buyPercentage: 20,
               signal: 'avoid',
-              reasoning: 'Analysis failed',
-              riskLevel: 'high',
+              reasoning: 'Analysis failed - technical issues',
               confidence: 0.1
             },
             aiAnalyzed: false
@@ -249,18 +314,20 @@ Signals: strong_buy (80+), buy (60-79), hold (40-59), avoid (0-39)`;
       const batchResults = await Promise.all(batchPromises);
       results.push(...batchResults);
       
+      // Delay between batches
       if (i + maxConcurrent < stocks.length) {
-        onProgress?.(`⏳ Processing next batch (${i + maxConcurrent}/${stocks.length})...`);
-        await new Promise(resolve => setTimeout(resolve, 3000)); // Longer delay for intensive analysis
+        onProgress?.(`⏳ Processing next batch (${i + maxConcurrent + 1}/${stocks.length})...`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
     }
     
+    // Sort by buy percentage
     const sortedResults = results
       .filter(stock => stock.buySignal !== null)
       .sort((a, b) => (b.buySignal?.buyPercentage || 0) - (a.buySignal?.buyPercentage || 0));
     
-    console.log(`[INFO] Pure data analysis complete: ${sortedResults.length} analyzed`);
-    onProgress?.(`🎯 Analysis complete: ${sortedResults.length}/${stocks.length} processed`);
+    console.log(`[INFO] Market expert analysis complete: ${sortedResults.length} analyzed`);
+    onProgress?.(`🎯 Analysis complete: ${sortedResults.length}/${stocks.length} successful`);
     
     return sortedResults;
   }
