@@ -1,4 +1,4 @@
-// src/hooks/useNewsData.js - Simple version
+// src/hooks/useNewsData.js - Updated to work with optimized system
 import { useState, useEffect, useCallback } from 'react';
 import { polygonService } from '../services/PolygonService';
 import { newsProcessor } from '../services/NewsProcessor';
@@ -25,22 +25,14 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
     });
   }, [minPrice, maxPrice]);
 
-  useEffect(() => {
-    if (newsData && newsData.allStocks) {
-      const filteredStocks = applyPriceFilters(newsData.allStocks);
-      setNewsData(prevData => ({
-        ...prevData,
-        stocks: filteredStocks
-      }));
-    }
-  }, [minPrice, maxPrice, applyPriceFilters, newsData?.allStocks]);
-
   const fetchNewsData = useCallback(async () => {
     try {
       setNewsLoading(true);
       setError(null);
       
-      // Step 1: Get positive sentiment news
+      console.log('[INFO] Starting optimized news fetch...');
+      
+      // Step 1: Get all news from last 4 hours
       const rawNews = await polygonService.getAllMarketNews(4);
       
       if (!rawNews?.results?.length) {
@@ -48,6 +40,8 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
           articles: [],
           stocks: [],
           totalArticles: 0,
+          recentArticles: 0,
+          positiveStocks: 0,
           aiSignals: null,
           timestamp: new Date().toISOString()
         });
@@ -55,10 +49,10 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
         return;
       }
 
-      // Step 2: Process news into stocks (NOW ASYNC)
+      // Step 2: Process news with enhanced ticker extraction and positive filtering
       const processedData = await newsProcessor.processNewsForStocks(rawNews.results);
       
-      // Step 3: Get current prices
+      // Step 3: Get current prices for all positive stocks
       if (processedData.stocks.length > 0) {
         const tickers = processedData.stocks.map(s => s.ticker);
         const marketData = await polygonService.getMarketData(tickers);
@@ -72,7 +66,7 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
             currentPrice: snapshot?.lastTrade?.p || snapshot?.day?.c || null,
             changePercent: snapshot?.todaysChangePerc || 0,
             volume: snapshot?.day?.v || 0,
-            exchange: 'Unknown'
+            exchange: snapshot?.exchange || 'Unknown'
           };
         });
         
@@ -86,6 +80,8 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
           aiSignals: null,
           timestamp: new Date().toISOString()
         });
+        
+        console.log(`[SUCCESS] Loaded ${filteredStocks.length} positive stocks from last 4 hours`);
       }
       
       setNewsLoading(false);
@@ -102,6 +98,7 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
       setAnalysisLoading(true);
       setAnalysisPerformed(true);
       
+      // Only analyze very recent stocks (last 2 hours)
       const candidateStocks = stocks.filter(stock => 
         stock.latestNews?.minutesAgo < 120 && 
         stock.currentPrice && 
@@ -118,13 +115,14 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
       const aiStockMap = new Map(stocksWithBuySignals.map(stock => [stock.ticker, stock]));
       const aiEnhancedStocks = stocks.map(stock => aiStockMap.get(stock.ticker) || stock);
       
+      // Sort by buy signal strength
       aiEnhancedStocks.sort((a, b) => {
         if (a.buySignal && b.buySignal) {
           return b.buySignal.buyPercentage - a.buySignal.buyPercentage;
         }
         if (a.buySignal && !b.buySignal) return -1;
         if (!a.buySignal && b.buySignal) return 1;
-        return b.newsCount - a.newsCount;
+        return a.latestMinutesAgo - b.latestMinutesAgo; // Most recent first
       });
 
       const aiSignals = aiEnhancedStocks

@@ -1,7 +1,8 @@
-// src/components/NewsTable.jsx - Fixed company name display
-import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, Clock, MessageSquare, Brain, Zap, ChevronUp, ChevronDown, CheckCircle } from 'lucide-react';
+// src/components/NewsTable.jsx - Fixed version with WebSocket prices
+import React, { useState, useEffect, useRef } from 'react';
+import { TrendingUp, TrendingDown, Clock, MessageSquare, Brain, Zap, ChevronUp, ChevronDown, CheckCircle, Wifi, WifiOff, AlertCircle } from 'lucide-react';
 import { AIWorker } from './AIWorker';
+import { useWebSocketPrices } from '../hooks/useWebSocketPrices';
 
 export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
   const [selectedStock, setSelectedStock] = useState(null);
@@ -9,6 +10,46 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
   const [sortOrder, setSortOrder] = useState('desc');
   const [stockAnalyses, setStockAnalyses] = useState({});
   const [analyzingStocks, setAnalyzingStocks] = useState(new Set());
+  const [priceAnimations, setPriceAnimations] = useState(new Map());
+  
+  // Use ref to track previous prices to avoid infinite loop
+  const previousPricesRef = useRef(new Map());
+
+  // WebSocket real-time price updates
+  const { priceData, isConnected, connectionStatus, reconnect } = useWebSocketPrices(stocks);
+
+  // Track price changes for animations - FIXED to prevent infinite loop
+  useEffect(() => {
+    const newAnimations = new Map();
+    
+    priceData.forEach((newPrice, ticker) => {
+      const previousPrice = previousPricesRef.current.get(ticker);
+      
+      if (previousPrice && newPrice.currentPrice && previousPrice !== newPrice.currentPrice) {
+        const animation = newPrice.currentPrice > previousPrice ? 'price-up' : 'price-down';
+        newAnimations.set(ticker, animation);
+        
+        // Clear animation after 1 second
+        setTimeout(() => {
+          setPriceAnimations(prev => {
+            const updated = new Map(prev);
+            updated.delete(ticker);
+            return updated;
+          });
+        }, 1000);
+      }
+      
+      // Update previous price
+      if (newPrice.currentPrice) {
+        previousPricesRef.current.set(ticker, newPrice.currentPrice);
+      }
+    });
+    
+    // Only update animations if there are new ones
+    if (newAnimations.size > 0) {
+      setPriceAnimations(newAnimations);
+    }
+  }, [priceData]); // Only depend on priceData, not stocks
 
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -19,12 +60,11 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
     }
   };
 
-  // Click to open/close analysis terminal
   const handleStockClick = (stock) => {
     if (selectedStock?.ticker === stock.ticker) {
-      setSelectedStock(null); // Close if same stock clicked
+      setSelectedStock(null);
     } else {
-      setSelectedStock(stock); // Open new stock analysis
+      setSelectedStock(stock);
     }
   };
 
@@ -32,7 +72,6 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
     setSelectedStock(null);
   };
 
-  // AI Worker callbacks with persistent log storage
   const handleWorkerStart = (ticker) => {
     setAnalyzingStocks(prev => new Set([...prev, ticker]));
   };
@@ -54,15 +93,27 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
     });
   };
 
-  // Enhanced stock data with persistent AI analysis
+  // Enhanced stock data with real-time WebSocket prices
   const getEnhancedStock = (stock) => {
     const savedAnalysis = stockAnalyses[stock.ticker];
+    const realtimeData = priceData.get(stock.ticker);
+    
     return {
       ...stock,
+      // Use WebSocket price data if available
+      currentPrice: realtimeData?.currentPrice || stock.currentPrice,
+      changePercent: realtimeData?.changePercent || stock.changePercent,
+      bid: realtimeData?.bid,
+      ask: realtimeData?.ask,
+      spread: realtimeData?.spread,
+      lastUpdated: realtimeData?.lastUpdated,
+      // AI analysis data
       buySignal: savedAnalysis || stock.buySignal,
       isAnalyzing: analyzingStocks.has(stock.ticker),
       hasCustomAnalysis: !!savedAnalysis,
-      hasSavedLogs: !!(savedAnalysis?.savedLogs?.length > 0)
+      hasSavedLogs: !!(savedAnalysis?.savedLogs?.length > 0),
+      // Animation state
+      priceAnimation: priceAnimations.get(stock.ticker)
     };
   };
 
@@ -110,6 +161,41 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
     return `${Math.floor(minutes / 1440)}d ago`;
   };
 
+  const formatLastUpdated = (timestamp) => {
+    if (!timestamp) return '';
+    const secondsAgo = Math.floor((Date.now() - timestamp) / 1000);
+    if (secondsAgo < 5) return 'Live';
+    if (secondsAgo < 60) return `${secondsAgo}s ago`;
+    const minutesAgo = Math.floor(secondsAgo / 60);
+    return `${minutesAgo}m ago`;
+  };
+
+  const getConnectionIcon = () => {
+    switch (connectionStatus) {
+      case 'connected':
+        return <Wifi className="w-3 h-3 text-green-400" />;
+      case 'connecting':
+        return <WifiOff className="w-3 h-3 text-yellow-400 animate-pulse" />;
+      case 'error':
+        return <AlertCircle className="w-3 h-3 text-red-400" />;
+      default:
+        return <WifiOff className="w-3 h-3 text-gray-400" />;
+    }
+  };
+
+  const getConnectionText = () => {
+    switch (connectionStatus) {
+      case 'connected':
+        return 'Live WebSocket';
+      case 'connecting':
+        return 'Connecting...';
+      case 'error':
+        return 'Connection Error';
+      default:
+        return 'Disconnected';
+    }
+  };
+
   const getBuySignalColor = (buyPercentage) => {
     if (!buyPercentage) return 'text-gray-400';
     if (buyPercentage >= 80) return 'text-green-400';
@@ -149,7 +235,24 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
         <div className="bg-gray-700 px-6 py-4 border-b border-gray-600">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-white">AI Stock Analysis</h3>
+              <div className="flex items-center space-x-3">
+                <h3 className="text-lg font-semibold text-white">AI Stock Analysis</h3>
+                {/* WebSocket status indicator */}
+                <div className="flex items-center space-x-2">
+                  {getConnectionIcon()}
+                  <span className="text-xs text-gray-400">
+                    {getConnectionText()}
+                  </span>
+                  {connectionStatus === 'error' && (
+                    <button 
+                      onClick={reconnect}
+                      className="text-xs text-blue-400 hover:text-blue-300 underline"
+                    >
+                      Reconnect
+                    </button>
+                  )}
+                </div>
+              </div>
               <p className="text-sm text-gray-400">
                 {stocks.length} stocks • {Object.keys(stockAnalyses).length} AI analyzed • 
                 <span className="text-purple-400 ml-1">Click rows to analyze</span>
@@ -161,7 +264,6 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
               </div>
               <button
                 onClick={() => {
-                  // Get unanalyzed stocks
                   const unanalyzedStocks = stocks.filter(stock => 
                     !stockAnalyses[stock.ticker] && 
                     !analyzingStocks.has(stock.ticker) &&
@@ -205,7 +307,7 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                       : 'hover:bg-gray-700'
                   }`}
                 >
-                  {/* Stock Info - FIXED: Only show company name if different from ticker */}
+                  {/* Stock Info */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center space-x-2">
                       <div>
@@ -226,15 +328,43 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                     </div>
                   </td>
 
-                  {/* Price */}
+                  {/* Real-Time WebSocket Price with Animation */}
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-white">{formatPrice(stock.currentPrice)}</div>
-                    <div className={`text-sm flex items-center ${stock.changePercent > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {stock.changePercent > 0 ? 
-                        <TrendingUp className="w-3 h-3 mr-1" /> : 
-                        <TrendingDown className="w-3 h-3 mr-1" />
-                      }
-                      {formatPercent(stock.changePercent)}
+                    <div className="space-y-1">
+                      {/* Price with animation */}
+                      <div className={`text-white font-medium transition-all duration-300 ${
+                        stock.priceAnimation === 'price-up' ? 'text-green-400 scale-105' : 
+                        stock.priceAnimation === 'price-down' ? 'text-red-400 scale-105' : 
+                        'text-white'
+                      }`}>
+                        {formatPrice(stock.currentPrice)}
+                      </div>
+                      
+                      {/* Change percentage with trend icon */}
+                      <div className={`text-sm flex items-center ${
+                        stock.changePercent > 0 ? 'text-green-400' : 
+                        stock.changePercent < 0 ? 'text-red-400' : 'text-gray-400'
+                      }`}>
+                        {stock.changePercent > 0 ? 
+                          <TrendingUp className="w-3 h-3 mr-1" /> : 
+                          <TrendingDown className="w-3 h-3 mr-1" />
+                        }
+                        <span className="font-medium">{formatPercent(stock.changePercent)}</span>
+                      </div>
+                      
+                      {/* Live update indicator */}
+                      {stock.lastUpdated && (
+                        <div className="text-xs text-green-400 font-medium">
+                          {formatLastUpdated(stock.lastUpdated)}
+                        </div>
+                      )}
+                      
+                      {/* Bid/Ask spread if available */}
+                      {stock.bid && stock.ask && (
+                        <div className="text-xs text-gray-500">
+                          Bid: ${stock.bid.toFixed(2)} | Ask: ${stock.ask.toFixed(2)}
+                        </div>
+                      )}
                     </div>
                   </td>
 

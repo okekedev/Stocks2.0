@@ -501,3 +501,23 @@ body::after {
   background: rgba(0, 217, 255, 0.2);
   color: var(--text-primary);
 }
+
+.price-up {
+  animation: priceUp 1s ease-in-out;
+}
+
+.price-down {
+  animation: priceDown 1s ease-in-out;
+}
+
+@keyframes priceUp {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); background-color: rgba(34, 197, 94, 0.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes priceDown {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); background-color: rgba(239, 68, 68, 0.2); }
+  100% { transform: scale(1); }
+}

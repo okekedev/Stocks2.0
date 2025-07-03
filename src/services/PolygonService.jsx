@@ -1,4 +1,4 @@
-// src/services/PolygonService.js - Fixed with getCompanyNames method
+// src/services/PolygonService.js - Add method for individual ticker updates
 class PolygonService {
   constructor() {
     this.apiKey = import.meta.env.VITE_POLYGON_API_KEY;
@@ -33,7 +33,7 @@ class PolygonService {
   }
 
   // Get positive sentiment news only
-  async getAllMarketNews(hours = 8) {
+  async getAllMarketNews(hours = 4) {
     const fromDate = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
     
     const response = await this.makeRequest('/v2/reference/news', {
@@ -43,7 +43,7 @@ class PolygonService {
       'published_utc.gte': fromDate
     });
     
-    // Filter for positive sentiment only - let NewsProcessor handle ticker filtering
+    // Filter for positive sentiment only
     if (response.results) {
       response.results = response.results.filter(article => 
         article.insights && 
@@ -54,48 +54,73 @@ class PolygonService {
     return response;
   }
 
-  // Get market snapshots for pricing
+  // Get market snapshots for pricing (optimized for real-time updates)
   async getMarketData(tickers) {
     try {
-      const response = await this.makeRequest('/v2/snapshot/locale/us/markets/stocks/tickers', {
-        tickers: tickers.join(',')
-      });
-      
-      return response.tickers || [];
+      // Split large requests to avoid API limits
+      const chunks = [];
+      for (let i = 0; i < tickers.length; i += 100) {
+        chunks.push(tickers.slice(i, i + 100));
+      }
+
+      const allData = [];
+      for (const chunk of chunks) {
+        const response = await this.makeRequest('/v2/snapshot/locale/us/markets/stocks/tickers', {
+          tickers: chunk.join(',')
+        });
+        
+        if (response.tickers) {
+          allData.push(...response.tickers);
+        }
+      }
+
+      return allData;
     } catch (error) {
       console.error('[ERROR] Failed to get market data:', error);
       return [];
     }
   }
 
-  // Get company names for tickers (MISSING METHOD - NOW ADDED)
+  // Get single ticker snapshot (for targeted updates)
+  async getSingleTickerSnapshot(ticker) {
+    try {
+      const response = await this.makeRequest(`/v2/snapshot/locale/us/markets/stocks/tickers/${ticker}`);
+      return response.ticker || null;
+    } catch (error) {
+      console.error(`[ERROR] Failed to get snapshot for ${ticker}:`, error);
+      return null;
+    }
+  }
+
+  // Get company names for tickers
   async getCompanyNames(tickers) {
     const companyNames = new Map();
     
     try {
-      console.log(`[INFO] Fetching company names for ${tickers.length} tickers...`);
-      
-      // Use the tickers endpoint to get company info
-      const response = await this.makeRequest('/v3/reference/tickers', {
-        ticker: tickers.join(','),
-        market: 'stocks',
-        active: true,
-        limit: 1000
-      });
-      
-      if (response.results) {
-        response.results.forEach(result => {
-          if (result.ticker && result.name) {
-            companyNames.set(result.ticker, result.name);
-          }
-        });
+      const chunks = [];
+      for (let i = 0; i < tickers.length; i += 100) {
+        chunks.push(tickers.slice(i, i + 100));
       }
-      
-      console.log(`[INFO] Found company names for ${companyNames.size} tickers`);
+
+      for (const chunk of chunks) {
+        const response = await this.makeRequest('/v3/reference/tickers', {
+          ticker: chunk.join(','),
+          market: 'stocks',
+          active: true,
+          limit: 1000
+        });
+        
+        if (response.results) {
+          response.results.forEach(result => {
+            if (result.ticker && result.name) {
+              companyNames.set(result.ticker, result.name);
+            }
+          });
+        }
+      }
       
     } catch (error) {
       console.error('[ERROR] Failed to fetch company names:', error);
-      // Return empty map if API fails
     }
     
     return companyNames;
