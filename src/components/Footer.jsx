@@ -1,5 +1,5 @@
-// src/components/Footer.jsx - Modern Professional Footer
-import React from 'react';
+// src/components/Footer.jsx - Simplified Modern Footer with Dropdown Disclaimer
+import React, { useState } from 'react';
 import { 
   TrendingUp, 
   Shield, 
@@ -10,20 +10,22 @@ import {
   Github,
   Twitter,
   Mail,
-  Heart,
   Zap,
-  Globe
+  Globe,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
   
   return (
     <footer className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700/50 mt-12">
       {/* Main Footer Content */}
       <div className="px-6 py-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             
             {/* Brand Section */}
             <div className="lg:col-span-1">
@@ -81,31 +83,6 @@ export function Footer() {
               </ul>
             </div>
 
-            {/* Features */}
-            <div>
-              <h4 className="text-white font-semibold mb-4">Features</h4>
-              <ul className="space-y-3 text-sm text-gray-400">
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  → AI Trading Signals
-                </li>
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  → Real-time Price Updates
-                </li>
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  → Sentiment Analysis
-                </li>
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  → Market News Integration
-                </li>
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  → Advanced Filtering
-                </li>
-                <li className="hover:text-white transition-colors cursor-pointer">
-                  → Portfolio Analytics
-                </li>
-              </ul>
-            </div>
-
             {/* Status & Info */}
             <div>
               <h4 className="text-white font-semibold mb-4 flex items-center">
@@ -140,19 +117,37 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Disclaimer Section */}
+      {/* Dropdown Disclaimer Section */}
       <div className="bg-red-900/20 border-t border-red-700/30 px-6 py-4">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-start space-x-3">
-            <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-red-300 leading-relaxed">
-              <strong className="text-red-200">Investment Disclaimer:</strong> This platform provides AI-generated 
-              analysis for educational and informational purposes only. All trading signals, predictions, and 
-              recommendations are not financial advice. Stock trading involves substantial risk of loss. 
-              Past performance does not guarantee future results. Always conduct your own research and 
-              consider consulting with a qualified financial advisor before making investment decisions.
+          <button
+            onClick={() => setIsDisclaimerOpen(!isDisclaimerOpen)}
+            className="flex items-center justify-between w-full text-left group"
+          >
+            <div className="flex items-center space-x-3">
+              <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
+              <span className="text-red-200 font-semibold">Investment Disclaimer</span>
             </div>
-          </div>
+            <div className="text-red-400 group-hover:text-red-300 transition-colors">
+              {isDisclaimerOpen ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+            </div>
+          </button>
+          
+          {isDisclaimerOpen && (
+            <div className="mt-4 p-4 bg-red-900/30 rounded-lg border border-red-700/30 animate-in slide-in-from-top duration-300">
+              <div className="text-sm text-red-300 leading-relaxed">
+                <strong className="text-red-200">Investment Disclaimer:</strong> This platform provides AI-generated 
+                analysis for educational and informational purposes only. All trading signals, predictions, and 
+                recommendations are not financial advice. Stock trading involves substantial risk of loss. 
+                Past performance does not guarantee future results. Always conduct your own research and 
+                consider consulting with a qualified financial advisor before making investment decisions.
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -162,10 +157,6 @@ export function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             <div className="flex items-center space-x-4 text-sm text-gray-400">
               <span>© {currentYear} StockAI Pro. All rights reserved.</span>
-              <span className="hidden md:inline">•</span>
-              <span className="hidden md:inline">Market data delayed 15 minutes</span>
-              <span className="hidden md:inline">•</span>
-              <span className="hidden md:inline">Built with React & AI</span>
             </div>
             
             <div className="flex items-center space-x-6 text-sm">
@@ -175,14 +166,6 @@ export function Footer() {
               <button className="text-gray-400 hover:text-white transition-colors">
                 Terms of Service
               </button>
-              <button className="text-gray-400 hover:text-white transition-colors">
-                API Documentation
-              </button>
-              <div className="flex items-center space-x-1 text-gray-400">
-                <span>Made with</span>
-                <Heart className="w-3 h-3 text-red-400" />
-                <span>for traders</span>
-              </div>
             </div>
           </div>
         </div>
