@@ -20,42 +20,35 @@ class PolygonService {
         }
       });
 
-      console.log(`[INFO] Direct API call: ${endpoint}`);
-      
       const response = await fetch(url.toString());
       
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
       
-      const data = await response.json();
-      console.log(`[INFO] API response: ${data.status}, count: ${data.count || 0}`);
-      
-      return data;
+      return await response.json();
     } catch (error) {
       console.error(`[ERROR] API request failed:`, error);
       throw error;
     }
   }
 
-  // Get all recent market news - our main function
+  // Get all recent market news
   async getAllMarketNews(hours = 4) {
-    const fromDate = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
-    const toDate = new Date().toISOString();
+    const fromDate = new Date(Date.now() - hours * 60 * 60 * 1000);
     
     return this.makeRequest('/v2/reference/news', {
       limit: 1000,
       order: 'desc',
       sort: 'published_utc',
-      'published_utc.gte': fromDate,
-      'published_utc.lte': toDate
+      'published_utc.gte': fromDate.toISOString()
     });
   }
 
   // Get market data for stocks with news
   async getMarketData(tickers) {
     try {
-      const batchSize = 250; // Polygon limit
+      const batchSize = 250;
       const allSnapshots = [];
       
       for (let i = 0; i < tickers.length; i += batchSize) {

@@ -13,10 +13,33 @@ export function NewsTable({ stocks, allArticles }) {
     return sortOrder === 'desc' ? bVal - aVal : aVal - bVal;
   });
 
-  const formatPrice = (price) => price ? `$${price.toFixed(2)}` : 'N/A';
-  const formatPercent = (percent) => percent ? `${percent > 0 ? '+' : ''}${percent.toFixed(2)}%` : 'N/A';
-  const formatVolume = (volume) => volume ? `${(volume / 1000).toFixed(0)}K` : 'N/A';
+  // Enhanced formatters that handle missing data gracefully
+  const formatPrice = (price) => {
+    if (price && !isNaN(price) && price > 0) {
+      return `$${parseFloat(price).toFixed(2)}`;
+    }
+    return 'N/A';
+  };
+
+  const formatPercent = (percent) => {
+    if (percent && !isNaN(percent)) {
+      return `${percent > 0 ? '+' : ''}${parseFloat(percent).toFixed(2)}%`;
+    }
+    return 'N/A';
+  };
+
+  const formatVolume = (volume) => {
+    if (volume && !isNaN(volume) && volume > 0) {
+      const vol = parseFloat(volume);
+      if (vol >= 1000000) return `${(vol / 1000000).toFixed(1)}M`;
+      if (vol >= 1000) return `${(vol / 1000).toFixed(0)}K`;
+      return vol.toString();
+    }
+    return 'N/A';
+  };
+
   const formatTime = (minutes) => {
+    if (!minutes || isNaN(minutes)) return 'N/A';
     if (minutes < 60) return `${minutes}m ago`;
     if (minutes < 1440) return `${Math.floor(minutes / 60)}h ago`;
     return `${Math.floor(minutes / 1440)}d ago`;
@@ -33,6 +56,13 @@ export function NewsTable({ stocks, allArticles }) {
     if (impact > 0.4) return 'text-yellow-400';
     return 'text-gray-400';
   };
+
+  // Debug logging to see what fields are available
+  React.useEffect(() => {
+    if (stocks.length > 0) {
+      console.log('Available stock fields:', Object.keys(stocks[0]));
+    }
+  }, [stocks]);
 
   return (
     <div className="bg-gray-800 rounded-lg overflow-hidden">
@@ -79,11 +109,14 @@ export function NewsTable({ stocks, allArticles }) {
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="font-medium text-white">{stock.ticker}</div>
-                  <div className="text-sm text-gray-400">{stock.exchange}</div>
+                  <div className="text-sm text-gray-400">{stock.exchange || 'Unknown'}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-white">{formatPrice(stock.currentPrice)}</div>
-                  <div className={`text-sm ${stock.changePercent > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  <div className="text-white">{formatPrice(stock.currentPrice || stock.price)}</div>
+                  <div className={`text-sm ${
+                    (stock.changePercent || 0) > 0 ? 'text-green-400' : 
+                    (stock.changePercent || 0) < 0 ? 'text-red-400' : 'text-gray-400'
+                  }`}>
                     {formatPercent(stock.changePercent)}
                   </div>
                 </td>
@@ -93,17 +126,17 @@ export function NewsTable({ stocks, allArticles }) {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <MessageSquare className="w-4 h-4 text-blue-400 mr-1" />
-                    <span className="text-white font-medium">{stock.newsCount}</span>
+                    <span className="text-white font-medium">{stock.newsCount || 0}</span>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`font-medium ${getSentimentColor(stock.avgSentiment)}`}>
-                    {stock.avgSentiment.toFixed(2)}
+                    {(stock.avgSentiment || 0).toFixed(2)}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`font-medium ${getImpactColor(stock.avgImpact)}`}>
-                    {stock.avgImpact.toFixed(2)}
+                    {(stock.avgImpact || 0).toFixed(2)}
                   </span>
                 </td>
                 <td className="px-6 py-4">

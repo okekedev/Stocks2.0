@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { polygonService } from '../services/PolygonService';
+import { currentPriceService } from '../services/CurrentPriceService';
 import { newsProcessor } from '../services/NewsProcessor';
 
 export function useNewsData(refreshInterval = 5 * 60 * 1000) { // 5 minutes
@@ -12,8 +13,8 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) { // 5 minutes
       console.log('[INFO] Fetching latest market news...');
       setError(null);
       
-      // Step 1: Get all recent market news (4-hour window)
-      const rawNews = await polygonService.getAllMarketNews(4);
+      // Step 1: Get all recent market news (8-hour window to catch more news cycles)
+      const rawNews = await polygonService.getAllMarketNews(8);
       
       if (!rawNews?.results?.length) {
         setNewsData({
@@ -28,27 +29,53 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) { // 5 minutes
 
       console.log(`[INFO] Processing ${rawNews.results.length} articles...`);
       
+      // Debug: Check what articles we're getting
+      console.log('[DEBUG] Sample articles:', rawNews.results.slice(0, 3).map(a => ({
+        title: a.title,
+        tickers: a.tickers,
+        publishedUtc: a.published_utc
+      })));
+      
       // Step 2: Process news and extract Robinhood stocks
       const processedData = newsProcessor.processNewsForStocks(rawNews.results);
       
-      // Step 3: Get market data for stocks with news
+      // Debug: Check processing results
+      console.log('[DEBUG] Processing results:', {
+        totalArticles: rawNews.results.length,
+        articlesWithValidTickers: processedData.articles.length,
+        uniqueStocks: processedData.stocks.length,
+        filteredOutArticles: rawNews.results.length - processedData.articles.length
+      });
+      
+      // Step 3: Get current price and volume data for stocks with news
       if (processedData.stocks.length > 0) {
-        console.log(`[INFO] Getting market data for ${processedData.stocks.length} stocks...`);
+        console.log(`[INFO] Getting current market data for ${processedData.stocks.length} stocks...`);
         const tickers = processedData.stocks.map(s => s.ticker);
-        const marketData = await polygonService.getMarketData(tickers);
         
-        // Merge market data with news data
+        // Use the new current price service
+        const priceData = await currentPriceService.getCurrentPricesGrouped(tickers);
+        
+        // Create a map for faster lookups
+        const priceMap = new Map(priceData.map(p => [p.ticker, p]));
+        
+        // Merge price data with news data
         processedData.stocks = processedData.stocks.map(stock => {
-          const snapshot = marketData.find(m => m.ticker === stock.ticker);
+          const marketData = priceMap.get(stock.ticker);
           return {
             ...stock,
-            currentPrice: snapshot?.lastTrade?.p || null,
-            changePercent: snapshot?.todaysChangePerc || 0,
-            volume: snapshot?.dailyBar?.v || 0,
-            marketCap: snapshot?.marketCap || null,
-            exchange: snapshot?.exchange || 'Unknown'
+            currentPrice: marketData?.price || null,
+            price: marketData?.price || null, // Add both for compatibility
+            changePercent: marketData?.changePercent || 0,
+            change: marketData?.change || 0,
+            volume: marketData?.volume || 0,
+            high: marketData?.high || null,
+            low: marketData?.low || null,
+            open: marketData?.open || null,
+            exchange: 'NASDAQ' // Default since we don't have exchange info from price API
           };
         });
+        
+        console.log(`[INFO] Successfully merged price data for ${priceData.length} stocks`);
       }
       
       // Sort by impact and news count

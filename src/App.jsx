@@ -12,7 +12,7 @@ export default function App() {
     maxPrice: '',
     minVolume: '',
     minNewsCount: 1,
-    minSentiment: -1,
+    minSentiment: 0.1, // Default to positive sentiment (changed from -1)
     minImpactScore: 0,
     search: ''
   });
@@ -84,24 +84,50 @@ export default function App() {
 // Apply filters to stocks array
 function applyFilters(stocks, filters) {
   return stocks.filter(stock => {
-    // Price filters
-    if (filters.minPrice && (!stock.currentPrice || stock.currentPrice < parseFloat(filters.minPrice))) return false;
-    if (filters.maxPrice && (!stock.currentPrice || stock.currentPrice > parseFloat(filters.maxPrice))) return false;
+    // Price filters - only filter stocks that actually have price data
+    if (filters.minPrice !== '') {
+      const minPrice = parseFloat(filters.minPrice);
+      const stockPrice = parseFloat(stock.currentPrice || stock.price);
+      
+      // If stock has no price data, don't filter it out based on price
+      // Only filter out stocks that have price data AND are below the minimum
+      if (!isNaN(stockPrice) && stockPrice < minPrice) return false;
+    }
     
-    // Volume filters  
-    if (filters.minVolume && (!stock.volume || stock.volume < parseFloat(filters.minVolume) * 1000)) return false;
+    if (filters.maxPrice !== '') {
+      const maxPrice = parseFloat(filters.maxPrice);
+      const stockPrice = parseFloat(stock.currentPrice || stock.price);
+      
+      // If stock has no price data, don't filter it out based on price
+      // Only filter out stocks that have price data AND are above the maximum
+      if (!isNaN(stockPrice) && stockPrice > maxPrice) return false;
+    }
     
-    // News filters
+    // Volume filters - only filter stocks that actually have volume data > 0
+    if (filters.minVolume !== '') {
+      const minVolume = parseFloat(filters.minVolume);
+      const stockVolume = parseFloat(stock.volume);
+      
+      // If stock has no meaningful volume data (0 or NaN), don't filter it out
+      // Only filter out stocks that have volume data AND are below the minimum
+      if (!isNaN(stockVolume) && stockVolume > 0 && stockVolume < minVolume) return false;
+    }
+    
+    // News filters - these work fine since they don't depend on market data
     if (filters.minNewsCount && stock.newsCount < parseInt(filters.minNewsCount)) return false;
-    if (filters.minSentiment && stock.avgSentiment < parseFloat(filters.minSentiment)) return false;
-    if (filters.minImpactScore && stock.avgImpact < parseFloat(filters.minImpactScore)) return false;
+    if (filters.minSentiment > -1 && stock.avgSentiment < parseFloat(filters.minSentiment)) return false;
+    if (filters.minImpactScore > 0 && stock.avgImpact < parseFloat(filters.minImpactScore)) return false;
     
     // Search filter
-    if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
+    if (filters.search && filters.search.trim() !== '') {
+      const searchTerm = filters.search.toLowerCase().trim();
       const matchesTicker = stock.ticker.toLowerCase().includes(searchTerm);
       const matchesNews = stock.latestNews?.title.toLowerCase().includes(searchTerm);
-      if (!matchesTicker && !matchesNews) return false;
+      const matchesDescription = stock.articles?.some(article => 
+        article.title.toLowerCase().includes(searchTerm) ||
+        (article.description && article.description.toLowerCase().includes(searchTerm))
+      );
+      if (!matchesTicker && !matchesNews && !matchesDescription) return false;
     }
     
     return true;

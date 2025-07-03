@@ -86,7 +86,7 @@ export function TableFilters({ filters, onChange, stockCount }) {
         {/* Volume */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
-            Min Volume (K)
+            Min Volume
           </label>
           <input
             type="number"
