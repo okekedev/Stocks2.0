@@ -1,69 +1,85 @@
-// src/components/Header.jsx
+// src/components/Header.jsx - Clean Header (No Price Filter)
 import React from 'react';
-import { Brain, Clock, DollarSign, Filter } from 'lucide-react';
+import { TrendingUp, Clock, Zap } from 'lucide-react';
 
-export function Header({ 
-  lastUpdate, 
-  totalStocks, 
-  totalArticles,
-  minPrice,
-  setMinPrice,
-  maxPrice,
-  setMaxPrice
-}) {
+export function Header({ lastUpdate }) {
   const formatTime = (timestamp) => {
     if (!timestamp) return 'Never';
     return new Date(timestamp).toLocaleTimeString();
   };
 
+  const formatTimeAgo = (timestamp) => {
+    if (!timestamp) return 'Never';
+    const now = Date.now();
+    const diff = now - new Date(timestamp).getTime();
+    const minutes = Math.floor(diff / 60000);
+    
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+  };
+
   return (
-    <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Brain className="w-8 h-8 text-purple-400" />
-          <div>
-            <h1 className="text-2xl font-bold text-white">AI Stock Trading Signals</h1>
-            <p className="text-sm text-gray-400">Auto-refreshing every 5 minutes • Smart caching</p>
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-6">
-          {/* Price Filters */}
-          <div className="flex items-center space-x-3 bg-gray-700 rounded-lg px-4 py-2">
-            <DollarSign className="w-4 h-4 text-green-400" />
-            <div className="flex items-center space-x-2">
-              <input
-                type="number"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-                className="w-16 bg-gray-600 text-white text-sm rounded px-2 py-1 border border-gray-500 focus:border-green-400 outline-none"
-                min="0"
-                step="0.01"
-                placeholder="Min"
-              />
-              <span className="text-gray-400">-</span>
-              <input
-                type="number"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-                className="w-20 bg-gray-600 text-white text-sm rounded px-2 py-1 border border-gray-500 focus:border-green-400 outline-none"
-                min="0"
-                step="1"
-                placeholder="Max"
-              />
+    <header className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-gray-700/50 shadow-2xl">
+      {/* Main Header */}
+      <div className="px-6 py-4">
+        <div className="flex items-center justify-between">
+          {/* Left Side - Branding */}
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse"></div>
             </div>
-            <Filter className="w-4 h-4 text-green-400" />
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                StockAI Pro
+              </h1>
+              <div className="flex items-center space-x-3 text-sm">
+                <span className="text-gray-400">Real-time Market Intelligence</span>
+                <span className="text-gray-500">•</span>
+                <div className="flex items-center space-x-1">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-green-400 font-medium">Live</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Stats */}
+          {/* Right Side - Last Update Only */}
           <div className="text-right">
-            <div className="text-sm text-gray-400 flex items-center">
-              <Clock className="w-4 h-4 mr-1" />
-              Last Update: {formatTime(lastUpdate)}
+            <div className="flex items-center space-x-2 text-sm">
+              <Clock className="w-4 h-4 text-gray-400" />
+              <span className="text-gray-400">Updated</span>
+              <span className="font-medium text-white">{formatTimeAgo(lastUpdate)}</span>
             </div>
-            <div className="text-xs text-gray-500">
-              {totalStocks} stocks • {totalArticles} articles
+            <div className="text-xs text-gray-500 mt-1">
+              {formatTime(lastUpdate)}
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Status Bar */}
+      <div className="bg-gray-800/50 border-t border-gray-700/50 px-6 py-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-2">
+              <Zap className="w-3 h-3 text-yellow-400" />
+              <span className="text-xs text-gray-400">Auto-refresh every 5 minutes</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-xs text-gray-400">AI analysis ready</span>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4 text-xs text-gray-500">
+            <span>Market Data Provider: Polygon.io</span>
+            <span>•</span>
+            <span>AI Engine: Gemini</span>
           </div>
         </div>
       </div>

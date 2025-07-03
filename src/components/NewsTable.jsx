@@ -1,6 +1,21 @@
-// src/components/NewsTable.jsx - Fixed version with WebSocket prices
+// src/components/NewsTable.jsx - Enhanced Modern UI
 import React, { useState, useEffect, useRef } from 'react';
-import { TrendingUp, TrendingDown, Clock, MessageSquare, Brain, Zap, ChevronUp, ChevronDown, CheckCircle, Wifi, WifiOff, AlertCircle } from 'lucide-react';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Clock, 
+  MessageSquare, 
+  Brain, 
+  Zap, 
+  ChevronUp, 
+  ChevronDown, 
+  CheckCircle, 
+  Wifi, 
+  WifiOff, 
+  AlertCircle,
+  Activity,
+  Target
+} from 'lucide-react';
 import { AIWorker } from './AIWorker';
 import { useWebSocketPrices } from '../hooks/useWebSocketPrices';
 
@@ -173,20 +188,20 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
   const getConnectionIcon = () => {
     switch (connectionStatus) {
       case 'connected':
-        return <Wifi className="w-3 h-3 text-green-400" />;
+        return <Wifi className="w-4 h-4 text-green-400" />;
       case 'connecting':
-        return <WifiOff className="w-3 h-3 text-yellow-400 animate-pulse" />;
+        return <WifiOff className="w-4 h-4 text-yellow-400 animate-pulse" />;
       case 'error':
-        return <AlertCircle className="w-3 h-3 text-red-400" />;
+        return <AlertCircle className="w-4 h-4 text-red-400" />;
       default:
-        return <WifiOff className="w-3 h-3 text-gray-400" />;
+        return <WifiOff className="w-4 h-4 text-gray-400" />;
     }
   };
 
   const getConnectionText = () => {
     switch (connectionStatus) {
       case 'connected':
-        return 'Live WebSocket';
+        return 'Live Data Stream';
       case 'connecting':
         return 'Connecting...';
       case 'error':
@@ -214,15 +229,18 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
 
   const SortHeader = ({ field, children, className = "" }) => (
     <th 
-      className={`px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:text-white transition-colors ${className}`}
+      className={`px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:text-white transition-colors ${className}`}
       onClick={() => handleSort(field)}
     >
-      <div className="flex items-center space-x-1">
+      <div className="flex items-center space-x-2">
         <span>{children}</span>
         {sortBy === field && (
-          sortOrder === 'asc' ? 
-            <ChevronUp className="w-4 h-4" /> : 
-            <ChevronDown className="w-4 h-4" />
+          <div className={`p-1 rounded ${sortOrder === 'asc' ? 'bg-blue-500/20' : 'bg-purple-500/20'}`}>
+            {sortOrder === 'asc' ? 
+              <ChevronUp className="w-3 h-3 text-blue-400" /> : 
+              <ChevronDown className="w-3 h-3 text-purple-400" />
+            }
+          </div>
         )}
       </div>
     </th>
@@ -230,38 +248,53 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
 
   return (
     <>
-      <div className="bg-gray-800 rounded-lg overflow-hidden relative">
-        {/* Table Header */}
-        <div className="bg-gray-700 px-6 py-4 border-b border-gray-600">
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-gray-700/50 shadow-2xl">
+        {/* Enhanced Header */}
+        <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-6 py-6 border-b border-gray-600/50">
           <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center space-x-3">
-                <h3 className="text-lg font-semibold text-white">AI Stock Analysis</h3>
-                {/* WebSocket status indicator */}
-                <div className="flex items-center space-x-2">
-                  {getConnectionIcon()}
-                  <span className="text-xs text-gray-400">
-                    {getConnectionText()}
-                  </span>
-                  {connectionStatus === 'error' && (
-                    <button 
-                      onClick={reconnect}
-                      className="text-xs text-blue-400 hover:text-blue-300 underline"
-                    >
-                      Reconnect
-                    </button>
-                  )}
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Activity className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white flex items-center">
+                  AI Stock Analysis
+                </h3>
+                <div className="flex items-center space-x-4 mt-1">
+                  {/* WebSocket status indicator */}
+                  <div className="flex items-center space-x-2">
+                    {getConnectionIcon()}
+                    <span className="text-sm text-gray-300 font-medium">
+                      {getConnectionText()}
+                    </span>
+                    {connectionStatus === 'error' && (
+                      <button 
+                        onClick={reconnect}
+                        className="text-sm text-blue-400 hover:text-blue-300 underline transition-colors"
+                      >
+                        Reconnect
+                      </button>
+                    )}
+                  </div>
+                  <div className="w-px h-4 bg-gray-500"></div>
+                  <div className="text-sm text-gray-400">
+                    Interactive Analysis Dashboard
+                  </div>
                 </div>
               </div>
-              <p className="text-sm text-gray-400">
-                {stocks.length} stocks • {Object.keys(stockAnalyses).length} AI analyzed • 
-                <span className="text-purple-400 ml-1">Click rows to analyze</span>
-              </p>
             </div>
+            
+            {/* Action Button */}
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-400">
-                Live Analysis: <span className="font-medium text-white">{analyzingStocks.size} running</span>
-              </div>
+              {analyzingStocks.size > 0 && (
+                <div className="flex items-center space-x-2 text-sm">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400"></div>
+                  <span className="text-purple-400 font-medium">
+                    {analyzingStocks.size} Analyzing...
+                  </span>
+                </div>
+              )}
+              
               <button
                 onClick={() => {
                   const unanalyzedStocks = stocks.filter(stock => 
@@ -276,157 +309,173 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                   }
                 }}
                 disabled={analyzingStocks.size > 0}
-                className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-purple-800 disabled:to-blue-800 disabled:opacity-50 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl hover:scale-105"
               >
-                <Brain className="w-4 h-4" />
+                <Brain className="w-5 h-5" />
                 <span>Analyze All</span>
+                <Target className="w-4 h-4" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Table */}
+        {/* Enhanced Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-700 border-b border-gray-600">
+            <thead className="bg-gradient-to-r from-gray-800 to-gray-700 border-b border-gray-600/50">
               <tr>
                 <SortHeader field="ticker">Stock</SortHeader>
-                <SortHeader field="currentPrice">Price</SortHeader>
+                <SortHeader field="currentPrice">Live Price</SortHeader>
                 <SortHeader field="newsCount">News</SortHeader>
                 <SortHeader field="buySignal">AI Signal</SortHeader>
                 <SortHeader field="latestNews">Latest News</SortHeader>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700">
-              {sortedStocks.map((stock) => (
+            <tbody className="divide-y divide-gray-700/50">
+              {sortedStocks.map((stock, index) => (
                 <tr 
                   key={stock.ticker}
-                  className={`transition-colors ${
+                  className={`transition-all duration-300 ${
                     selectedStock?.ticker === stock.ticker 
-                      ? 'bg-purple-900/30 border-purple-500' 
-                      : 'hover:bg-gray-700'
+                      ? 'bg-gradient-to-r from-purple-900/30 to-blue-900/30 border-l-4 border-purple-500 shadow-lg' 
+                      : 'hover:bg-gray-700/50 hover:shadow-md'
                   }`}
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  {/* Stock Info */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center space-x-2">
-                      <div>
-                        <div className="font-medium text-white">{stock.ticker}</div>
+                  {/* Enhanced Stock Info */}
+                  <td className="px-6 py-5 whitespace-nowrap">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex-1">
+                        <div className="font-bold text-lg text-white">{stock.ticker}</div>
                         {stock.companyName && (
-                          <div className="text-sm text-gray-400">{stock.companyName}</div>
+                          <div className="text-sm text-gray-400 truncate max-w-32">{stock.companyName}</div>
                         )}
                       </div>
-                      {stock.isAnalyzing && (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400" />
-                      )}
-                      {stock.hasCustomAnalysis && (
-                        <CheckCircle className="w-4 h-4 text-green-400" title="AI Analyzed" />
-                      )}
-                      {stock.hasSavedLogs && (
-                        <div className="w-2 h-2 bg-purple-400 rounded-full" title="Has saved analysis" />
-                      )}
+                      <div className="flex items-center space-x-2">
+                        {stock.isAnalyzing && (
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-400" />
+                        )}
+                        {stock.hasCustomAnalysis && (
+                          <div className="p-1 bg-green-500/20 rounded-full">
+                            <CheckCircle className="w-4 h-4 text-green-400" title="AI Analyzed" />
+                          </div>
+                        )}
+                        {stock.hasSavedLogs && (
+                          <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse" title="Has saved analysis" />
+                        )}
+                      </div>
                     </div>
                   </td>
 
-                  {/* Real-Time WebSocket Price with Animation */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="space-y-1">
-                      {/* Price with animation */}
-                      <div className={`text-white font-medium transition-all duration-300 ${
-                        stock.priceAnimation === 'price-up' ? 'text-green-400 scale-105' : 
-                        stock.priceAnimation === 'price-down' ? 'text-red-400 scale-105' : 
+                  {/* Enhanced Real-Time Price */}
+                  <td className="px-6 py-5 whitespace-nowrap">
+                    <div className="space-y-2">
+                      {/* Price with enhanced animation */}
+                      <div className={`text-white font-bold text-lg transition-all duration-500 ${
+                        stock.priceAnimation === 'price-up' ? 'text-green-400 scale-110 drop-shadow-lg' : 
+                        stock.priceAnimation === 'price-down' ? 'text-red-400 scale-110 drop-shadow-lg' : 
                         'text-white'
                       }`}>
-                        {formatPrice(stock.currentPrice)}
+                        ${formatPrice(stock.currentPrice)}
                       </div>
                       
-                      {/* Change percentage with trend icon */}
-                      <div className={`text-sm flex items-center ${
+                      {/* Enhanced change percentage */}
+                      <div className={`text-sm flex items-center font-semibold ${
                         stock.changePercent > 0 ? 'text-green-400' : 
                         stock.changePercent < 0 ? 'text-red-400' : 'text-gray-400'
                       }`}>
                         {stock.changePercent > 0 ? 
-                          <TrendingUp className="w-3 h-3 mr-1" /> : 
-                          <TrendingDown className="w-3 h-3 mr-1" />
+                          <TrendingUp className="w-4 h-4 mr-1" /> : 
+                          <TrendingDown className="w-4 h-4 mr-1" />
                         }
-                        <span className="font-medium">{formatPercent(stock.changePercent)}</span>
+                        <span>{formatPercent(stock.changePercent)}</span>
                       </div>
                       
-                      {/* Live update indicator */}
+                      {/* Enhanced live indicator */}
                       {stock.lastUpdated && (
-                        <div className="text-xs text-green-400 font-medium">
-                          {formatLastUpdated(stock.lastUpdated)}
+                        <div className="text-xs">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-green-900/30 text-green-400 font-medium">
+                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-1"></div>
+                            {formatLastUpdated(stock.lastUpdated)}
+                          </span>
                         </div>
                       )}
                       
-                      {/* Bid/Ask spread if available */}
+                      {/* Bid/Ask spread with better styling */}
                       {stock.bid && stock.ask && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 bg-gray-800/50 rounded px-2 py-1">
                           Bid: ${stock.bid.toFixed(2)} | Ask: ${stock.ask.toFixed(2)}
                         </div>
                       )}
                     </div>
                   </td>
 
-                  {/* News Count */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <MessageSquare className="w-4 h-4 text-blue-400 mr-1" />
-                      <span className="text-white font-medium">{stock.newsCount}</span>
+                  {/* Enhanced News Count */}
+                  <td className="px-6 py-5 whitespace-nowrap">
+                    <div className="flex items-center justify-center">
+                      <div className="flex items-center space-x-2 bg-blue-500/10 rounded-full px-3 py-2">
+                        <MessageSquare className="w-4 h-4 text-blue-400" />
+                        <span className="text-white font-bold">{stock.newsCount}</span>
+                      </div>
                     </div>
                   </td>
 
-                  {/* AI Buy Signal - Clickable */}
+                  {/* Enhanced AI Signal - Clickable */}
                   <td 
-                    className="px-6 py-4 whitespace-nowrap cursor-pointer hover:bg-gray-600 transition-colors"
+                    className="px-6 py-5 whitespace-nowrap cursor-pointer group"
                     onClick={() => handleStockClick(stock)}
                   >
                     {stock.buySignal ? (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-2xl">{getBuySignalIcon(stock.buySignal.buyPercentage)}</span>
-                        <div>
-                          <div className={`font-bold text-lg ${getBuySignalColor(stock.buySignal.buyPercentage)}`}>
+                      <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-700/30 group-hover:bg-gray-600/40 transition-all duration-300">
+                        <span className="text-3xl">{getBuySignalIcon(stock.buySignal.buyPercentage)}</span>
+                        <div className="flex-1">
+                          <div className={`font-bold text-xl ${getBuySignalColor(stock.buySignal.buyPercentage)}`}>
                             {stock.buySignal.buyPercentage}%
                           </div>
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-gray-400 uppercase tracking-wide">
                             {stock.buySignal.signal.replace('_', ' ')}
                           </div>
                         </div>
                         {stock.hasCustomAnalysis && (
-                          <Zap className="w-4 h-4 text-purple-400" title="Live AI Analysis" />
+                          <div className="p-1 bg-purple-500/20 rounded-full">
+                            <Zap className="w-4 h-4 text-purple-400" title="Live AI Analysis" />
+                          </div>
                         )}
                       </div>
                     ) : (
-                      <div className="flex items-center space-x-2">
-                        <Brain className="w-5 h-5 text-gray-400" />
-                        <div className="text-gray-400 text-sm">
+                      <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-700/20 group-hover:bg-purple-900/20 transition-all duration-300">
+                        <Brain className="w-6 h-6 text-gray-400 group-hover:text-purple-400 transition-colors" />
+                        <div className="text-gray-400 group-hover:text-purple-400 transition-colors">
                           {stock.isAnalyzing ? (
-                            <span className="text-purple-400">Analyzing...</span>
+                            <span className="text-purple-400 font-medium">Analyzing...</span>
                           ) : (
-                            <span className="hover:text-purple-400">Click to analyze</span>
+                            <span className="font-medium">Click to analyze</span>
                           )}
                         </div>
                       </div>
                     )}
                   </td>
 
-                  {/* Latest News */}
-                  <td className="px-6 py-4">
+                  {/* Enhanced Latest News */}
+                  <td className="px-6 py-5">
                     <div className="max-w-xs">
-                      <div className="text-sm text-white truncate">
+                      <div className="text-sm text-white font-medium mb-1 truncate">
                         {stock.latestNews?.title || 'No recent news'}
                       </div>
-                      <div className="flex items-center justify-between text-xs text-gray-400 mt-1">
-                        <div className="flex items-center space-x-1">
-                          <Clock className="w-3 h-3" />
-                          <span className={stock.latestNews?.minutesAgo < 60 ? 'text-green-400' : 
-                                         stock.latestNews?.minutesAgo < 240 ? 'text-yellow-400' : 'text-gray-400'}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Clock className="w-3 h-3 text-gray-400" />
+                          <span className={`text-xs font-medium ${
+                            stock.latestNews?.minutesAgo < 60 ? 'text-green-400' : 
+                            stock.latestNews?.minutesAgo < 240 ? 'text-yellow-400' : 'text-gray-400'
+                          }`}>
                             {stock.latestNews ? formatTime(stock.latestNews.minutesAgo) : 'N/A'}
                           </span>
                         </div>
                         {selectedStock?.ticker === stock.ticker && (
-                          <div className="text-purple-300 text-xs">
-                            🔍 Viewing
+                          <div className="flex items-center space-x-1 text-purple-300 text-xs bg-purple-900/30 rounded-full px-2 py-1">
+                            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                            <span>Active</span>
                           </div>
                         )}
                       </div>
@@ -438,19 +487,21 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
           </table>
         </div>
 
-        {/* Empty State */}
+        {/* Enhanced Empty State */}
         {stocks.length === 0 && (
-          <div className="text-center py-12">
-            <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-300">No stocks found</h3>
+          <div className="text-center py-16">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageSquare className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-300 mb-2">No stocks found</h3>
             <p className="text-gray-400">Try refreshing or check back later</p>
           </div>
         )}
       </div>
 
-      {/* Click-Triggered AI Worker Terminal */}
+      {/* Enhanced AI Worker Modal */}
       {selectedStock && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <AIWorker
             stock={selectedStock}
             isActive={true}

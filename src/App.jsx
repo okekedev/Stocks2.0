@@ -1,4 +1,4 @@
-// src/App.jsx - Fixed clean imports
+// src/App.jsx - Clean Version with No Duplications
 import React from 'react';
 import { useNewsData } from './hooks/NewsData';
 import { Header } from './components/Header';
@@ -7,6 +7,7 @@ import { AISignalsDashboard } from './components/AISignalsDashboard';
 import { NewsTable } from './components/NewsTable';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ErrorDisplay } from './components/ErrorDisplay';
+import { Footer } from './components/Footer';
 
 export default function App() {
   const { 
@@ -27,14 +28,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
+      {/* Clean Header - Only branding and last update */}
       <Header 
         lastUpdate={newsData?.timestamp}
-        totalStocks={newsData?.stocks?.length || 0}
-        totalArticles={newsData?.totalArticles || 0}
-        minPrice={minPrice}
-        setMinPrice={setMinPrice}
-        maxPrice={maxPrice}
-        setMaxPrice={setMaxPrice}
       />
       
       <div className="container mx-auto px-4 py-6">
@@ -55,26 +51,15 @@ export default function App() {
         {/* Main Content */}
         {newsData && !newsLoading && (
           <>
-            {/* Stats Overview */}
-            <FilteringStats newsData={newsData} loading={false} />
-
-            {/* Price Filter Info */}
-            {(minPrice !== '' || maxPrice !== '') && (
-              <div className="bg-blue-900/20 border border-blue-700/30 rounded-lg p-4 mb-6">
-                <div className="flex items-center space-x-2">
-                  <span className="text-blue-400">💰</span>
-                  <span className="text-blue-300">
-                    Price filter active: ${minPrice || '0'} - ${maxPrice || '∞'}
-                  </span>
-                  <button 
-                    onClick={() => { setMinPrice(''); setMaxPrice(''); }}
-                    className="text-xs bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded"
-                  >
-                    Clear Filter
-                  </button>
-                </div>
-              </div>
-            )}
+            {/* Stats Overview with Price Filter - All in one place */}
+            <FilteringStats 
+              newsData={newsData} 
+              loading={false}
+              minPrice={minPrice}
+              setMinPrice={setMinPrice}
+              maxPrice={maxPrice}
+              setMaxPrice={setMaxPrice}
+            />
 
             {/* AI Trading Signals - Only show if we have signals */}
             {newsData.aiSignals && newsData.aiSignals.length > 0 && (
@@ -89,23 +74,6 @@ export default function App() {
               stocks={newsData.stocks}
               allArticles={newsData.articles}
             />
-            
-            {/* No Analysis Yet State */}
-            {!analysisLoading && !analysisPerformed && newsData.stocks.length > 0 && (
-              <div className="bg-gray-800 rounded-lg p-6 text-center mb-6">
-                <div className="text-gray-400 mb-2">🤖</div>
-                <h3 className="text-lg font-medium text-gray-300 mb-2">Ready for AI Analysis</h3>
-                <p className="text-gray-400 mb-4">
-                  Click "Start Analysis" to get trading signals for {newsData.stocks.length} stocks with recent news.
-                </p>
-                <button
-                  onClick={performAnalysis}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-                >
-                  Start AI Analysis
-                </button>
-              </div>
-            )}
 
             {/* Analysis Complete - No Signals State */}
             {!analysisLoading && analysisPerformed && newsData.aiSignals && newsData.aiSignals.length === 0 && (
@@ -134,6 +102,9 @@ export default function App() {
           </div>
         )}
       </div>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
