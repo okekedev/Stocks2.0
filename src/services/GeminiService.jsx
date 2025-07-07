@@ -1,4 +1,4 @@
-// src/services/GeminiService.js - Complete file with comprehensive debugging
+// src/services/GeminiService.js - Updated with Raw JSON Technical Data
 import { articleFetcher } from './ArticleFetcher';
 import { technicalService } from './TechnicalService';
 
@@ -117,6 +117,7 @@ class GeminiService {
         buyPercentage: Math.max(0, Math.min(100, result.buyPercentage || 50)),
         signal: result.signal || 'hold',
         reasoning: result.reasoning || 'Analysis completed',
+        eodForecast: result.eodForecast || null, // ✅ Add EOD forecast
         confidence: Math.max(0, Math.min(1, result.confidence || 0.5)),
         analysisTimestamp: new Date().toISOString(),
         hasTechnicalData: !technicalData.error && technicalData.barsAnalyzed > 0,
@@ -135,7 +136,7 @@ class GeminiService {
     }
   }
 
-  // Simple market expert prompt with comprehensive debugging
+  // Updated prompt with raw JSON technical data
   buildMarketExpertPrompt(stock, technicalData, fullArticleContent) {
     console.log('\n🔍 ===========================================');
     console.log('🔍 DEBUGGING PROMPT CONSTRUCTION');
@@ -173,11 +174,11 @@ class GeminiService {
     
     if (technicalData.error) {
       console.log(`   ❌ Error: ${technicalData.error}`);
-      technicalSection = 'TECHNICAL DATA: Not available';
+      technicalSection = 'TECHNICAL_ANALYSIS: null\nNote: Technical data unavailable';
     } else if (!technicalData.technicalData) {
       console.log(`   ❌ No technicalData object found`);
       console.log(`   Available keys:`, Object.keys(technicalData));
-      technicalSection = 'TECHNICAL DATA: Not available - no data structure returned';
+      technicalSection = 'TECHNICAL_ANALYSIS: null\nNote: No technical data structure returned';
     } else {
       const t = technicalData.technicalData;
       console.log(`   ✅ Technical data object found`);
@@ -200,47 +201,54 @@ class GeminiService {
       
       if (!hasRealData) {
         console.log(`   ⚠️ All technical metrics are null/zero - likely new IPO with no history`);
-        technicalSection = `
-TECHNICAL DATA: Limited (New IPO - insufficient historical data)
-• Bars analyzed: ${technicalData.barsAnalyzed || 0}
-• Note: Stock may be too new for meaningful technical analysis`;
+        technicalSection = `TECHNICAL_ANALYSIS: null
+ANALYSIS_CONTEXT:
+- Bars analyzed: ${technicalData.barsAnalyzed || 0}
+- Note: Insufficient historical data (likely new IPO)`;
       } else {
-        technicalSection = `
-INTRADAY TECHNICAL DATA (last 4 hours):
-• Price vs VWAP: ${t.priceVsVwap ? t.priceVsVwap.toFixed(2) + '%' : 'N/A'}
-• Momentum: ${t.momentum ? `${t.momentum.direction} ${t.momentum.percentChange.toFixed(2)}% (strength: ${t.momentum.strength.toFixed(2)})` : 'N/A'}
-• Volume: ${t.volume ? `${t.volume.ratio}x average (${t.volume.volumeSpike ? 'SPIKE' : t.volume.isAboveAverage ? 'above avg' : 'normal'})` : 'N/A'}
-• Breakout: ${t.breakout ? `${t.breakout.hasBreakout ? t.breakout.direction + ' ' + t.breakout.strength.toFixed(2) + '%' : 'none'}` : 'N/A'}
-• Support/Resistance: ${t.levels ? `${t.levels.support} / ${t.levels.resistance} (current: ${t.levels.currentPrice})` : 'N/A'}`;
+        // Send raw JSON technical data
+        technicalSection = `TECHNICAL_ANALYSIS: ${JSON.stringify(technicalData.technicalData, null, 2)}
+
+ANALYSIS_CONTEXT:
+- Bars analyzed: ${technicalData.barsAnalyzed}
+- Timeframe: 4 hours intraday
+- Current price: $${technicalData.currentPrice}`;
       }
     }
     
     console.log('\n🔧 TECHNICAL SECTION PREVIEW:');
     console.log(technicalSection);
 
-    const prompt = `You are a professional market expert and intraday trader. Thoroughly analyze the content and data provided to you below to determine your intraday trading signal for this stock.
+    const prompt = `You are a professional market expert and intraday trader. Analyze the structured data below for your trading signal.
 
 STOCK: ${stock.ticker}
-CURRENT PRICE: $${currentPrice?.toFixed(2) || 'N/A'}
-TODAY'S CHANGE: ${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%
-NEWS AGE: ${stock.latestNews?.minutesAgo || 'unknown'} minutes ago
+CURRENT_PRICE: $${currentPrice?.toFixed(2) || 'N/A'}
+TODAYS_CHANGE: ${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%
+NEWS_AGE_MINUTES: ${stock.latestNews?.minutesAgo || 'unknown'}
 
-LATEST NEWS:
+LATEST_NEWS_CONTENT:
 ${newsText}
 
 ${technicalSection}
 
-Perform a thorough analysis of the news content and technical data. What is your intraday trading signal for this stock? What is your detailed reasoning?
+Based on this structured data, provide your intraday trading signal and end-of-day price forecast. Consider:
+- Technical momentum vs news sentiment alignment
+- Volume confirmation of price moves  
+- Price position relative to support/resistance
+- Breakout potential and VWAP relationship
+- Intraday price action and market close expectations
 
 Return only JSON:
 {
   "buyPercentage": 75,
-  "signal": "buy",
-  "reasoning": "Your brief market expert reasoning (max 20 words)",
+  "signal": "buy", 
+  "reasoning": "Brief market expert reasoning (max 20 words)",
+  "eodForecast": 24.50,
   "confidence": 0.8
 }
 
-Signal options: strong_buy (80+%), buy (60-79%), hold (40-59%), avoid (0-39%)`;
+Signal options: strong_buy (80+%), buy (60-79%), hold (40-59%), avoid (0-39%)
+eodForecast: Expected price at market close today (4PM ET)`;
 
     // Debug: Final prompt
     console.log('\n📝 FINAL PROMPT PREVIEW:');

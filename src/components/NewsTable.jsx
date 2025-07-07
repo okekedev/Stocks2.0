@@ -1,4 +1,4 @@
-// src/components/NewsTable.jsx - Enhanced Modern UI with Trades-Only WebSocket
+// src/components/NewsTable.jsx - Enhanced Modern UI with EOD Forecast
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   TrendingUp, 
@@ -118,18 +118,17 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
     });
   };
 
-  // Enhanced stock data with real-time WebSocket prices - TRADES ONLY
+  // Enhanced stock data with real-time price data
   const getEnhancedStock = (stock) => {
     const savedAnalysis = stockAnalyses[stock.ticker];
     const realtimeData = priceData.get(stock.ticker);
     
     return {
       ...stock,
-      // Use WebSocket price data if available (trades only)
+      // Use real-time price data if available
       currentPrice: realtimeData?.currentPrice || stock.currentPrice,
       changePercent: realtimeData?.changePercent || stock.changePercent,
       lastUpdated: realtimeData?.lastUpdated,
-      // ✅ REMOVED: bid, ask, spread since we only get trade data
       // AI analysis data
       buySignal: savedAnalysis || stock.buySignal,
       isAnalyzing: analyzingStocks.has(stock.ticker),
@@ -269,7 +268,7 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                   AI Stock Analysis
                 </h3>
                 <div className="flex items-center space-x-4 mt-1">
-                  {/* WebSocket status indicator */}
+                  {/* Price polling status indicator */}
                   <div className="flex items-center space-x-2">
                     {getConnectionIcon()}
                     <span className="text-sm text-gray-300 font-medium">
@@ -375,7 +374,7 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                     </div>
                   </td>
 
-                  {/* Enhanced Real-Time Price - TRADES ONLY */}
+                  {/* Enhanced Real-Time Price */}
                   <td className="px-6 py-5 whitespace-nowrap">
                     <div className="space-y-2">
                       {/* Price with enhanced animation */}
@@ -398,10 +397,6 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                         }
                         <span>{formatPercent(stock.changePercent)}</span>
                       </div>
-                      
-                      {/* ✅ REMOVED: API Update indicator - not needed */}
-                      
-                      {/* ✅ REMOVED: Bid/Ask spread display since we only get trade data */}
                     </div>
                   </td>
 
@@ -415,35 +410,48 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                     </div>
                   </td>
 
-                  {/* Enhanced AI Signal - Clickable for Analysis */}
+                  {/* ✅ UPDATED: Enhanced AI Signal with EOD Forecast & Lightning Bolt */}
                   <td className="px-6 py-5 whitespace-nowrap">
                     {stock.buySignal ? (
                       <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-700/30 transition-all duration-300">
                         <span className="text-3xl">{getBuySignalIcon(stock.buySignal.buyPercentage)}</span>
                         <div className="flex-1">
-                          <div className={`font-bold text-xl ${getBuySignalColor(stock.buySignal.buyPercentage)}`}>
-                            {stock.buySignal.buyPercentage}%
+                          <div className="flex items-center space-x-2">
+                            <div className={`font-bold text-xl ${getBuySignalColor(stock.buySignal.buyPercentage)}`}>
+                              {stock.buySignal.buyPercentage}%
+                            </div>
+                            {/* ✅ EOD Forecast Display */}
+                            {stock.buySignal.eodForecast && (
+                              <div className="text-sm">
+                                <span className="text-gray-400">EOD:</span>
+                                <span className={`ml-1 font-semibold ${
+                                  stock.buySignal.eodForecast > stock.currentPrice ? 'text-green-400' : 'text-red-400'
+                                }`}>
+                                  ${stock.buySignal.eodForecast.toFixed(2)}
+                                </span>
+                              </div>
+                            )}
                           </div>
                           <div className="text-xs text-gray-400 uppercase tracking-wide">
                             {stock.buySignal.signal.replace('_', ' ')}
                           </div>
                         </div>
                         {stock.hasCustomAnalysis && (
-                          <div className="p-1 bg-purple-500/20 rounded-full">
-                            <Zap className="w-4 h-4 text-purple-400" title="AI Analyzed" />
+                          <div className="flex items-center space-x-2">
+                            {/* ✅ Lightning bolt for re-analysis (removed text button) */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAIAnalyzeClick(stock);
+                              }}
+                              disabled={stock.isAnalyzing}
+                              className="p-2 bg-purple-500/20 hover:bg-purple-500/40 text-purple-400 hover:text-purple-300 rounded-lg transition-all duration-300 disabled:opacity-50 group"
+                              title="Re-analyze with AI"
+                            >
+                              <Zap className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                            </button>
                           </div>
                         )}
-                        {/* Re-analyze button */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAIAnalyzeClick(stock);
-                          }}
-                          disabled={stock.isAnalyzing}
-                          className="text-xs bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 px-2 py-1 rounded transition-colors disabled:opacity-50"
-                        >
-                          Re-analyze
-                        </button>
                       </div>
                     ) : (
                       <div 
@@ -510,14 +518,17 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
 
       {/* Enhanced AI Worker Modal with Auto-Start */}
       {selectedStock && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedStock(null)} // ✅ Click outside to close
+        >
           <AIWorker
             stock={selectedStock}
             autoStart={true} // ✅ Auto-start analysis when modal opens
             isActive={true}
             onAnalysisStart={handleWorkerStart}
             onAnalysisComplete={handleWorkerComplete}
-            onClose={closeTerminal}
+            onClose={() => setSelectedStock(null)} // ✅ X button close
             savedLogs={stockAnalyses[selectedStock.ticker]?.savedLogs || null}
             savedResult={stockAnalyses[selectedStock.ticker] || null}
           />
