@@ -1,13 +1,13 @@
-// src/components/AIWorker.jsx - Updated with auto-start and modern styling
+// src/components/AIWorker.jsx - Updated to display EOD Movement
 import React, { useState, useEffect, useRef } from 'react';
-import { Brain, Terminal, CheckCircle, X, Zap, TrendingUp, Activity, Clock } from 'lucide-react';
+import { Brain, Terminal, CheckCircle, X, Zap, TrendingUp, Activity, Clock, Target } from 'lucide-react';
 import { geminiService } from '../services/GeminiService';
 
 export function AIWorker({ 
   stock, 
   onAnalysisComplete, 
   onAnalysisStart,
-  onClose, // ✅ Add onClose prop
+  onClose,
   isActive = false,
   savedLogs = null,
   savedResult = null,
@@ -109,8 +109,10 @@ export function AIWorker({
       const log7 = addLog(`💭 ${aiResult.reasoning}`, 'reasoning');
       allLogs.push(log7);
       
-      if (aiResult.eodForecast) {
-        const log8 = addLog(`🎯 EOD Forecast: ${aiResult.eodForecast.toFixed(2)}`, 'forecast');
+      // ✅ Updated to show EOD movement instead of absolute price
+      if (aiResult.eodMovement !== undefined && aiResult.eodMovement !== null) {
+        const movementDirection = aiResult.eodMovement > 0 ? '📈' : aiResult.eodMovement < 0 ? '📉' : '➡️';
+        const log8 = addLog(`${movementDirection} EOD Movement: ${aiResult.eodMovement > 0 ? '+' : ''}${aiResult.eodMovement.toFixed(1)}%`, 'forecast');
         allLogs.push(log8);
       }
 
@@ -133,6 +135,7 @@ export function AIWorker({
         buyPercentage: 30,
         signal: 'hold',
         reasoning: 'AI service unavailable',
+        eodMovement: 0, // ✅ Updated field name
         confidence: 0.2,
         savedLogs: allLogs
       };
@@ -189,6 +192,28 @@ export function AIWorker({
     if (buyPercentage >= 60) return '📈';
     if (buyPercentage >= 40) return '⚡';
     return '🤔';
+  };
+
+  // ✅ NEW: Format EOD movement
+  const formatEodMovement = (movement) => {
+    if (movement === undefined || movement === null) return 'N/A';
+    const sign = movement > 0 ? '+' : '';
+    return `${sign}${movement.toFixed(1)}%`;
+  };
+
+  // ✅ NEW: Get EOD movement color and icon
+  const getEodMovementColor = (movement) => {
+    if (movement === undefined || movement === null) return 'text-gray-400';
+    if (movement > 0) return 'text-green-400';
+    if (movement < 0) return 'text-red-400';
+    return 'text-gray-400';
+  };
+
+  const getEodMovementIcon = (movement) => {
+    if (movement === undefined || movement === null) return '➡️';
+    if (movement > 0) return '📈';
+    if (movement < 0) return '📉';
+    return '➡️';
   };
 
   return (
@@ -315,7 +340,7 @@ export function AIWorker({
         <div ref={logsEndRef} />
       </div>
 
-      {/* Enhanced Summary */}
+      {/* ✅ Enhanced Summary with EOD Movement */}
       {complete && result && (
         <div className="bg-gradient-to-r from-gray-800/80 to-gray-700/80 border-t border-gray-600/50 p-6">
           <div className="grid grid-cols-3 gap-6">
@@ -338,23 +363,26 @@ export function AIWorker({
               </div>
             </div>
 
-            {/* Confidence & Data */}
+            {/* ✅ EOD Movement (instead of Confidence) */}
             <div className="text-center">
               <div className="text-sm text-gray-400 mb-2 flex items-center justify-center space-x-1">
-                <Activity className="w-4 h-4" />
-                <span>Confidence</span>
+                <Target className="w-4 h-4" />
+                <span>EOD Movement</span>
               </div>
-              <div className="text-xl font-bold text-blue-400">
-                {Math.round(result.confidence * 100)}%
-              </div>
-              <div className="text-xs text-gray-500 mt-1">
-                {result.hasTechnicalData ? `${result.technicalBars} bars` : 'No tech data'}
-                <span className="mx-1">•</span>
-                {result.hasFullArticle ? 'Full article' : 'Summary only'}
+              <div className="flex items-center justify-center space-x-2">
+                <span className="text-2xl">{getEodMovementIcon(result.eodMovement)}</span>
+                <div>
+                  <div className={`text-xl font-bold ${getEodMovementColor(result.eodMovement)}`}>
+                    {formatEodMovement(result.eodMovement)}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    From current price
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Analysis Time */}
+            {/* Analysis Time & Confidence */}
             <div className="text-center">
               <div className="text-sm text-gray-400 mb-2 flex items-center justify-center space-x-1">
                 <Clock className="w-4 h-4" />
@@ -364,7 +392,12 @@ export function AIWorker({
                 {new Date(result.analysisTimestamp).toLocaleTimeString()}
               </div>
               <div className="text-xs text-gray-500 mt-1">
-                {new Date(result.analysisTimestamp).toLocaleDateString()}
+                Confidence: {Math.round(result.confidence * 100)}%
+              </div>
+              <div className="text-xs text-gray-500">
+                {result.hasTechnicalData ? `${result.technicalBars} bars` : 'No tech data'}
+                <span className="mx-1">•</span>
+                {result.hasFullArticle ? 'Full article' : 'Summary only'}
               </div>
             </div>
           </div>

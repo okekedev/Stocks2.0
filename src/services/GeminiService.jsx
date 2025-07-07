@@ -1,11 +1,11 @@
-// src/services/GeminiService.js - Updated with Raw JSON Technical Data
+// src/services/GeminiService.js - Enhanced with AI Pattern Recognition
 import { articleFetcher } from './ArticleFetcher';
-import { technicalService } from './TechnicalService';
+import { enhancedTechnicalService } from './EnhancedTechnicalService';
 
 class GeminiService {
   constructor() {
     this.apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
+    this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
     
     if (!this.apiKey) {
       console.warn('VITE_GEMINI_API_KEY not found - AI analysis will be disabled');
@@ -30,25 +30,70 @@ class GeminiService {
             }]
           }],
           generationConfig: {
-            temperature: 0.1,
-            topK: 1,
-            topP: 1,
-            maxOutputTokens: 600,
+            temperature: 0.7, // ✅ Higher for pattern recognition creativity
+            topK: 40, 
+            topP: 0.9, 
+            maxOutputTokens: 1000, // ✅ More tokens for complex pattern analysis
+            candidateCount: 1,
+            stopSequences: ["```", "END_ANALYSIS"]
           }
         })
       });
 
       if (!response.ok) {
-        throw new Error(`Gemini API error: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Gemini API error: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
       const data = await response.json();
       
-      if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-        throw new Error('Invalid response from Gemini API');
+      // Enhanced error checking
+      console.log('[DEBUG] Full Gemini API response:', JSON.stringify(data, null, 2));
+      
+      if (!data) {
+        throw new Error('Empty response from Gemini API');
+      }
+      
+      if (!data.candidates) {
+        throw new Error('No candidates in Gemini API response');
+      }
+      
+      if (!Array.isArray(data.candidates) || data.candidates.length === 0) {
+        throw new Error('Candidates array is empty or invalid');
+      }
+      
+      const candidate = data.candidates[0];
+      if (!candidate) {
+        throw new Error('First candidate is undefined');
+      }
+      
+      if (!candidate.content) {
+        if (candidate.finishReason === 'SAFETY') {
+          throw new Error('Response blocked due to safety filters');
+        }
+        if (candidate.finishReason === 'RECITATION') {
+          throw new Error('Response blocked due to recitation concerns');
+        }
+        if (candidate.finishReason === 'OTHER') {
+          throw new Error('Response generation failed for unknown reason');
+        }
+        throw new Error('No content in candidate response');
+      }
+      
+      if (!candidate.content.parts) {
+        throw new Error('No parts in candidate content');
+      }
+      
+      if (!Array.isArray(candidate.content.parts) || candidate.content.parts.length === 0) {
+        throw new Error('Parts array is empty or invalid');
+      }
+      
+      const part = candidate.content.parts[0];
+      if (!part || !part.text) {
+        throw new Error('No text in first part of response');
       }
 
-      return data.candidates[0].content.parts[0].text;
+      return part.text;
       
     } catch (error) {
       console.error('[ERROR] Gemini API request failed:', error);
@@ -56,73 +101,77 @@ class GeminiService {
     }
   }
 
-  // Market expert analysis - get ALL data first, then send one prompt
+  // ✅ ENHANCED: AI Pattern Recognition Analysis
   async analyzeStock(stock, onProgress = null) {
     try {
-      onProgress?.(`🔄 Collecting all data for ${stock.ticker}...`);
+      onProgress?.(`🔄 Collecting comprehensive market data for ${stock.ticker}...`);
       
-      // Step 1: Get raw technical data (no interpretation)
-      console.log(`🔧 [${stock.ticker}] Fetching technical data...`);
-      const technicalData = await technicalService.analyzeStock(stock.ticker);
+      // ✅ Step 1: Get RAW multi-timeframe market data
+      console.log(`🔧 [${stock.ticker}] Fetching raw market data for AI pattern recognition...`);
+      const rawMarketData = await enhancedTechnicalService.analyzeStockForAI(stock.ticker);
       
-      console.log(`🔧 [${stock.ticker}] Technical data result:`, {
-        hasError: !!technicalData.error,
-        errorMessage: technicalData.error,
-        hasTechnicalData: !!technicalData.technicalData,
-        barsAnalyzed: technicalData.barsAnalyzed,
-        currentPrice: technicalData.currentPrice,
-        keys: Object.keys(technicalData)
-      });
-      
-      if (technicalData.error) {
-        onProgress?.(`⚠️ Technical: ${technicalData.error}`);
-      } else if (technicalData.barsAnalyzed === 0) {
-        onProgress?.(`⚠️ Technical: No historical data (likely new IPO)`);
+      if (rawMarketData.error) {
+        onProgress?.(`⚠️ Market Data: ${rawMarketData.error}`);
       } else {
-        onProgress?.(`✅ Technical: ${technicalData.barsAnalyzed || 0} bars analyzed`);
+        onProgress?.(`✅ Market Data: ${rawMarketData.dataPoints} data points across multiple timeframes`);
       }
 
-      // Step 2: Get full article content if available
+      // Step 2: Get article content
       let fullArticleContent = null;
       if (stock.latestNews?.articleUrl) {
         try {
           onProgress?.(`📰 Fetching full article...`);
           fullArticleContent = await articleFetcher.fetchArticleContent(stock.latestNews.articleUrl);
+          
           if (fullArticleContent?.success) {
             onProgress?.(`✅ Article: ${fullArticleContent.wordCount || 0} words`);
+          } else if (fullArticleContent?.fallback) {
+            onProgress?.(`⚠️ Article unavailable: ${fullArticleContent.error}`);
           } else {
             onProgress?.(`⚠️ Article fetch failed`);
           }
         } catch (error) {
           onProgress?.(`⚠️ Article error: ${error.message}`);
+          fullArticleContent = {
+            content: 'Article content could not be fetched',
+            title: 'Error',
+            success: false,
+            fallback: true,
+            error: error.message
+          };
         }
       } else {
         onProgress?.(`📰 Using news summary only`);
       }
       
-      // Step 3: Build complete prompt with all data
-      onProgress?.(`🛠️ Building comprehensive analysis prompt...`);
-      const prompt = this.buildMarketExpertPrompt(stock, technicalData, fullArticleContent);
+      // ✅ Step 3: Build AI pattern recognition prompt
+      onProgress?.(`🛠️ Building AI pattern recognition prompt...`);
+      const prompt = this.buildAIPatternPrompt(stock, rawMarketData, fullArticleContent);
       
-      // Step 4: Send ONE complete request to AI
-      onProgress?.(`🧠 Sending to AI for market expert analysis...`);
+      // ✅ Step 4: Send to AI for pattern analysis
+      onProgress?.(`🧠 Analyzing patterns with Gemini 2.5 Flash...`);
       const response = await this.makeRequest(prompt);
       const cleanResponse = response.replace(/```json\n?|\n?```/g, '').trim();
       
-      console.log(`🤖 [${stock.ticker}] AI Response:`, cleanResponse);
+      console.log(`🤖 [${stock.ticker}] AI Pattern Analysis Response:`, cleanResponse);
       
       const result = JSON.parse(cleanResponse);
       
       const finalResult = {
         buyPercentage: Math.max(0, Math.min(100, result.buyPercentage || 50)),
         signal: result.signal || 'hold',
-        reasoning: result.reasoning || 'Analysis completed',
-        eodForecast: result.eodForecast || null, // ✅ Add EOD forecast
+        reasoning: result.reasoning || 'Pattern analysis completed',
+        eodMovement: result.eodMovement || 0,
         confidence: Math.max(0, Math.min(1, result.confidence || 0.5)),
+        
+        // ✅ NEW: AI-discovered patterns
+        patternsFound: result.patternsFound || [],
+        anomalies: result.anomalies || [],
+        
         analysisTimestamp: new Date().toISOString(),
-        hasTechnicalData: !technicalData.error && technicalData.barsAnalyzed > 0,
+        hasRawData: rawMarketData.hasData,
         hasFullArticle: !!(fullArticleContent?.success),
-        technicalBars: technicalData.barsAnalyzed || 0
+        dataPoints: rawMarketData.dataPoints || 0
       };
       
       onProgress?.(`✅ Complete: ${finalResult.signal.toUpperCase()} (${finalResult.buyPercentage}%)`);
@@ -136,130 +185,92 @@ class GeminiService {
     }
   }
 
-  // Updated prompt with raw JSON technical data
-  buildMarketExpertPrompt(stock, technicalData, fullArticleContent) {
-    console.log('\n🔍 ===========================================');
-    console.log('🔍 DEBUGGING PROMPT CONSTRUCTION');
-    console.log('🔍 ===========================================');
+  // ✅ NEW: AI Pattern Recognition Prompt - Let AI find patterns in raw data
+  buildAIPatternPrompt(stock, rawMarketData, fullArticleContent) {
+    let newsText = '';
+    let newsQuality = 'SUMMARY_ONLY';
     
-    // Debug: News text selection
-    const newsText = fullArticleContent?.success && fullArticleContent?.content 
-      ? fullArticleContent.content 
-      : (stock.latestNews?.description || stock.latestNews?.title || 'No recent news');
-    
-    console.log('📰 NEWS TEXT SOURCE:');
-    console.log(`   Full article available: ${!!(fullArticleContent?.success)}`);
-    console.log(`   Full article length: ${fullArticleContent?.content?.length || 0} chars`);
-    console.log(`   Fallback to description: ${!!(stock.latestNews?.description)}`);
-    console.log(`   Fallback to title: ${!!(stock.latestNews?.title)}`);
-    console.log(`   Final news text length: ${newsText.length} chars`);
-    console.log(`   News preview: "${newsText.substring(0, 100)}..."`);
-
-    // Debug: Price data
-    const currentPrice = stock.currentPrice || technicalData.currentPrice;
-    const changePercent = stock.changePercent || 0;
-    
-    console.log('\n💰 PRICE DATA:');
-    console.log(`   Stock current price: ${stock.currentPrice}`);
-    console.log(`   Technical current price: ${technicalData.currentPrice}`);
-    console.log(`   Final current price: ${currentPrice}`);
-    console.log(`   Change percent: ${changePercent}%`);
-    console.log(`   News age: ${stock.latestNews?.minutesAgo || 'unknown'} minutes`);
-    
-    // Debug: Technical data construction
-    let technicalSection = '';
-    console.log('\n📊 TECHNICAL DATA ANALYSIS:');
-    console.log(`   Technical data has error: ${!!technicalData.error}`);
-    console.log(`   Technical data exists: ${!!technicalData.technicalData}`);
-    
-    if (technicalData.error) {
-      console.log(`   ❌ Error: ${technicalData.error}`);
-      technicalSection = 'TECHNICAL_ANALYSIS: null\nNote: Technical data unavailable';
-    } else if (!technicalData.technicalData) {
-      console.log(`   ❌ No technicalData object found`);
-      console.log(`   Available keys:`, Object.keys(technicalData));
-      technicalSection = 'TECHNICAL_ANALYSIS: null\nNote: No technical data structure returned';
+    if (fullArticleContent?.success && fullArticleContent?.content && fullArticleContent.content.length > 100) {
+      newsText = fullArticleContent.content;
+      newsQuality = 'FULL_ARTICLE';
+    } else if (fullArticleContent?.fallback) {
+      newsText = stock.latestNews?.description || stock.latestNews?.title || 'No detailed news available';
+      newsQuality = 'FALLBACK_SUMMARY';
     } else {
-      const t = technicalData.technicalData;
-      console.log(`   ✅ Technical data object found`);
-      console.log(`   Available technical keys:`, Object.keys(t));
-      
-      // Debug each technical metric
-      console.log('\n   📈 TECHNICAL METRICS:');
-      console.log(`      VWAP: ${t.priceVsVwap}`);
-      console.log(`      Momentum:`, t.momentum);
-      console.log(`      Volume:`, t.volume);
-      console.log(`      Breakout:`, t.breakout);
-      console.log(`      Levels:`, t.levels);
-      
-      // Check if we have any real data
-      const hasRealData = t.priceVsVwap !== null && t.priceVsVwap !== 0 ||
-                         t.momentum !== null ||
-                         t.volume !== null ||
-                         t.breakout !== null ||
-                         t.levels !== null;
-      
-      if (!hasRealData) {
-        console.log(`   ⚠️ All technical metrics are null/zero - likely new IPO with no history`);
-        technicalSection = `TECHNICAL_ANALYSIS: null
-ANALYSIS_CONTEXT:
-- Bars analyzed: ${technicalData.barsAnalyzed || 0}
-- Note: Insufficient historical data (likely new IPO)`;
-      } else {
-        // Send raw JSON technical data
-        technicalSection = `TECHNICAL_ANALYSIS: ${JSON.stringify(technicalData.technicalData, null, 2)}
-
-ANALYSIS_CONTEXT:
-- Bars analyzed: ${technicalData.barsAnalyzed}
-- Timeframe: 4 hours intraday
-- Current price: $${technicalData.currentPrice}`;
-      }
+      newsText = stock.latestNews?.description || stock.latestNews?.title || 'No recent news available';
+      newsQuality = 'SUMMARY_ONLY';
     }
     
-    console.log('\n🔧 TECHNICAL SECTION PREVIEW:');
-    console.log(technicalSection);
-
-    const prompt = `You are a professional market expert and intraday trader. Analyze the structured data below for your trading signal.
-
-STOCK: ${stock.ticker}
-CURRENT_PRICE: $${currentPrice?.toFixed(2) || 'N/A'}
-TODAYS_CHANGE: ${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%
-NEWS_AGE_MINUTES: ${stock.latestNews?.minutesAgo || 'unknown'}
-
-LATEST_NEWS_CONTENT:
-${newsText}
-
-${technicalSection}
-
-Based on this structured data, provide your intraday trading signal and end-of-day price forecast. Consider:
-- Technical momentum vs news sentiment alignment
-- Volume confirmation of price moves  
-- Price position relative to support/resistance
-- Breakout potential and VWAP relationship
-- Intraday price action and market close expectations
-
-Return only JSON:
+    // ✅ Prepare raw data for AI pattern recognition
+    let marketDataSection = '';
+    
+    if (rawMarketData.error || !rawMarketData.hasData) {
+      marketDataSection = `MARKET_DATA: null
+DATA_STATUS: ${rawMarketData.error || 'No data available'}
+PATTERN_ANALYSIS: Not possible - insufficient market data`;
+    } else {
+      // ✅ Send ACTUAL raw data to AI for pattern recognition
+      marketDataSection = `RAW_MARKET_DATA:
 {
-  "buyPercentage": 75,
-  "signal": "buy", 
-  "reasoning": "Brief market expert reasoning (max 20 words)",
-  "eodForecast": 24.50,
-  "confidence": 0.8
+  "currentPrice": ${rawMarketData.currentPrice},
+  "todayChangePercent": ${rawMarketData.todayChangePercent?.toFixed(2) || 0},
+  "dataQuality": ${JSON.stringify(rawMarketData.dataQuality, null, 2)},
+  
+  "recent1minBars": ${JSON.stringify(rawMarketData.rawTimeframes['1min'].slice(-60), null, 2)},
+  "recent5minBars": ${JSON.stringify(rawMarketData.rawTimeframes['5min'].slice(-24), null, 2)},
+  "recent1hourBars": ${JSON.stringify(rawMarketData.rawTimeframes['1hour'].slice(-6), null, 2)},
+  "recentDailyBars": ${JSON.stringify(rawMarketData.recentDays, null, 2)},
+  "optionsActivity": ${JSON.stringify(rawMarketData.optionsActivity, null, 2)}
 }
 
-Signal options: strong_buy (80+%), buy (60-79%), hold (40-59%), avoid (0-39%)
-eodForecast: Expected price at market close today (4PM ET)`;
+DATA_POINTS: ${rawMarketData.dataPoints} total market data points
+TIMEFRAMES: 1min (${rawMarketData.dataQuality.minuteBars}), 5min (${rawMarketData.dataQuality.fiveMinBars}), 1hour (${rawMarketData.dataQuality.hourlyBars}), daily (${rawMarketData.dataQuality.dailyBars})`;
+    }
 
-    // Debug: Final prompt
-    console.log('\n📝 FINAL PROMPT PREVIEW:');
-    console.log('='.repeat(80));
-    console.log(prompt);
-    console.log('='.repeat(80));
-    console.log(`\n📊 PROMPT STATS:`);
-    console.log(`   Total length: ${prompt.length} characters`);
-    console.log(`   News portion: ${newsText.length} characters`);
-    console.log(`   Technical portion: ${technicalSection.length} characters`);
-    console.log('🔍 ===========================================\n');
+    const prompt = `You are an AI pattern recognition expert analyzing ${stock.ticker} for intraday trading opportunities.
+
+STOCK: ${stock.ticker}
+NEWS_CATALYST (${newsQuality}):
+${newsText}
+
+${marketDataSection}
+
+ADVANCED PATTERN ANALYSIS INSTRUCTIONS:
+As an AI with superior pattern recognition capabilities, analyze the RAW market data above to discover:
+
+1. **HIDDEN PATTERNS**: Look for subtle patterns in the price/volume data that humans might miss
+2. **CROSS-TIMEFRAME ANALYSIS**: Find correlations between 1min, 5min, hourly, and daily patterns  
+3. **VOLUME ANOMALIES**: Detect unusual volume patterns that signal institutional activity
+4. **MICRO-TRENDS**: Identify emerging short-term trends in the recent minute-by-minute data
+5. **NEWS-PRICE CORRELATION**: How is the price action responding to the news catalyst?
+
+Your pattern recognition capabilities should identify:
+- Support/resistance levels from actual price touches
+- Volume spikes and their timing relative to price moves
+- Momentum shifts between timeframes
+- Unusual trading patterns (gaps, reversals, breakouts)
+- Price action patterns (flags, pennants, wedges) across timeframes
+
+Return ONLY this JSON:
+{
+  "buyPercentage": 65,
+  "signal": "buy",
+  "reasoning": "Specific pattern-based analysis (max 30 words)",
+  "eodMovement": 2.8,
+  "confidence": 0.8,
+  "patternsFound": ["breakout above resistance", "volume spike confirmation"],
+  "anomalies": ["unusual pre-market volume", "gap up on news"]
+}
+
+SCORING INSTRUCTIONS:
+- Use the RAW data patterns to determine scores, not just news sentiment
+- buyPercentage: Base on strength of technical patterns + news alignment
+- eodMovement: Predict based on pattern completion targets and momentum
+- confidence: Higher when multiple timeframes confirm the same pattern
+- patternsFound: List 1-3 specific patterns you detected in the data
+- anomalies: Note any unusual data points that influence your analysis
+
+IMPORTANT: Each stock will have unique patterns - use your AI pattern recognition to find what humans cannot see in the raw data.`;
 
     return prompt;
   }
@@ -274,8 +285,8 @@ eodForecast: Expected price at market close today (4PM ET)`;
     
     const results = [];
     
-    console.log(`[INFO] Market expert batch analysis: ${stocks.length} stocks...`);
-    onProgress?.(`🎯 Market expert analyzing ${stocks.length} stocks...`);
+    console.log(`[INFO] AI pattern recognition batch analysis: ${stocks.length} stocks...`);
+    onProgress?.(`🎯 AI pattern analysis for ${stocks.length} stocks...`);
     
     for (let i = 0; i < stocks.length; i += maxConcurrent) {
       const batch = stocks.slice(i, i + maxConcurrent);
@@ -296,7 +307,8 @@ eodForecast: Expected price at market close today (4PM ET)`;
           
           onStockComplete?.(stock.ticker, result);
           const signalText = (buySignal.signal || 'hold').toUpperCase();
-          onProgress?.(`✅ [${stock.ticker}] ${signalText} (${buySignal.buyPercentage}%) - ${buySignal.reasoning}`);
+          const patterns = buySignal.patternsFound?.length > 0 ? ` | Patterns: ${buySignal.patternsFound.join(', ')}` : '';
+          onProgress?.(`✅ [${stock.ticker}] ${signalText} (${buySignal.buyPercentage}%)${patterns}`);
           return result;
           
         } catch (error) {
@@ -307,8 +319,11 @@ eodForecast: Expected price at market close today (4PM ET)`;
             buySignal: {
               buyPercentage: 20,
               signal: 'avoid',
-              reasoning: 'Analysis failed - technical issues',
-              confidence: 0.1
+              reasoning: 'AI pattern analysis failed',
+              eodMovement: 0,
+              confidence: 0.1,
+              patternsFound: [],
+              anomalies: []
             },
             aiAnalyzed: false
           };
@@ -334,8 +349,8 @@ eodForecast: Expected price at market close today (4PM ET)`;
       .filter(stock => stock.buySignal !== null)
       .sort((a, b) => (b.buySignal?.buyPercentage || 0) - (a.buySignal?.buyPercentage || 0));
     
-    console.log(`[INFO] Market expert analysis complete: ${sortedResults.length} analyzed`);
-    onProgress?.(`🎯 Analysis complete: ${sortedResults.length}/${stocks.length} successful`);
+    console.log(`[INFO] AI pattern analysis complete: ${sortedResults.length} analyzed`);
+    onProgress?.(`🎯 Pattern analysis complete: ${sortedResults.length}/${stocks.length} successful`);
     
     return sortedResults;
   }

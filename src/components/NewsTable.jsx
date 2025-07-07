@@ -1,4 +1,4 @@
-// src/components/NewsTable.jsx - Enhanced Modern UI with EOD Forecast
+// src/components/NewsTable.jsx - Updated to show EOD Movement instead of absolute price
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   TrendingUp, 
@@ -234,6 +234,21 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
     return '🤔';
   };
 
+  // ✅ NEW: Format EOD movement
+  const formatEodMovement = (movement) => {
+    if (movement === undefined || movement === null) return null;
+    const sign = movement > 0 ? '+' : '';
+    return `${sign}${movement.toFixed(1)}%`;
+  };
+
+  // ✅ NEW: Get EOD movement color
+  const getEodMovementColor = (movement) => {
+    if (movement === undefined || movement === null) return 'text-gray-400';
+    if (movement > 0) return 'text-green-400';
+    if (movement < 0) return 'text-red-400';
+    return 'text-gray-400';
+  };
+
   const SortHeader = ({ field, children, className = "" }) => (
     <th 
       className={`px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:text-white transition-colors ${className}`}
@@ -410,7 +425,7 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                     </div>
                   </td>
 
-                  {/* ✅ UPDATED: Enhanced AI Signal with EOD Forecast & Lightning Bolt */}
+                  {/* ✅ UPDATED: Enhanced AI Signal with EOD Movement Forecast */}
                   <td className="px-6 py-5 whitespace-nowrap">
                     {stock.buySignal ? (
                       <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-700/30 transition-all duration-300">
@@ -420,14 +435,12 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                             <div className={`font-bold text-xl ${getBuySignalColor(stock.buySignal.buyPercentage)}`}>
                               {stock.buySignal.buyPercentage}%
                             </div>
-                            {/* ✅ EOD Forecast Display */}
-                            {stock.buySignal.eodForecast && (
+                            {/* ✅ EOD Movement Display (instead of absolute price) */}
+                            {stock.buySignal.eodMovement !== undefined && stock.buySignal.eodMovement !== null && (
                               <div className="text-sm">
                                 <span className="text-gray-400">EOD:</span>
-                                <span className={`ml-1 font-semibold ${
-                                  stock.buySignal.eodForecast > stock.currentPrice ? 'text-green-400' : 'text-red-400'
-                                }`}>
-                                  ${stock.buySignal.eodForecast.toFixed(2)}
+                                <span className={`ml-1 font-semibold ${getEodMovementColor(stock.buySignal.eodMovement)}`}>
+                                  {formatEodMovement(stock.buySignal.eodMovement)}
                                 </span>
                               </div>
                             )}
@@ -438,7 +451,7 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                         </div>
                         {stock.hasCustomAnalysis && (
                           <div className="flex items-center space-x-2">
-                            {/* ✅ Lightning bolt for re-analysis (removed text button) */}
+                            {/* Lightning bolt for re-analysis */}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -520,15 +533,15 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
       {selectedStock && (
         <div 
           className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedStock(null)} // ✅ Click outside to close
+          onClick={() => setSelectedStock(null)}
         >
           <AIWorker
             stock={selectedStock}
-            autoStart={true} // ✅ Auto-start analysis when modal opens
+            autoStart={true}
             isActive={true}
             onAnalysisStart={handleWorkerStart}
             onAnalysisComplete={handleWorkerComplete}
-            onClose={() => setSelectedStock(null)} // ✅ X button close
+            onClose={() => setSelectedStock(null)}
             savedLogs={stockAnalyses[selectedStock.ticker]?.savedLogs || null}
             savedResult={stockAnalyses[selectedStock.ticker] || null}
           />

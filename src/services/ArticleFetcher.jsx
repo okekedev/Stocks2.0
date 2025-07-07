@@ -1,4 +1,4 @@
-// src/services/ArticleFetcher.js
+// src/services/ArticleFetcher.js - Fixed with better error handling and fallbacks
 class ArticleFetcher {
   constructor() {
     // Using Jina Reader API for web scraping
@@ -6,7 +6,7 @@ class ArticleFetcher {
     this.cache = new Map(); // Simple cache to avoid re-fetching
   }
 
-  // Fetch article content using Jina Reader
+  // Fetch article content using Jina Reader with fallbacks
   async fetchArticleContent(articleUrl) {
     // Check cache first
     if (this.cache.has(articleUrl)) {
@@ -17,7 +17,7 @@ class ArticleFetcher {
     try {
       console.log(`[INFO] Fetching article content: ${articleUrl}`);
       
-      // Use Jina Reader to extract clean text
+      // Try Jina Reader first
       const jinaUrl = `${this.jinaReaderUrl}${articleUrl}`;
       
       const response = await fetch(jinaUrl, {
@@ -27,11 +27,29 @@ class ArticleFetcher {
         }
       });
 
+      // ✅ Handle specific error codes better
+      if (response.status === 451) {
+        console.warn(`[WARN] Jina Reader blocked for legal reasons: ${articleUrl}`);
+        return this.createFallbackContent(articleUrl, 'Content blocked for legal reasons');
+      }
+
+      if (response.status === 429) {
+        console.warn(`[WARN] Jina Reader rate limited: ${articleUrl}`);
+        return this.createFallbackContent(articleUrl, 'Rate limited - using summary only');
+      }
+
       if (!response.ok) {
-        throw new Error(`Failed to fetch article: ${response.status}`);
+        console.warn(`[WARN] Jina Reader failed (${response.status}): ${articleUrl}`);
+        return this.createFallbackContent(articleUrl, `HTTP ${response.status} error`);
       }
 
       const content = await response.text();
+      
+      // ✅ Validate content
+      if (!content || content.trim().length < 50) {
+        console.warn(`[WARN] Jina Reader returned insufficient content: ${articleUrl}`);
+        return this.createFallbackContent(articleUrl, 'Insufficient content returned');
+      }
       
       // Clean up the content
       const cleanContent = this.cleanContent(content);
@@ -43,19 +61,31 @@ class ArticleFetcher {
       }
       this.cache.set(articleUrl, cleanContent);
       
-      console.log(`[SUCCESS] Fetched ${cleanContent.length} characters from article`);
+      console.log(`[SUCCESS] Fetched ${cleanContent.content.length} characters from article`);
       return cleanContent;
       
     } catch (error) {
       console.error(`[ERROR] Failed to fetch article content:`, error);
-      // Return fallback content
-      return {
-        content: 'Article content could not be fetched',
-        title: 'Error fetching article',
-        success: false,
-        error: error.message
-      };
+      // ✅ Always return valid fallback content
+      return this.createFallbackContent(articleUrl, error.message);
     }
+  }
+
+  // ✅ NEW: Create consistent fallback content structure
+  createFallbackContent(articleUrl, reason) {
+    const fallbackContent = {
+      content: `Article content unavailable (${reason}). Analysis will use news summary only.`,
+      title: 'Article Content Unavailable',
+      wordCount: 0,
+      success: false,
+      error: reason,
+      fallback: true
+    };
+
+    // Cache the fallback to avoid repeated failed requests
+    this.cache.set(articleUrl, fallbackContent);
+    
+    return fallbackContent;
   }
 
   // Clean and structure the content
@@ -95,6 +125,7 @@ class ArticleFetcher {
       return {
         content: rawContent.substring(0, 2000),
         title: 'Article',
+        wordCount: 0,
         success: false,
         error: error.message
       };
@@ -116,6 +147,7 @@ class ArticleFetcher {
         return {
           content: textContent.substring(0, 4000),
           title: 'Article Content',
+          wordCount: textContent.split(' ').length,
           success: true
         };
       }
@@ -124,27 +156,27 @@ class ArticleFetcher {
       
     } catch (error) {
       console.error('[ERROR] Proxy fetch failed:', error);
-      return {
-        content: 'Could not fetch article content',
-        title: 'Error',
-        success: false,
-        error: error.message
-      };
+      return this.createFallbackContent(articleUrl, 'Proxy fetch failed');
     }
   }
 
   // Simple HTML text extraction
   extractTextFromHtml(html) {
-    // Create a temporary DOM element to extract text
-    const temp = document.createElement('div');
-    temp.innerHTML = html;
-    
-    // Remove script and style elements
-    const scripts = temp.querySelectorAll('script, style');
-    scripts.forEach(el => el.remove());
-    
-    // Get text content
-    return temp.textContent || temp.innerText || '';
+    try {
+      // Create a temporary DOM element to extract text
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
+      
+      // Remove script and style elements
+      const scripts = temp.querySelectorAll('script, style');
+      scripts.forEach(el => el.remove());
+      
+      // Get text content
+      return temp.textContent || temp.innerText || '';
+    } catch (error) {
+      console.error('[ERROR] HTML text extraction failed:', error);
+      return '';
+    }
   }
 
   // Batch fetch multiple articles
