@@ -1,4 +1,4 @@
-// src/components/NewsTable.jsx - Updated to show EOD Movement instead of absolute price
+// src/components/NewsTable.jsx - Updated with Persistent Analysis Support
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   TrendingUp, 
@@ -19,13 +19,18 @@ import {
 import { AIWorker } from './AIWorker';
 import { usePricePolling } from '../hooks/usePricePolling';
 
-export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
+export function NewsTable({ stocks, allArticles, onAnalyzeAll, persistentAnalyses = {}, onAnalysisComplete }) {
   const [selectedStock, setSelectedStock] = useState(null);
   const [sortBy, setSortBy] = useState('buySignal');
   const [sortOrder, setSortOrder] = useState('desc');
-  const [stockAnalyses, setStockAnalyses] = useState({});
   const [analyzingStocks, setAnalyzingStocks] = useState(new Set());
   const [priceAnimations, setPriceAnimations] = useState(new Map());
+  
+  // ✅ Debug logging for persistent analyses
+  useEffect(() => {
+    console.log('[DEBUG] NewsTable received persistentAnalyses:', persistentAnalyses);
+    console.log('[DEBUG] persistentAnalyses keys:', Object.keys(persistentAnalyses));
+  }, [persistentAnalyses]);
   
   // Use ref to track previous prices to avoid infinite loop
   const previousPricesRef = useRef(new Map());
@@ -102,14 +107,10 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
   };
 
   const handleWorkerComplete = (ticker, result) => {
-    setStockAnalyses(prev => ({
-      ...prev,
-      [ticker]: {
-        ...result,
-        savedLogs: result.savedLogs || [],
-        completedAt: new Date().toISOString()
-      }
-    }));
+    // ✅ FIXED: Update persistent analyses through a callback to useNewsData
+    if (onAnalysisComplete) {
+      onAnalysisComplete(ticker, result);
+    }
     
     setAnalyzingStocks(prev => {
       const newSet = new Set(prev);
@@ -120,8 +121,13 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
 
   // Enhanced stock data with real-time price data
   const getEnhancedStock = (stock) => {
-    const savedAnalysis = stockAnalyses[stock.ticker];
+    const savedAnalysis = persistentAnalyses[stock.ticker]; // ✅ Use persistent analyses
     const realtimeData = priceData.get(stock.ticker);
+    
+    // ✅ Debug logging
+    if (savedAnalysis) {
+      console.log(`[DEBUG] ${stock.ticker} has persistent analysis:`, savedAnalysis);
+    }
     
     return {
       ...stock,
@@ -129,7 +135,7 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
       currentPrice: realtimeData?.currentPrice || stock.currentPrice,
       changePercent: realtimeData?.changePercent || stock.changePercent,
       lastUpdated: realtimeData?.lastUpdated,
-      // AI analysis data
+      // AI analysis data - prioritize persistent over stock.buySignal
       buySignal: savedAnalysis || stock.buySignal,
       isAnalyzing: analyzingStocks.has(stock.ticker),
       hasCustomAnalysis: !!savedAnalysis,
@@ -208,7 +214,7 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
   const getConnectionText = () => {
     switch (connectionStatus) {
       case 'connected':
-        return `Price Data (${getTimeSinceUpdate()})`;
+        return `Price Data`;
       case 'updating':
         return 'Updating Prices...';
       case 'error':
@@ -302,6 +308,15 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
                   <div className="text-sm text-gray-400">
                     Price Updates Every Minute
                   </div>
+                  {/* ✅ NEW: Show persistent analysis count */}
+                  {Object.keys(persistentAnalyses).length > 0 && (
+                    <>
+                      <div className="w-px h-4 bg-gray-500"></div>
+                      <div className="text-sm text-purple-300">
+                        {Object.keys(persistentAnalyses).length} Analyzed
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -320,7 +335,7 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
               <button
                 onClick={() => {
                   const unanalyzedStocks = stocks.filter(stock => 
-                    !stockAnalyses[stock.ticker] && 
+                    !persistentAnalyses[stock.ticker] && // ✅ Use persistent analyses
                     !analyzingStocks.has(stock.ticker) &&
                     stock.latestNews?.minutesAgo < 120 && 
                     stock.currentPrice
@@ -542,8 +557,8 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll }) {
             onAnalysisStart={handleWorkerStart}
             onAnalysisComplete={handleWorkerComplete}
             onClose={() => setSelectedStock(null)}
-            savedLogs={stockAnalyses[selectedStock.ticker]?.savedLogs || null}
-            savedResult={stockAnalyses[selectedStock.ticker] || null}
+            savedLogs={persistentAnalyses[selectedStock.ticker]?.savedLogs || null}
+            savedResult={persistentAnalyses[selectedStock.ticker] || null}
           />
         </div>
       )}

@@ -75,33 +75,31 @@ export function FilteringStats({ newsData, loading, minPrice, setMinPrice, maxPr
 
   const stats = [
     {
-      label: 'Positive Articles',
+      label: 'Via News API',
       value: newsData.totalArticles || 0,
-      subtitle: 'Polygon filtered',
+      subtitle: 'Positive Articles',
       icon: Newspaper,
       color: 'emerald',
       gradient: 'from-emerald-500 to-green-600',
       bgGradient: 'from-emerald-500/10 to-green-600/10',
       borderColor: 'border-emerald-500/30',
-      change: '+12%',
       trend: 'up'
     },
     {
-      label: 'Tradeable Stocks',
+      label: 'With positive news',
       value: newsData.stocks?.length || 0,
-      subtitle: 'With news + prices',
+      subtitle: 'Stocks on Robinhood',
       icon: BarChart3,
       color: 'blue',
       gradient: 'from-blue-500 to-cyan-600',
       bgGradient: 'from-blue-500/10 to-cyan-600/10',
       borderColor: 'border-blue-500/30',
-      change: '+3',
       trend: 'up'
     },
     {
-      label: 'AI Analyzed',
+      label: 'Analyzed by AI',
       value: aiAnalyzedCount,
-      subtitle: 'With buy signals',
+      subtitle: 'Stock(s)',
       icon: Brain,
       color: 'purple',
       gradient: 'from-purple-500 to-violet-600',
@@ -111,9 +109,8 @@ export function FilteringStats({ newsData, loading, minPrice, setMinPrice, maxPr
       trend: 'neutral'
     },
     {
-      label: 'Next Sync',
       value: formatCountdown(countdown),
-      subtitle: 'Auto-refresh',
+      subtitle: 'News refresh timer',
       icon: Clock,
       color: 'orange',
       gradient: 'from-orange-500 to-amber-600',
@@ -191,8 +188,7 @@ export function FilteringStats({ newsData, loading, minPrice, setMinPrice, maxPr
                       ></div>
                     </div>
                     <div className="flex justify-between text-xs text-gray-500 mt-1">
-                      <span>Fresh</span>
-                      <span>Updating...</span>
+                  
                     </div>
                   </div>
                 )}

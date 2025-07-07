@@ -1,4 +1,4 @@
-// src/App.jsx - Fixed Version with All Features Working
+// src/App.jsx - Fixed Version with Persistent Analysis Support
 import React from 'react';
 import { useNewsData } from './hooks/useNewsData';
 import { Header } from './components/Header';
@@ -17,11 +17,19 @@ export default function App() {
     error, 
     refresh, 
     performAnalysis, // ✅ This should be returned from useNewsData
+    updateSingleAnalysis, // ✅ NEW: Function to update individual analysis
+    persistentAnalyses, // ✅ NEW: Get persistent analyses
+    clearAnalyses, // ✅ NEW: Clear function
     minPrice,
     setMinPrice,
     maxPrice,
     setMaxPrice
   } = useNewsData();
+
+  // ✅ Handler for individual analysis completion
+  const handleAnalysisComplete = (ticker, result) => {
+    updateSingleAnalysis(ticker, result);
+  };
 
   // ✅ Handler for batch AI analysis - connects NewsTable to performAnalysis
   const handleAnalyzeAll = async (stocks) => {
@@ -70,6 +78,8 @@ export default function App() {
               stocks={newsData.stocks}
               allArticles={newsData.articles}
               onAnalyzeAll={handleAnalyzeAll} // ✅ Now properly connected
+              persistentAnalyses={persistentAnalyses} // ✅ NEW: Pass persistent analyses
+              onAnalysisComplete={handleAnalysisComplete} // ✅ NEW: Pass individual analysis handler
             />
 
             {/* Analysis Complete - No Signals State */}
@@ -80,6 +90,15 @@ export default function App() {
                 <p className="text-gray-400">
                   Analysis results are now available in the stocks table above. Click on any stock to see detailed AI insights.
                 </p>
+                {/* ✅ NEW: Optional clear button for debugging */}
+                {Object.keys(persistentAnalyses).length > 0 && (
+                  <button
+                    onClick={clearAnalyses}
+                    className="mt-3 text-sm text-red-400 hover:text-red-300 underline transition-colors"
+                  >
+                    Clear All Analyses ({Object.keys(persistentAnalyses).length})
+                  </button>
+                )}
               </div>
             )}
           </>

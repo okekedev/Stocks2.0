@@ -1,4 +1,4 @@
-// src/hooks/useNewsData.js - Updated to return performAnalysis function
+// src/hooks/useNewsData.js - Updated with persistent analysis storage
 import { useState, useEffect, useCallback } from 'react';
 import { polygonService } from '../services/PolygonService';
 import { newsProcessor } from '../services/NewsProcessor';
@@ -12,6 +12,7 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
   const [error, setError] = useState(null);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
+  const [persistentAnalyses, setPersistentAnalyses] = useState({}); // ✅ NEW: Store AI analyses separately
 
   const applyPriceFilters = useCallback((stocks) => {
     if (!stocks || stocks.length === 0) return stocks;
@@ -57,16 +58,21 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
         const tickers = processedData.stocks.map(s => s.ticker);
         const marketData = await polygonService.getMarketData(tickers);
         
-        // Add price data
+        // Add price data and merge with persistent analyses
         processedData.stocks = processedData.stocks.map(stock => {
           const snapshot = marketData.find(m => m.ticker === stock.ticker);
+          
+          // ✅ Get existing AI analysis for this ticker
+          const existingAnalysis = persistentAnalyses[stock.ticker];
           
           return {
             ...stock,
             currentPrice: snapshot?.lastTrade?.p || snapshot?.day?.c || null,
             changePercent: snapshot?.todaysChangePerc || 0,
             volume: snapshot?.day?.v || 0,
-            exchange: snapshot?.exchange || 'Unknown'
+            exchange: snapshot?.exchange || 'Unknown',
+            // ✅ Preserve existing AI analysis
+            buySignal: existingAnalysis || stock.buySignal || null
           };
         });
         
@@ -82,6 +88,7 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
         });
         
         console.log(`[SUCCESS] Loaded ${filteredStocks.length} positive stocks from last 4 hours`);
+        console.log(`[INFO] Preserved ${Object.keys(persistentAnalyses).length} existing AI analyses`);
       }
       
       setNewsLoading(false);
@@ -91,9 +98,9 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
       setError(err.message);
       setNewsLoading(false);
     }
-  }, [applyPriceFilters]);
+  }, [applyPriceFilters, persistentAnalyses]);
 
-  // ✅ AI Analysis function that App.jsx can call
+  // ✅ AI Analysis function that App.jsx can call - Now updates persistent state
   const performAnalysis = useCallback(async (stocksToAnalyze = null) => {
     try {
       setAnalysisLoading(true);
@@ -118,38 +125,104 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
       console.log(`[INFO] Starting AI analysis of ${candidateStocks.length} stocks...`);
       const stocksWithBuySignals = await geminiService.batchAnalyzeStocks(candidateStocks);
       
-      const aiStockMap = new Map(stocksWithBuySignals.map(stock => [stock.ticker, stock]));
-      const aiEnhancedStocks = stocks.map(stock => aiStockMap.get(stock.ticker) || stock);
-      
-      // Sort by buy signal strength
-      aiEnhancedStocks.sort((a, b) => {
-        if (a.buySignal && b.buySignal) {
-          return b.buySignal.buyPercentage - a.buySignal.buyPercentage;
+      // ✅ Update persistent analyses state FIRST
+      const newAnalyses = {};
+      stocksWithBuySignals.forEach(stock => {
+        if (stock.buySignal) {
+          newAnalyses[stock.ticker] = stock.buySignal;
         }
-        if (a.buySignal && !b.buySignal) return -1;
-        if (!a.buySignal && b.buySignal) return 1;
-        return a.latestMinutesAgo - b.latestMinutesAgo; // Most recent first
+      });
+      
+      // ✅ Update persistent analyses immediately
+      setPersistentAnalyses(prev => {
+        const updated = { ...prev, ...newAnalyses };
+        console.log(`[INFO] Updated persistent analyses:`, Object.keys(updated));
+        return updated;
+      });
+      
+      // ✅ Also update current newsData with analyses immediately
+      setNewsData(prevData => {
+        if (!prevData) return prevData;
+        
+        // ✅ Merge with BOTH existing persistent analyses AND new analyses
+        const allAnalyses = { ...persistentAnalyses, ...newAnalyses };
+        
+        const updatedStocks = prevData.stocks.map(stock => {
+          const analysis = allAnalyses[stock.ticker];
+          return analysis ? { ...stock, buySignal: analysis } : stock;
+        });
+        
+        // Sort by buy signal strength
+        updatedStocks.sort((a, b) => {
+          if (a.buySignal && b.buySignal) {
+            return b.buySignal.buyPercentage - a.buySignal.buyPercentage;
+          }
+          if (a.buySignal && !b.buySignal) return -1;
+          if (!a.buySignal && b.buySignal) return 1;
+          return a.latestMinutesAgo - b.latestMinutesAgo;
+        });
+
+        const aiSignals = updatedStocks
+          .filter(stock => stock.buySignal && stock.buySignal.buyPercentage >= 40)
+          .slice(0, 10);
+
+        console.log(`[INFO] Updated newsData with ${updatedStocks.filter(s => s.buySignal).length} analyzed stocks`);
+
+        return {
+          ...prevData,
+          stocks: updatedStocks,
+          aiSignals,
+          timestamp: new Date().toISOString()
+        };
       });
 
-      const aiSignals = aiEnhancedStocks
-        .filter(stock => stock.buySignal && stock.buySignal.buyPercentage >= 40)
-        .slice(0, 10);
-
-      setNewsData(prevData => ({
-        ...prevData,
-        stocks: aiEnhancedStocks,
-        aiSignals,
-        timestamp: new Date().toISOString()
-      }));
-
-      console.log(`[SUCCESS] AI analysis complete. ${aiSignals.length} trading signals found.`);
+      console.log(`[SUCCESS] AI analysis complete. ${Object.keys(newAnalyses).length} new analyses saved.`);
       
     } catch (error) {
       console.error('[ERROR] AI analysis failed:', error);
     } finally {
       setAnalysisLoading(false);
     }
-  }, [newsData?.stocks]);
+  }, [newsData?.stocks, persistentAnalyses]);
+
+  // ✅ NEW: Function to handle individual analysis completion
+  const updateSingleAnalysis = useCallback((ticker, result) => {
+    console.log(`[INFO] Updating single analysis for ${ticker}:`, result);
+    
+    // Update persistent analyses
+    setPersistentAnalyses(prev => ({
+      ...prev,
+      [ticker]: result
+    }));
+    
+    // Update current newsData
+    setNewsData(prevData => {
+      if (!prevData) return prevData;
+      
+      const updatedStocks = prevData.stocks.map(stock => {
+        if (stock.ticker === ticker) {
+          return { ...stock, buySignal: result };
+        }
+        return stock;
+      });
+      
+      // Re-sort by buy signal strength
+      updatedStocks.sort((a, b) => {
+        if (a.buySignal && b.buySignal) {
+          return b.buySignal.buyPercentage - a.buySignal.buyPercentage;
+        }
+        if (a.buySignal && !b.buySignal) return -1;
+        if (!a.buySignal && b.buySignal) return 1;
+        return a.latestMinutesAgo - b.latestMinutesAgo;
+      });
+
+      return {
+        ...prevData,
+        stocks: updatedStocks,
+        timestamp: new Date().toISOString()
+      };
+    });
+  }, []);
 
   useEffect(() => {
     fetchNewsData();
@@ -169,6 +242,9 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
     error,
     refresh: fetchNewsData,
     performAnalysis, // ✅ Now returns the analysis function
+    updateSingleAnalysis, // ✅ NEW: Function to update individual analysis
+    persistentAnalyses, // ✅ NEW: Expose persistent analyses
+    clearAnalyses: () => setPersistentAnalyses({}), // ✅ NEW: Allow manual clearing
     minPrice,
     setMinPrice,
     maxPrice,

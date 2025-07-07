@@ -52,13 +52,9 @@ export function Header({ lastUpdate }) {
           {/* Right Side - Last Update Only */}
           <div className="text-right">
             <div className="flex items-center space-x-2 text-sm">
-              <Clock className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-400">Updated</span>
-              <span className="font-medium text-white">{formatTimeAgo(lastUpdate)}</span>
+              <span className="text-gray-400">Developed by: Christian Okeke</span>
             </div>
-            <div className="text-xs text-gray-500 mt-1">
-              {formatTime(lastUpdate)}
-            </div>
+            
           </div>
         </div>
       </div>
@@ -69,12 +65,9 @@ export function Header({ lastUpdate }) {
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2">
               <Zap className="w-3 h-3 text-yellow-400" />
-              <span className="text-xs text-gray-400">Auto-refresh every 5 minutes</span>
+              <span className="text-xs text-gray-400">News refresh every 5 minutes - Prices update every minute</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-xs text-gray-400">AI analysis ready</span>
-            </div>
+            
           </div>
           <div className="flex items-center space-x-4 text-xs text-gray-500">
             <span>Market Data Provider: Polygon.io</span>
