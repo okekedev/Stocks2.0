@@ -1,4 +1,4 @@
-// src/services/GeminiService.js - Enhanced with AI Pattern Recognition
+// src/services/GeminiService.js - Optimized for Intraday Trading Analysis
 import { articleFetcher } from './ArticleFetcher';
 import { enhancedTechnicalService } from './EnhancedTechnicalService';
 
@@ -30,10 +30,10 @@ class GeminiService {
             }]
           }],
           generationConfig: {
-            temperature: 0.7, // ✅ Higher for pattern recognition creativity
+            temperature: 0.7,
             topK: 40, 
             topP: 0.9, 
-            maxOutputTokens: 1000, // ✅ More tokens for complex pattern analysis
+            maxOutputTokens: 8192, // ✅ FIXED: Increased for detailed analysis responses
             candidateCount: 1,
             stopSequences: ["```", "END_ANALYSIS"]
           }
@@ -74,6 +74,9 @@ class GeminiService {
         if (candidate.finishReason === 'RECITATION') {
           throw new Error('Response blocked due to recitation concerns');
         }
+        if (candidate.finishReason === 'MAX_TOKENS') {
+          throw new Error('Response incomplete - prompt too large (reduce data size)');
+        }
         if (candidate.finishReason === 'OTHER') {
           throw new Error('Response generation failed for unknown reason');
         }
@@ -101,19 +104,19 @@ class GeminiService {
     }
   }
 
-  // ✅ ENHANCED: AI Pattern Recognition Analysis
+  // ✅ OPTIMIZED: Focused Intraday Trading Analysis
   async analyzeStock(stock, onProgress = null) {
     try {
-      onProgress?.(`🔄 Collecting comprehensive market data for ${stock.ticker}...`);
+      onProgress?.(`🔄 Collecting intraday market data for ${stock.ticker}...`);
       
-      // ✅ Step 1: Get RAW multi-timeframe market data
-      console.log(`🔧 [${stock.ticker}] Fetching raw market data for AI pattern recognition...`);
+      // ✅ Step 1: Get focused price/volume data (no options complexity)
+      console.log(`🔧 [${stock.ticker}] Fetching price/volume data for intraday analysis...`);
       const rawMarketData = await enhancedTechnicalService.analyzeStockForAI(stock.ticker);
       
       if (rawMarketData.error) {
         onProgress?.(`⚠️ Market Data: ${rawMarketData.error}`);
       } else {
-        onProgress?.(`✅ Market Data: ${rawMarketData.dataPoints} data points across multiple timeframes`);
+        onProgress?.(`✅ Market Data: ${rawMarketData.dataPoints} price/volume data points`);
       }
 
       // Step 2: Get article content
@@ -144,27 +147,27 @@ class GeminiService {
         onProgress?.(`📰 Using news summary only`);
       }
       
-      // ✅ Step 3: Build AI pattern recognition prompt
-      onProgress?.(`🛠️ Building AI pattern recognition prompt...`);
-      const prompt = this.buildAIPatternPrompt(stock, rawMarketData, fullArticleContent);
+      // ✅ Step 3: Build focused intraday trading prompt
+      onProgress?.(`🛠️ Building intraday pattern analysis prompt...`);
+      const prompt = this.buildIntradayPatternPrompt(stock, rawMarketData, fullArticleContent);
       
-      // ✅ Step 4: Send to AI for pattern analysis
-      onProgress?.(`🧠 Analyzing patterns with Gemini 2.5 Flash...`);
+      // ✅ Step 4: Send to AI for intraday pattern analysis
+      onProgress?.(`🧠 Analyzing intraday patterns with Gemini 2.5 Flash...`);
       const response = await this.makeRequest(prompt);
       const cleanResponse = response.replace(/```json\n?|\n?```/g, '').trim();
       
-      console.log(`🤖 [${stock.ticker}] AI Pattern Analysis Response:`, cleanResponse);
+      console.log(`🤖 [${stock.ticker}] AI Intraday Analysis Response:`, cleanResponse);
       
       const result = JSON.parse(cleanResponse);
       
       const finalResult = {
         buyPercentage: Math.max(0, Math.min(100, result.buyPercentage || 50)),
         signal: result.signal || 'hold',
-        reasoning: result.reasoning || 'Pattern analysis completed',
-        eodMovement: result.eodMovement || 0,
+        reasoning: result.reasoning || 'Intraday pattern analysis completed',
+        eodMovement: result.eodMovementPrediction || 0, // ✅ Updated field name
         confidence: Math.max(0, Math.min(1, result.confidence || 0.5)),
         
-        // ✅ NEW: AI-discovered patterns
+        // ✅ Intraday-focused patterns
         patternsFound: result.patternsFound || [],
         anomalies: result.anomalies || [],
         
@@ -185,92 +188,48 @@ class GeminiService {
     }
   }
 
-  // ✅ NEW: AI Pattern Recognition Prompt - Let AI find patterns in raw data
-  buildAIPatternPrompt(stock, rawMarketData, fullArticleContent) {
+  // ✅ SIMPLIFIED: Clean and Direct Intraday Analysis Prompt
+  buildIntradayPatternPrompt(stock, rawMarketData, fullArticleContent) {
     let newsText = '';
-    let newsQuality = 'SUMMARY_ONLY';
     
-    if (fullArticleContent?.success && fullArticleContent?.content && fullArticleContent.content.length > 100) {
+    if (fullArticleContent?.success && fullArticleContent?.content) {
       newsText = fullArticleContent.content;
-      newsQuality = 'FULL_ARTICLE';
-    } else if (fullArticleContent?.fallback) {
-      newsText = stock.latestNews?.description || stock.latestNews?.title || 'No detailed news available';
-      newsQuality = 'FALLBACK_SUMMARY';
     } else {
       newsText = stock.latestNews?.description || stock.latestNews?.title || 'No recent news available';
-      newsQuality = 'SUMMARY_ONLY';
     }
     
-    // ✅ Prepare raw data for AI pattern recognition
     let marketDataSection = '';
     
     if (rawMarketData.error || !rawMarketData.hasData) {
-      marketDataSection = `MARKET_DATA: null
-DATA_STATUS: ${rawMarketData.error || 'No data available'}
-PATTERN_ANALYSIS: Not possible - insufficient market data`;
+      marketDataSection = `No market data available: ${rawMarketData.error || 'Unknown error'}`;
     } else {
-      // ✅ Send ACTUAL raw data to AI for pattern recognition
-      marketDataSection = `RAW_MARKET_DATA:
-{
-  "currentPrice": ${rawMarketData.currentPrice},
-  "todayChangePercent": ${rawMarketData.todayChangePercent?.toFixed(2) || 0},
-  "dataQuality": ${JSON.stringify(rawMarketData.dataQuality, null, 2)},
-  
-  "recent1minBars": ${JSON.stringify(rawMarketData.rawTimeframes['1min'].slice(-60), null, 2)},
-  "recent5minBars": ${JSON.stringify(rawMarketData.rawTimeframes['5min'].slice(-24), null, 2)},
-  "recent1hourBars": ${JSON.stringify(rawMarketData.rawTimeframes['1hour'].slice(-6), null, 2)},
-  "recentDailyBars": ${JSON.stringify(rawMarketData.recentDays, null, 2)},
-  "optionsActivity": ${JSON.stringify(rawMarketData.optionsActivity, null, 2)}
-}
+      marketDataSection = `Market Data:
+Current Price: ${rawMarketData.currentPrice} (${rawMarketData.todayChangePercent?.toFixed(2) || 0}% today)
 
-DATA_POINTS: ${rawMarketData.dataPoints} total market data points
-TIMEFRAMES: 1min (${rawMarketData.dataQuality.minuteBars}), 5min (${rawMarketData.dataQuality.fiveMinBars}), 1hour (${rawMarketData.dataQuality.hourlyBars}), daily (${rawMarketData.dataQuality.dailyBars})`;
+Recent 1-minute bars: ${JSON.stringify(rawMarketData.rawTimeframes['1min'].slice(-60))}
+Recent 5-minute bars: ${JSON.stringify(rawMarketData.rawTimeframes['5min'].slice(-24))}
+Recent hourly bars: ${JSON.stringify(rawMarketData.rawTimeframes['1hour'].slice(-6))}
+Recent daily bars: ${JSON.stringify(rawMarketData.recentDays)}`;
     }
 
-    const prompt = `You are an AI pattern recognition expert analyzing ${stock.ticker} for intraday trading opportunities.
+    const prompt = `You are an expert in intraday trading with deep knowledge and understanding of the most complex financial patterns. You will be given recent news from a stock and technical data for a given time period. I would like you to analyze this information and return a json in this format.
 
-STOCK: ${stock.ticker}
-NEWS_CATALYST (${newsQuality}):
+Stock: ${stock.ticker}
+
+News:
 ${newsText}
 
 ${marketDataSection}
 
-ADVANCED PATTERN ANALYSIS INSTRUCTIONS:
-As an AI with superior pattern recognition capabilities, analyze the RAW market data above to discover:
-
-1. **HIDDEN PATTERNS**: Look for subtle patterns in the price/volume data that humans might miss
-2. **CROSS-TIMEFRAME ANALYSIS**: Find correlations between 1min, 5min, hourly, and daily patterns  
-3. **VOLUME ANOMALIES**: Detect unusual volume patterns that signal institutional activity
-4. **MICRO-TRENDS**: Identify emerging short-term trends in the recent minute-by-minute data
-5. **NEWS-PRICE CORRELATION**: How is the price action responding to the news catalyst?
-
-Your pattern recognition capabilities should identify:
-- Support/resistance levels from actual price touches
-- Volume spikes and their timing relative to price moves
-- Momentum shifts between timeframes
-- Unusual trading patterns (gaps, reversals, breakouts)
-- Price action patterns (flags, pennants, wedges) across timeframes
-
-Return ONLY this JSON:
 {
-  "buyPercentage": 65,
-  "signal": "buy",
-  "reasoning": "Specific pattern-based analysis (max 30 words)",
-  "eodMovement": 2.8,
-  "confidence": 0.8,
-  "patternsFound": ["breakout above resistance", "volume spike confirmation"],
-  "anomalies": ["unusual pre-market volume", "gap up on news"]
-}
-
-SCORING INSTRUCTIONS:
-- Use the RAW data patterns to determine scores, not just news sentiment
-- buyPercentage: Base on strength of technical patterns + news alignment
-- eodMovement: Predict based on pattern completion targets and momentum
-- confidence: Higher when multiple timeframes confirm the same pattern
-- patternsFound: List 1-3 specific patterns you detected in the data
-- anomalies: Note any unusual data points that influence your analysis
-
-IMPORTANT: Each stock will have unique patterns - use your AI pattern recognition to find what humans cannot see in the raw data.`;
+  "buyPercentage": (0-100 based on intraday opportunity strength),
+  "signal": ("buy", "sell", "hold"),
+  "reasoning": (brief explanation of your analysis),
+  "eodMovementPrediction": (predicted % change by end of day),
+  "confidence": (0.0-1.0 confidence in your analysis),
+  "patternsFound": (array of technical patterns you identified),
+  "anomalies": (array of unusual market behaviors you noticed)
+}`;
 
     return prompt;
   }
@@ -285,8 +244,8 @@ IMPORTANT: Each stock will have unique patterns - use your AI pattern recognitio
     
     const results = [];
     
-    console.log(`[INFO] AI pattern recognition batch analysis: ${stocks.length} stocks...`);
-    onProgress?.(`🎯 AI pattern analysis for ${stocks.length} stocks...`);
+    console.log(`[INFO] AI intraday pattern analysis: ${stocks.length} stocks...`);
+    onProgress?.(`🎯 AI intraday analysis for ${stocks.length} stocks...`);
     
     for (let i = 0; i < stocks.length; i += maxConcurrent) {
       const batch = stocks.slice(i, i + maxConcurrent);
@@ -319,7 +278,7 @@ IMPORTANT: Each stock will have unique patterns - use your AI pattern recognitio
             buySignal: {
               buyPercentage: 20,
               signal: 'avoid',
-              reasoning: 'AI pattern analysis failed',
+              reasoning: 'AI intraday analysis failed',
               eodMovement: 0,
               confidence: 0.1,
               patternsFound: [],
@@ -349,8 +308,8 @@ IMPORTANT: Each stock will have unique patterns - use your AI pattern recognitio
       .filter(stock => stock.buySignal !== null)
       .sort((a, b) => (b.buySignal?.buyPercentage || 0) - (a.buySignal?.buyPercentage || 0));
     
-    console.log(`[INFO] AI pattern analysis complete: ${sortedResults.length} analyzed`);
-    onProgress?.(`🎯 Pattern analysis complete: ${sortedResults.length}/${stocks.length} successful`);
+    console.log(`[INFO] AI intraday analysis complete: ${sortedResults.length} analyzed`);
+    onProgress?.(`🎯 Intraday analysis complete: ${sortedResults.length}/${stocks.length} successful`);
     
     return sortedResults;
   }

@@ -1,4 +1,4 @@
-// src/services/EnhancedTechnicalService.js - Raw data for AI pattern recognition
+// src/services/EnhancedTechnicalService.js - Focused on price/volume data for intraday trading
 class EnhancedTechnicalService {
   constructor() {
     this.apiKey = import.meta.env.VITE_POLYGON_API_KEY;
@@ -28,10 +28,10 @@ class EnhancedTechnicalService {
     }
   }
 
-  // ✅ NEW: Get comprehensive multi-timeframe raw data
+  // Get comprehensive multi-timeframe price/volume data
   async getRawMarketData(ticker, hours = 6) {
     try {
-      console.log(`[INFO] Fetching comprehensive market data for ${ticker}...`);
+      console.log(`[INFO] Fetching market data for ${ticker}...`);
       
       const now = new Date();
       const fromDate = new Date(now.getTime() - hours * 60 * 60 * 1000);
@@ -40,7 +40,7 @@ class EnhancedTechnicalService {
       const from = fromDate.toISOString().split('T')[0];
       const to = now.toISOString().split('T')[0];
       
-      // ✅ Get multiple timeframes in parallel
+      // Get multiple timeframes in parallel
       const [minuteBars, fiveMinBars, hourlyBars] = await Promise.all([
         this.getMinuteBars(ticker, from, to, 1),   // 1-minute bars
         this.getMinuteBars(ticker, from, to, 5),   // 5-minute bars  
@@ -68,7 +68,7 @@ class EnhancedTechnicalService {
       };
       
     } catch (error) {
-      console.error(`[ERROR] Failed to get raw market data for ${ticker}:`, error);
+      console.error(`[ERROR] Failed to get market data for ${ticker}:`, error);
       return {
         ticker,
         error: error.message,
@@ -91,7 +91,7 @@ class EnhancedTechnicalService {
         return [];
       }
       
-      // ✅ Return raw OHLCV data with timestamps
+      // Return clean OHLCV data with timestamps
       return response.results.map(bar => ({
         timestamp: bar.t,
         datetime: new Date(bar.t).toISOString(),
@@ -110,7 +110,7 @@ class EnhancedTechnicalService {
     }
   }
 
-  // ✅ NEW: Get recent days for longer-term context
+  // Get recent daily data for context
   async getRecentDailyData(ticker, days = 10) {
     try {
       const now = new Date();
@@ -144,48 +144,15 @@ class EnhancedTechnicalService {
     }
   }
 
-  // ✅ NEW: Get options flow data if available
-  async getOptionsActivity(ticker) {
-    try {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const dateStr = yesterday.toISOString().split('T')[0];
-      
-      const response = await this.makeRequest(`/v3/snapshot/options/${ticker}`, {
-        'expiration_date.gte': dateStr
-      });
-      
-      if (!response.results) return null;
-      
-      // Return summary of options activity
-      const callActivity = response.results.filter(opt => opt.details?.contract_type === 'call').length;
-      const putActivity = response.results.filter(opt => opt.details?.contract_type === 'put').length;
-      
-      return {
-        totalContracts: response.results.length,
-        callsCount: callActivity,
-        putsCount: putActivity,
-        callPutRatio: putActivity > 0 ? callActivity / putActivity : null,
-        hasActivity: response.results.length > 0
-      };
-      
-    } catch (error) {
-      // Options data might not be available for all stocks
-      console.log(`[INFO] No options data available for ${ticker}`);
-      return null;
-    }
-  }
-
-  // ✅ NEW: Main analysis function - comprehensive raw data
+  // Main analysis function - focused on price/volume patterns
   async analyzeStockForAI(ticker) {
     try {
-      console.log(`[INFO] Starting comprehensive AI data collection for ${ticker}`);
+      console.log(`[INFO] Starting AI data collection for ${ticker}`);
       
-      // Get all data in parallel for speed
-      const [rawData, dailyData, optionsData] = await Promise.all([
+      // Get essential data for intraday pattern recognition
+      const [rawData, dailyData] = await Promise.all([
         this.getRawMarketData(ticker, 6), // 6 hours of intraday data
-        this.getRecentDailyData(ticker, 10), // 10 days of daily data
-        this.getOptionsActivity(ticker) // Options activity if available
+        this.getRecentDailyData(ticker, 10) // 10 days of daily context
       ]);
       
       const totalDataPoints = rawData.metadata.totalBars + dailyData.length;
@@ -199,14 +166,14 @@ class EnhancedTechnicalService {
         };
       }
       
-      // ✅ Calculate basic statistics for context
+      // Calculate basic statistics for context
       const current1min = rawData.timeframes['1min'];
       const currentPrice = current1min.length > 0 ? current1min[current1min.length - 1].close : null;
       
       const todayOpen = current1min.length > 0 ? current1min[0].open : null;
       const todayChange = currentPrice && todayOpen ? ((currentPrice - todayOpen) / todayOpen) * 100 : null;
       
-      // ✅ Package everything for AI analysis
+      // Package everything for AI analysis (focused on price/volume)
       const result = {
         ticker,
         hasData: true,
@@ -216,10 +183,9 @@ class EnhancedTechnicalService {
         currentPrice,
         todayChangePercent: todayChange,
         
-        // ✅ RAW DATA FOR AI PATTERN RECOGNITION
+        // Raw data for AI pattern recognition (price/volume focus)
         rawTimeframes: rawData.timeframes,
         recentDays: dailyData,
-        optionsActivity: optionsData,
         
         // Metadata for AI context
         dataQuality: {
@@ -227,14 +193,14 @@ class EnhancedTechnicalService {
           fiveMinBars: rawData.timeframes['5min'].length, 
           hourlyBars: rawData.timeframes['1hour'].length,
           dailyBars: dailyData.length,
-          hasOptions: !!optionsData,
-          timespan: '6h intraday + 10d daily'
+          timespan: '6h intraday + 10d daily',
+          focus: 'price_volume_patterns'
         },
         
         timestamp: new Date().toISOString()
       };
       
-      console.log(`[SUCCESS] Comprehensive data ready for ${ticker}:`, {
+      console.log(`[SUCCESS] Price/volume data ready for ${ticker}:`, {
         totalDataPoints,
         currentPrice,
         todayChange: todayChange?.toFixed(2) + '%'
@@ -254,7 +220,7 @@ class EnhancedTechnicalService {
     }
   }
 
-  // ✅ Batch analysis for multiple stocks
+  // Batch analysis for multiple stocks
   async batchAnalyzeForAI(tickers, maxConcurrent = 3) {
     const results = [];
     
