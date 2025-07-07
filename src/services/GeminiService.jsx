@@ -1,11 +1,10 @@
-// src/services/GeminiService.js - Updated for Gemini 2.5 Flash with Thinking
+// src/services/GeminiService.js - Optimized for Intraday Trading Analysis
 import { articleFetcher } from './ArticleFetcher';
 import { enhancedTechnicalService } from './EnhancedTechnicalService';
 
 class GeminiService {
   constructor() {
     this.apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    // ✅ Using standard Gemini 2.5 Flash (stable version)
     this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
     
     if (!this.apiKey) {
@@ -19,30 +18,25 @@ class GeminiService {
     }
 
     try {
-      // ✅ Standard Gemini API request (no thinking config)
-      const requestBody = {
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.1, // Lower for more consistent JSON output
-          topK: 40, 
-          topP: 0.9, 
-          maxOutputTokens: 2048,
-          candidateCount: 1
-        }
-      };
-
-      console.log(`🧠 [Gemini 2.5] Making standard API request...`);
-
       const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.1,
+            topK: 40, 
+            topP: 0.9, 
+            maxOutputTokens: 8192, // ✅ INCREASED - Allow longer responses
+            candidateCount: 1
+          }
+        })
       });
 
       if (!response.ok) {
@@ -52,20 +46,26 @@ class GeminiService {
 
       const data = await response.json();
       
-      // ✅ Enhanced debugging without thinking info
-      console.log(`🤖 [Gemini 2.5] API Response received successfully`);
+      // ✅ DETAILED DEBUGGING - Log the full response structure
+      console.log('🔍 [FULL DEBUG] Gemini API Response:', JSON.stringify(data, null, 2));
       
-      // ✅ Enhanced error checking for 2.5 Flash
+      // Enhanced error checking with fallback handling
+      console.log('[DEBUG] Gemini API response structure:', {
+        hasCandidates: !!data.candidates,
+        candidatesLength: data.candidates?.length || 0,
+        firstCandidateStructure: data.candidates?.[0] ? Object.keys(data.candidates[0]) : 'none',
+        firstCandidateFinishReason: data.candidates?.[0]?.finishReason || 'none',
+        hasContent: !!data.candidates?.[0]?.content,
+        contentStructure: data.candidates?.[0]?.content ? Object.keys(data.candidates[0].content) : 'none'
+      });
+      
       if (!data) {
         throw new Error('Empty response from Gemini API');
       }
       
-      if (!data.candidates) {
-        throw new Error('No candidates in Gemini API response');
-      }
-      
-      if (!Array.isArray(data.candidates) || data.candidates.length === 0) {
-        throw new Error('Candidates array is empty or invalid');
+      if (!data.candidates || !Array.isArray(data.candidates) || data.candidates.length === 0) {
+        console.error('[ERROR] Invalid candidates structure:', data);
+        throw new Error(`No valid candidates in API response. Full response: ${JSON.stringify(data)}`);
       }
       
       const candidate = data.candidates[0];
@@ -73,62 +73,56 @@ class GeminiService {
         throw new Error('First candidate is undefined');
       }
       
+      // ✅ MORE DETAILED FINISH REASON CHECKING
+      if (candidate.finishReason && candidate.finishReason !== 'STOP') {
+        console.warn(`[WARN] Unusual finish reason: ${candidate.finishReason}`, candidate);
+        
+        switch (candidate.finishReason) {
+          case 'SAFETY':
+            throw new Error(`Content blocked by safety filters. Candidate: ${JSON.stringify(candidate)}`);
+          case 'RECITATION':
+            throw new Error(`Content blocked due to recitation concerns. Candidate: ${JSON.stringify(candidate)}`);
+          case 'MAX_TOKENS':
+            throw new Error(`Response too long (hit maxOutputTokens limit). Candidate: ${JSON.stringify(candidate)}`);
+          case 'OTHER':
+            throw new Error(`Response generation failed for unknown reason. Candidate: ${JSON.stringify(candidate)}`);
+          default:
+            console.warn(`[WARN] Unknown finish reason: ${candidate.finishReason}`);
+        }
+      }
+      
+      // Handle missing content structure
       if (!candidate.content) {
-        if (candidate.finishReason === 'SAFETY') {
-          throw new Error('Response blocked due to safety filters');
-        }
-        if (candidate.finishReason === 'RECITATION') {
-          throw new Error('Response blocked due to recitation concerns');
-        }
-        if (candidate.finishReason === 'MAX_TOKENS') {
-          throw new Error('Response incomplete - reduce prompt size or increase maxOutputTokens');
-        }
-        if (candidate.finishReason === 'OTHER') {
-          throw new Error('Response generation failed for unknown reason');
-        }
-        throw new Error('No content in candidate response');
+        console.error('[ERROR] No content in candidate:', candidate);
+        throw new Error(`No content in response. Full candidate: ${JSON.stringify(candidate)}`);
       }
       
-      if (!candidate.content.parts) {
-        throw new Error('No parts in candidate content');
-      }
-      
-      if (!Array.isArray(candidate.content.parts) || candidate.content.parts.length === 0) {
-        throw new Error('Parts array is empty or invalid');
+      if (!candidate.content.parts || !Array.isArray(candidate.content.parts) || candidate.content.parts.length === 0) {
+        console.error('[ERROR] Invalid parts structure:', candidate.content);
+        throw new Error(`No valid parts in candidate content. Content: ${JSON.stringify(candidate.content)}`);
       }
       
       const part = candidate.content.parts[0];
-      if (!part || (!part.text)) {
-        // ✅ Handle empty responses more gracefully
-        console.warn('[WARN] Gemini 2.5 Flash returned empty response');
-        
-        // Return a fallback JSON response that matches our expected format
-        return JSON.stringify({
-          buyPercentage: 50,
-          signal: 'hold',
-          reasoning: 'Analysis inconclusive - Gemini returned empty response',
-          eodMovementPrediction: 0,
-          confidence: 0.3,
-          patternsFound: [],
-          anomalies: ['Empty AI response']
-        });
+      if (!part || typeof part.text !== 'string') {
+        console.error('[ERROR] Invalid part structure:', part);
+        throw new Error(`No valid text in response part. Part: ${JSON.stringify(part)}`);
       }
 
-      // ✅ Return the actual text content
+      console.log(`✅ [SUCCESS] Received response: ${part.text.substring(0, 100)}...`);
       return part.text;
       
     } catch (error) {
-      console.error('[ERROR] Gemini 2.5 Flash API request failed:', error);
+      console.error('[ERROR] Gemini API request failed:', error);
       throw error;
     }
   }
 
-  // ✅ OPTIMIZED: Focused Intraday Trading Analysis with 2.5 Flash Thinking
+  // ✅ OPTIMIZED: Focused Intraday Trading Analysis
   async analyzeStock(stock, onProgress = null) {
     try {
       onProgress?.(`🔄 Collecting intraday market data for ${stock.ticker}...`);
       
-      // ✅ Step 1: Get focused price/volume data
+      // ✅ Step 1: Get focused price/volume data (no options complexity)
       console.log(`🔧 [${stock.ticker}] Fetching price/volume data for intraday analysis...`);
       const rawMarketData = await enhancedTechnicalService.analyzeStockForAI(stock.ticker);
       
@@ -166,35 +160,24 @@ class GeminiService {
         onProgress?.(`📰 Using news summary only`);
       }
       
-      // ✅ Step 3: Build optimized prompt for 2.5 Flash
-      onProgress?.(`🛠️ Building intraday analysis prompt...`);
+      // ✅ Step 3: Build focused intraday trading prompt
+      onProgress?.(`🛠️ Building analysis prompt...`);
       const prompt = this.buildIntradayPatternPrompt(stock, rawMarketData, fullArticleContent);
       
-      // ✅ Debug prompt size
+      // Check prompt size to avoid token limits
       console.log(`📏 [${stock.ticker}] Prompt size: ${prompt.length} characters`);
-      if (prompt.length > 30000) {
-        console.warn(`⚠️ [${stock.ticker}] Large prompt detected: ${prompt.length} chars`);
+      if (prompt.length > 12000) {
+        console.warn(`[WARN] Large prompt for ${stock.ticker}: ${prompt.length} chars`);
+        onProgress?.(`⚠️ Large prompt detected (${Math.round(prompt.length/1000)}k chars)`);
       }
       
-      // ✅ Step 4: Send to Gemini 2.5 Flash (standard API)
-      onProgress?.(`🧠 Analyzing with Gemini 2.5 Flash...`);
+      // ✅ Step 4: Send to AI - No fallback, let errors bubble up
+      onProgress?.(`🧠 Analyzing patterns with Gemini AI...`);
       
       const response = await this.makeRequest(prompt);
-      
-      // ✅ Better response validation
-      if (!response || response.trim() === '') {
-        throw new Error('Gemini 2.5 Flash returned empty response');
-      }
-      
       const cleanResponse = response.replace(/```json\n?|\n?```/g, '').trim();
       
-      console.log(`🤖 [${stock.ticker}] AI Response:`, cleanResponse.substring(0, 200) + '...');
-      
-      // ✅ Validate JSON before parsing
-      if (!cleanResponse.startsWith('{') || !cleanResponse.endsWith('}')) {
-        console.warn(`⚠️ [${stock.ticker}] Invalid JSON format received:`, cleanResponse);
-        throw new Error('Invalid JSON format received from AI');
-      }
+      console.log(`🤖 [${stock.ticker}] AI Response:`, cleanResponse);
       
       const result = JSON.parse(cleanResponse);
       
@@ -202,10 +185,10 @@ class GeminiService {
         buyPercentage: Math.max(0, Math.min(100, result.buyPercentage || 50)),
         signal: result.signal || 'hold',
         reasoning: result.reasoning || 'Intraday pattern analysis completed',
-        eodMovement: result.eodMovementPrediction || 0,
+        eodMovement: result.eodMovementPrediction || 0, // ✅ Updated field name
         confidence: Math.max(0, Math.min(1, result.confidence || 0.5)),
         
-        // ✅ Standard 2.5 Flash capabilities
+        // ✅ Intraday-focused patterns
         patternsFound: result.patternsFound || [],
         anomalies: result.anomalies || [],
         
@@ -227,68 +210,59 @@ class GeminiService {
     }
   }
 
-  // ✅ OPTIMIZED: Prompt designed for Gemini 2.5 Flash thinking capabilities
+  // ✅ OPTIMIZED: Compact and Safety-Filter Friendly Prompt
   buildIntradayPatternPrompt(stock, rawMarketData, fullArticleContent) {
+    // Use shorter news content to reduce token usage
     let newsText = '';
     
     if (fullArticleContent?.success && fullArticleContent?.content) {
-      newsText = fullArticleContent.content.slice(0, 2000); // Limit article content
+      // Limit article content to prevent token overflow
+      newsText = fullArticleContent.content.substring(0, 1500) + (fullArticleContent.content.length > 1500 ? '...' : '');
     } else {
       newsText = stock.latestNews?.description || stock.latestNews?.title || 'No recent news available';
     }
     
+    // Simplified market data (reduce JSON size)
     let marketDataSection = '';
     
     if (rawMarketData.error || !rawMarketData.hasData) {
-      marketDataSection = `No market data available: ${rawMarketData.error || 'Unknown error'}`;
+      marketDataSection = `Market data unavailable: ${rawMarketData.error || 'No data'}`;
     } else {
-      // ✅ Optimized market data for 2.5 Flash thinking
-      const recent1min = rawMarketData.rawTimeframes['1min'].slice(-30); // Last 30 minutes
-      const recent5min = rawMarketData.rawTimeframes['5min'].slice(-12); // Last hour in 5min bars
+      // Use only the most recent critical data points
+      const recent1min = rawMarketData.rawTimeframes['1min'].slice(-20); // Last 20 minutes
+      const recent5min = rawMarketData.rawTimeframes['5min'].slice(-12); // Last hour
       const recentDaily = rawMarketData.recentDays.slice(-5); // Last 5 days
       
-      marketDataSection = `MARKET DATA:
-Current Price: ${rawMarketData.currentPrice} (${rawMarketData.todayChangePercent?.toFixed(2) || 0}% today)
-
-Recent 30min (1min bars): ${JSON.stringify(recent1min)}
-Recent hour (5min bars): ${JSON.stringify(recent5min)}
-Recent 5 days (daily): ${JSON.stringify(recentDaily)}`;
+      marketDataSection = `Current: $${rawMarketData.currentPrice} (${rawMarketData.todayChangePercent?.toFixed(2) || 0}% today)
+Recent 1min: ${JSON.stringify(recent1min)}
+Recent 5min: ${JSON.stringify(recent5min)}
+Recent daily: ${JSON.stringify(recentDaily)}`;
     }
 
-    // ✅ Prompt optimized for Gemini 2.5 Flash thinking capabilities
-    const prompt = `You are an expert intraday trader with access to Gemini 2.5 Flash thinking capabilities. Think through this analysis step by step.
+    // Simplified, direct prompt to avoid safety filters
+    const prompt = `Analyze this stock for intraday trading opportunity. Return only valid JSON.
 
 STOCK: ${stock.ticker}
-CURRENT PRICE: ${rawMarketData.currentPrice || 'N/A'}
-TODAY'S CHANGE: ${rawMarketData.todayChangePercent?.toFixed(2) || 0}%
 
-NEWS ANALYSIS:
-${newsText}
+NEWS: ${newsText}
 
-${marketDataSection}
+MARKET DATA: ${marketDataSection}
 
-THINK THROUGH THE FOLLOWING:
-1. Analyze the news sentiment and potential market impact
-2. Examine price/volume patterns in the recent data
-3. Identify any technical patterns or anomalies
-4. Consider the end-of-day movement probability
-5. Assess overall trading opportunity strength
-
-RESPOND WITH ONLY THIS JSON FORMAT (no markdown, no explanations):
+Return JSON format:
 {
-  "buyPercentage": 50,
-  "signal": "hold",
-  "reasoning": "Brief analysis explanation",
-  "eodMovementPrediction": 0.0,
-  "confidence": 0.5,
-  "patternsFound": ["pattern1"],
-  "anomalies": ["anomaly1"]
+  "buyPercentage": [number 0-100],
+  "signal": ["buy"|"sell"|"hold"],
+  "reasoning": "[brief analysis]",
+  "eodMovementPrediction": [number percentage],
+  "confidence": [number 0.0-1.0],
+  "patternsFound": ["pattern1", "pattern2"],
+  "anomalies": ["anomaly1", "anomaly2"]
 }`;
 
     return prompt;
   }
 
-  // ✅ Enhanced batch analysis with 2.5 Flash capabilities
+  // Batch analysis with progress tracking
   async batchAnalyzeStocks(stocks, options = {}) {
     const { 
       maxConcurrent = 1,
@@ -298,8 +272,8 @@ RESPOND WITH ONLY THIS JSON FORMAT (no markdown, no explanations):
     
     const results = [];
     
-    console.log(`[INFO] Gemini 2.5 Flash analysis: ${stocks.length} stocks...`);
-    onProgress?.(`🎯 AI analysis with Gemini 2.5 Flash for ${stocks.length} stocks...`);
+    console.log(`[INFO] AI intraday pattern analysis: ${stocks.length} stocks...`);
+    onProgress?.(`🎯 AI intraday analysis for ${stocks.length} stocks...`);
     
     for (let i = 0; i < stocks.length; i += maxConcurrent) {
       const batch = stocks.slice(i, i + maxConcurrent);
@@ -362,8 +336,8 @@ RESPOND WITH ONLY THIS JSON FORMAT (no markdown, no explanations):
       .filter(stock => stock.buySignal !== null)
       .sort((a, b) => (b.buySignal?.buyPercentage || 0) - (a.buySignal?.buyPercentage || 0));
     
-    console.log(`[INFO] Gemini 2.5 Flash analysis complete: ${sortedResults.length} analyzed`);
-    onProgress?.(`🎯 Analysis complete: ${sortedResults.length}/${stocks.length} successful`);
+    console.log(`[INFO] AI intraday analysis complete: ${sortedResults.length} analyzed`);
+    onProgress?.(`🎯 Intraday analysis complete: ${sortedResults.length}/${stocks.length} successful`);
     
     return sortedResults;
   }
