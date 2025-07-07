@@ -1,4 +1,4 @@
-// src/components/AIWorker.jsx - Fixed with proper close handler
+// src/components/AIWorker.jsx - Add protection against double calls
 import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Terminal, CheckCircle, X } from 'lucide-react';
 import { geminiService } from '../services/GeminiService';
@@ -7,8 +7,6 @@ export function AIWorker({
   stock, 
   onAnalysisComplete, 
   onAnalysisStart,
-  onClose,
-  autoStart = false, // ✅ New prop to auto-start analysis
   isActive = false,
   savedLogs = null,
   savedResult = null
@@ -18,17 +16,9 @@ export function AIWorker({
   const [complete, setComplete] = useState(!!savedResult);
   const [result, setResult] = useState(savedResult);
   const logsEndRef = useRef(null);
-
-  // Auto-start analysis when component mounts (if enabled)
-  useEffect(() => {
-    if (autoStart && !analyzing && !complete && !savedResult) {
-      console.log(`[AIWorker] Auto-starting analysis for ${stock.ticker}`);
-      // Small delay to let the UI settle
-      setTimeout(() => {
-        performRealAIAnalysis();
-      }, 500);
-    }
-  }, [autoStart, stock.ticker, analyzing, complete, savedResult]);
+  
+  // Prevent double calls with ref
+  const analysisInProgress = useRef(false);
 
   // Load saved logs when component mounts
   useEffect(() => {
@@ -62,10 +52,15 @@ export function AIWorker({
     return newLog;
   };
 
-  // Real AI analysis using Gemini
+  // Real AI analysis with double-call protection
   const performRealAIAnalysis = async () => {
-    if (analyzing) return;
+    // Prevent double calls
+    if (analyzing || analysisInProgress.current) {
+      console.log('🛡️ Analysis already in progress, ignoring duplicate call');
+      return;
+    }
     
+    analysisInProgress.current = true;
     setAnalyzing(true);
     setComplete(false);
     setLogs([]); // Clear previous logs
@@ -74,7 +69,7 @@ export function AIWorker({
     const allLogs = [];
 
     try {
-      const log1 = addLog(`🤖 Starting real AI analysis for ${stock.ticker}...`, 'system');
+      const log1 = addLog(`🤖 Starting AI analysis for ${stock.ticker}...`, 'system');
       allLogs.push(log1);
       
       const log2 = addLog(`📊 Price: $${stock.currentPrice?.toFixed(2)} (${stock.changePercent > 0 ? '+' : ''}${stock.changePercent?.toFixed(2)}%)`, 'info');
@@ -98,7 +93,7 @@ export function AIWorker({
       const log7 = addLog(`💭 ${aiResult.reasoning}`, 'reasoning');
       allLogs.push(log7);
       
-      const log8 = addLog(`⚠️ Risk Level: ${aiResult.riskLevel.toUpperCase()}`, 'info');
+      const log8 = addLog(`⚠️ Risk Level: ${aiResult.riskLevel?.toUpperCase() || 'MEDIUM'}`, 'info');
       allLogs.push(log8);
 
       // Add saved logs to result
@@ -129,8 +124,16 @@ export function AIWorker({
       onAnalysisComplete?.(stock.ticker, fallbackResult);
     } finally {
       setAnalyzing(false);
+      analysisInProgress.current = false; // Reset protection
     }
   };
+
+  // Reset protection when component unmounts
+  useEffect(() => {
+    return () => {
+      analysisInProgress.current = false;
+    };
+  }, []);
 
   const getLogColor = (type) => {
     switch (type) {
@@ -144,11 +147,9 @@ export function AIWorker({
     }
   };
 
-  // ✅ Proper close handler
-  const handleClose = () => {
-    if (onClose) {
-      onClose();
-    }
+  const closeTerminal = () => {
+    // Close by setting hoveredStock to null in parent
+    document.body.click();
   };
 
   return (
@@ -159,7 +160,7 @@ export function AIWorker({
         maxHeight: '80vh',
         overflow: 'hidden'
       }}
-      onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+      onClick={(e) => e.stopPropagation()}
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-600">
@@ -174,7 +175,7 @@ export function AIWorker({
         </div>
         
         <div className="flex items-center space-x-2">
-          {!analyzing && !complete && !autoStart && (
+          {!analyzing && !complete && (
             <button
               onClick={performRealAIAnalysis}
               className="bg-purple-600 hover:bg-purple-700 text-white text-sm px-3 py-1 rounded flex items-center space-x-1"
@@ -184,7 +185,7 @@ export function AIWorker({
             </button>
           )}
           
-          {(complete || (!analyzing && autoStart)) && (
+          {complete && !analyzing && (
             <button
               onClick={performRealAIAnalysis}
               className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1 rounded flex items-center space-x-1"
@@ -195,7 +196,7 @@ export function AIWorker({
           )}
 
           <button
-            onClick={handleClose}
+            onClick={closeTerminal}
             className="text-gray-400 hover:text-white"
           >
             <X className="w-4 h-4" />
@@ -221,20 +222,13 @@ export function AIWorker({
         {analyzing && (
           <div className="flex items-center space-x-2 text-blue-400 text-sm">
             <span className="animate-pulse">▋</span>
-            <span>AI Analysis in Progress...</span>
+            <span>Connecting to Gemini AI...</span>
           </div>
         )}
         
-        {logs.length === 0 && !analyzing && !autoStart && (
+        {logs.length === 0 && !analyzing && (
           <div className="text-gray-400 text-sm text-center py-8">
             Click "Analyze with AI" to start real-time analysis using Google Gemini.
-          </div>
-        )}
-
-        {logs.length === 0 && !analyzing && autoStart && (
-          <div className="text-purple-400 text-sm text-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-400 mx-auto mb-2"></div>
-            Initializing AI analysis...
           </div>
         )}
         
@@ -261,7 +255,7 @@ export function AIWorker({
                   result.riskLevel === 'low' ? 'text-green-400' : 
                   result.riskLevel === 'medium' ? 'text-yellow-400' : 'text-red-400'
                 }`}>
-                  {result.riskLevel.toUpperCase()}
+                  {result.riskLevel?.toUpperCase() || 'MEDIUM'}
                 </span>
                 <span className="text-gray-400 mx-1">•</span>
                 <span className="text-blue-400">{Math.round(result.confidence * 100)}%</span>
