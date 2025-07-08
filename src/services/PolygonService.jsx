@@ -1,13 +1,90 @@
-// src/services/PolygonService.js - Enhanced with Market Hours Detection & Price Fallback
+// src/services/PolygonService.js - UTC-Based with Proper After-Hours Support
 class PolygonService {
   constructor() {
     this.apiKey = import.meta.env.VITE_POLYGON_API_KEY;
     this.baseUrl = 'https://api.polygon.io';
-    this.cache = new Map(); // Price cache to reduce API calls
+    this.cache = new Map();
     this.cacheExpiry = 30000; // 30 seconds cache
     
     if (!this.apiKey) {
       throw new Error('VITE_POLYGON_API_KEY environment variable is required');
+    }
+
+    // ✅ UTC-based market hours (EST/EDT auto-detection)
+    this.isDST = this.isDaylightSavingTime();
+    this.utcOffset = this.isDST ? 4 : 5; // Hours to add to ET to get UTC
+    
+    this.marketHours = {
+      premarket: { start: 4 + this.utcOffset, end: 9.5 + this.utcOffset },    // 4:00-9:30 AM ET
+      regular: { start: 9.5 + this.utcOffset, end: 16 + this.utcOffset },     // 9:30 AM-4:00 PM ET  
+      afterhours: { start: 16 + this.utcOffset, end: 20 + this.utcOffset }    // 4:00-8:00 PM ET
+    };
+
+    console.log(`[PolygonService] Market hours (UTC): Regular ${this.marketHours.regular.start}-${this.marketHours.regular.end}, After-hours ${this.marketHours.afterhours.start}-${this.marketHours.afterhours.end}, DST: ${this.isDST}`);
+  }
+
+  // ✅ Detect if currently in Daylight Saving Time
+  isDaylightSavingTime() {
+    const now = new Date();
+    const jan = new Date(now.getFullYear(), 0, 1);
+    const jul = new Date(now.getFullYear(), 6, 1);
+    return now.getTimezoneOffset() < Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+  }
+
+  // ✅ Get current market session based on UTC time
+  getCurrentMarketSession() {
+    const now = new Date();
+    const utcHours = now.getUTCHours() + now.getUTCMinutes() / 60;
+    const dayOfWeek = now.getUTCDay();
+    
+    // Handle weekend
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      return {
+        session: 'weekend',
+        isActive: false,
+        hasExtendedHours: false,
+        utcTime: now.toISOString(),
+        description: 'Market closed - Weekend'
+      };
+    }
+
+    // Handle cross-midnight after-hours (8 PM ET onwards becomes next day UTC)
+    let session = 'closed';
+    let isActive = false;
+    let hasExtendedHours = false;
+
+    if (this.isTimeInRange(utcHours, this.marketHours.premarket)) {
+      session = 'premarket';
+      isActive = true;
+      hasExtendedHours = true;
+    } else if (this.isTimeInRange(utcHours, this.marketHours.regular)) {
+      session = 'regular';
+      isActive = true;
+      hasExtendedHours = false;
+    } else if (this.isTimeInRange(utcHours, this.marketHours.afterhours)) {
+      session = 'afterhours';
+      isActive = true;
+      hasExtendedHours = true;
+    }
+
+    return {
+      session,
+      isActive,
+      hasExtendedHours,
+      utcTime: now.toISOString(),
+      utcHours: utcHours.toFixed(1),
+      description: `Market ${session} (UTC ${utcHours.toFixed(1)}h)`
+    };
+  }
+
+  // ✅ Helper to check if time is in range (handles cross-midnight)
+  isTimeInRange(utcHours, range) {
+    if (range.start <= range.end) {
+      // Normal range (doesn't cross midnight)
+      return utcHours >= range.start && utcHours < range.end;
+    } else {
+      // Cross-midnight range (e.g., 20:00 to 4:00 next day)
+      return utcHours >= range.start || utcHours < range.end;
     }
   }
 
@@ -34,66 +111,6 @@ class PolygonService {
     }
   }
 
-  // ✅ NEW: Market Hours Detection
-  isMarketOpen() {
-    const now = new Date();
-    const et = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
-    
-    const day = et.getDay(); // 0 = Sunday, 6 = Saturday
-    const hours = et.getHours();
-    const minutes = et.getMinutes();
-    const timeInMinutes = hours * 60 + minutes;
-    
-    // Market closed on weekends
-    if (day === 0 || day === 6) return false;
-    
-    // Regular market hours: 9:30 AM - 4:00 PM ET
-    const marketOpen = 9 * 60 + 30; // 9:30 AM in minutes
-    const marketClose = 16 * 60;    // 4:00 PM in minutes
-    
-    return timeInMinutes >= marketOpen && timeInMinutes < marketClose;
-  }
-
-  // ✅ NEW: Get detailed market status
-  getMarketStatus() {
-    const now = new Date();
-    const et = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
-    
-    const day = et.getDay();
-    const hours = et.getHours();
-    const minutes = et.getMinutes();
-    const timeInMinutes = hours * 60 + minutes;
-    
-    if (day === 0 || day === 6) return 'weekend';
-    
-    const preMarket = 4 * 60;        // 4:00 AM
-    const marketOpen = 9 * 60 + 30;  // 9:30 AM
-    const marketClose = 16 * 60;     // 4:00 PM
-    const afterHours = 20 * 60;      // 8:00 PM
-    
-    if (timeInMinutes < preMarket) return 'closed';
-    if (timeInMinutes < marketOpen) return 'premarket';
-    if (timeInMinutes < marketClose) return 'open';
-    if (timeInMinutes < afterHours) return 'afterhours';
-    return 'closed';
-  }
-
-  // ✅ NEW: Get market status with additional info
-  getDetailedMarketStatus() {
-    const now = new Date();
-    const et = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
-    const status = this.getMarketStatus();
-    
-    return {
-      status,
-      isOpen: status === 'open',
-      hasActiveTrading: ['open', 'premarket', 'afterhours'].includes(status),
-      easternTime: et.toLocaleTimeString('en-US', { timeZone: 'America/New_York' }),
-      easternDate: et.toLocaleDateString('en-US', { timeZone: 'America/New_York' }),
-      timestamp: now.toISOString()
-    };
-  }
-
   // Get positive sentiment news only
   async getAllMarketNews(hours = 4) {
     const fromDate = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
@@ -116,15 +133,153 @@ class PolygonService {
     return response;
   }
 
-  // ✅ ENHANCED: Get previous day's closing price for a ticker
+  // ✅ ENHANCED: Get market data with proper extended hours support
+  async getMarketData(tickers) {
+    try {
+      const now = Date.now();
+      const marketSession = this.getCurrentMarketSession();
+      const uncachedTickers = [];
+      const result = [];
+
+      // Check cache first
+      tickers.forEach(ticker => {
+        const cached = this.cache.get(ticker);
+        if (cached && (now - cached.timestamp) < this.cacheExpiry) {
+          result.push({
+            ...cached.data,
+            marketSession: marketSession.session,
+            hasExtendedHours: marketSession.hasExtendedHours
+          });
+        } else {
+          uncachedTickers.push(ticker);
+        }
+      });
+
+      // Fetch uncached tickers
+      if (uncachedTickers.length > 0) {
+        console.log(`[PolygonService] Fetching data for ${uncachedTickers.length} tickers (${marketSession.session} session)`);
+        
+        // Split large requests to avoid API limits
+        const chunks = [];
+        for (let i = 0; i < uncachedTickers.length; i += 100) {
+          chunks.push(uncachedTickers.slice(i, i + 100));
+        }
+
+        for (const chunk of chunks) {
+          const response = await this.makeRequest('/v2/snapshot/locale/us/markets/stocks/tickers', {
+            tickers: chunk.join(',')
+          });
+          
+          if (response.tickers) {
+            response.tickers.forEach(ticker => {
+              // ✅ Enhanced ticker data with session info
+              const enhancedTicker = {
+                ...ticker,
+                marketSession: marketSession.session,
+                hasExtendedHours: marketSession.hasExtendedHours,
+                isActive: marketSession.isActive,
+                dataTimestamp: now,
+                // ✅ Determine if we have extended hours price data
+                hasExtendedHoursPrice: this.hasExtendedHoursData(ticker, marketSession)
+              };
+
+              // Cache the result
+              this.cache.set(ticker.ticker, {
+                data: enhancedTicker,
+                timestamp: now
+              });
+              result.push(enhancedTicker);
+            });
+          }
+        }
+      } else {
+        console.log(`[PolygonService] Using cached data for all ${tickers.length} tickers`);
+      }
+
+      console.log(`[PolygonService] Retrieved ${result.length} snapshots during ${marketSession.session} session`);
+      return result;
+    } catch (error) {
+      console.error('[ERROR] Failed to get market data:', error);
+      return [];
+    }
+  }
+
+  // ✅ NEW: Check if ticker has extended hours data
+  hasExtendedHoursData(ticker, marketSession) {
+    if (!marketSession.hasExtendedHours) return false;
+    
+    // Check if we have recent trade data during extended hours
+    if (ticker.lastTrade?.t) {
+      const tradeTime = new Date(ticker.lastTrade.t);
+      const timeDiff = Math.abs(Date.now() - tradeTime.getTime());
+      
+      // If trade is within last 30 minutes during extended hours
+      return timeDiff < 30 * 60 * 1000;
+    }
+    
+    // Fallback to day data if available
+    return !!(ticker.day?.c);
+  }
+
+  // ✅ NEW: Get aggregates with proper extended hours filtering
+  async getAggregatesWithExtendedHours(ticker, from, to, multiplier = 1, timespan = 'minute') {
+    try {
+      const response = await this.makeRequest(`/v2/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${from}/${to}`, {
+        adjusted: true,
+        sort: 'asc',
+        limit: 50000
+      });
+      
+      if (!response.results || response.results.length === 0) {
+        return [];
+      }
+      
+      return response.results.map(bar => {
+        const timestamp = bar.t;
+        const utcDate = new Date(timestamp);
+        const utcHours = utcDate.getUTCHours() + utcDate.getUTCMinutes() / 60;
+        
+        // ✅ Determine session based on UTC time
+        let sessionType = 'closed';
+        if (this.isTimeInRange(utcHours, this.marketHours.premarket)) {
+          sessionType = 'premarket';
+        } else if (this.isTimeInRange(utcHours, this.marketHours.regular)) {
+          sessionType = 'regular';
+        } else if (this.isTimeInRange(utcHours, this.marketHours.afterhours)) {
+          sessionType = 'afterhours';
+        }
+        
+        return {
+          timestamp,
+          datetime: utcDate.toISOString(),
+          utcHours: utcHours.toFixed(1),
+          sessionType,
+          isExtendedHours: sessionType !== 'regular',
+          open: parseFloat(bar.o.toFixed(4)),
+          high: parseFloat(bar.h.toFixed(4)),
+          low: parseFloat(bar.l.toFixed(4)),
+          close: parseFloat(bar.c.toFixed(4)),
+          volume: bar.v,
+          vwap: parseFloat(bar.vw?.toFixed(4) || 0),
+          trades: bar.n || 0
+        };
+      });
+      
+    } catch (error) {
+      console.error(`[ERROR] Failed to get ${multiplier}${timespan} aggregates:`, error);
+      return [];
+    }
+  }
+
+  // ✅ Get previous day close with UTC handling
   async getPreviousDayClose(ticker, daysBack = 1) {
     try {
       const targetDate = new Date();
-      targetDate.setDate(targetDate.getDate() - daysBack);
+      targetDate.setUTCDate(targetDate.getUTCDate() - daysBack);
       
-      // Keep going back until we find a trading day (skip weekends)
-      while (targetDate.getDay() === 0 || targetDate.getDay() === 6) {
-        targetDate.setDate(targetDate.getDate() - 1);
+      // Skip weekends
+      while (targetDate.getUTCDay() === 0 || targetDate.getUTCDay() === 6) {
+        targetDate.setUTCDate(targetDate.getUTCDate() - 1);
       }
       
       const dateStr = targetDate.toISOString().split('T')[0];
@@ -153,145 +308,22 @@ class PolygonService {
     }
   }
 
-  // ✅ NEW: Enhanced market data with fallback for closed market
-  async getMarketDataWithFallback(tickers) {
-    try {
-      const now = Date.now();
-      const marketStatus = this.getMarketStatus();
-      const isMarketOpen = this.isMarketOpen();
-      
-      console.log(`[INFO] Market status: ${marketStatus}, fetching data for ${tickers.length} tickers`);
-      
-      // Get current/intraday data first
-      const currentData = await this.getMarketData(tickers);
-      
-      // Find tickers without current prices
-      const missingPriceTickers = tickers.filter(ticker => {
-        const snapshot = currentData.find(m => m.ticker === ticker);
-        const hasCurrentPrice = snapshot?.lastTrade?.p || snapshot?.day?.c;
-        return !hasCurrentPrice;
-      });
-      
-      if (missingPriceTickers.length > 0) {
-        console.log(`[INFO] ${missingPriceTickers.length} tickers missing current prices, fetching previous close...`);
-        
-        // Get previous day closes for missing tickers
-        const previousClosePromises = missingPriceTickers.map(ticker => 
-          this.getPreviousDayClose(ticker)
-        );
-        
-        const previousCloses = await Promise.allSettled(previousClosePromises);
-        
-        // Add synthetic snapshots with previous close data
-        previousCloses.forEach((result, index) => {
-          if (result.status === 'fulfilled' && result.value.found) {
-            const prevData = result.value;
-            const ticker = missingPriceTickers[index];
-            
-            // Create synthetic snapshot
-            currentData.push({
-              ticker,
-              day: {
-                c: prevData.previousClose,
-                o: prevData.previousOpen,
-                h: prevData.previousHigh,
-                l: prevData.previousLow,
-                v: prevData.previousVolume
-              },
-              todaysChangePerc: 0, // No change yet (market closed)
-              lastTrade: null,
-              // ✅ Mark as previous close data
-              isPreviousClose: true,
-              previousCloseDate: prevData.date,
-              marketStatus,
-              dataSource: 'previous_close'
-            });
-            
-            console.log(`[INFO] Added previous close for ${ticker}: $${prevData.previousClose}`);
-          } else {
-            console.warn(`[WARN] Could not get previous close for ${missingPriceTickers[index]}`);
-          }
-        });
-      }
-      
-      // Add market status to all snapshots
-      const enhancedData = currentData.map(snapshot => ({
-        ...snapshot,
-        marketStatus,
-        isMarketOpen,
-        dataTimestamp: now,
-        hasLiveData: !snapshot.isPreviousClose
-      }));
-      
-      console.log(`[SUCCESS] Enhanced market data: ${enhancedData.length} snapshots (${enhancedData.filter(s => s.isPreviousClose).length} using previous close)`);
-      
-      return enhancedData;
-      
-    } catch (error) {
-      console.error('[ERROR] Failed to get market data with fallback:', error);
-      return [];
-    }
-  }
-
-  // ✅ OPTIMIZED: Efficient market data fetching with caching
-  async getMarketData(tickers) {
-    try {
-      const now = Date.now();
-      const uncachedTickers = [];
-      const result = [];
-
-      // Check cache first
-      tickers.forEach(ticker => {
-        const cached = this.cache.get(ticker);
-        if (cached && (now - cached.timestamp) < this.cacheExpiry) {
-          result.push(cached.data);
-        } else {
-          uncachedTickers.push(ticker);
-        }
-      });
-
-      // Fetch uncached tickers
-      if (uncachedTickers.length > 0) {
-        console.log(`[PolygonService] Fetching fresh data for ${uncachedTickers.length} tickers`);
-        
-        // Split large requests to avoid API limits (max 100 per request)
-        const chunks = [];
-        for (let i = 0; i < uncachedTickers.length; i += 100) {
-          chunks.push(uncachedTickers.slice(i, i + 100));
-        }
-
-        for (const chunk of chunks) {
-          const response = await this.makeRequest('/v2/snapshot/locale/us/markets/stocks/tickers', {
-            tickers: chunk.join(',')
-          });
-          
-          if (response.tickers) {
-            response.tickers.forEach(ticker => {
-              // Cache the result
-              this.cache.set(ticker.ticker, {
-                data: ticker,
-                timestamp: now
-              });
-              result.push(ticker);
-            });
-          }
-        }
-      } else {
-        console.log(`[PolygonService] Using cached data for all ${tickers.length} tickers`);
-      }
-
-      return result;
-    } catch (error) {
-      console.error('[ERROR] Failed to get market data:', error);
-      return [];
-    }
-  }
-
-  // Get single ticker snapshot (for targeted updates)
+  // Get single ticker snapshot
   async getSingleTickerSnapshot(ticker) {
     try {
       const response = await this.makeRequest(`/v2/snapshot/locale/us/markets/stocks/tickers/${ticker}`);
-      return response.ticker || null;
+      const marketSession = this.getCurrentMarketSession();
+      
+      if (response.ticker) {
+        return {
+          ...response.ticker,
+          marketSession: marketSession.session,
+          hasExtendedHours: marketSession.hasExtendedHours,
+          isActive: marketSession.isActive
+        };
+      }
+      
+      return null;
     } catch (error) {
       console.error(`[ERROR] Failed to get snapshot for ${ticker}:`, error);
       return null;
@@ -332,61 +364,6 @@ class PolygonService {
     return companyNames;
   }
 
-  // ✅ NEW: Get last trading day (skips weekends and holidays)
-  getLastTradingDay(daysBack = 1) {
-    const date = new Date();
-    let count = 0;
-    
-    while (count < daysBack) {
-      date.setDate(date.getDate() - 1);
-      
-      // Skip weekends
-      if (date.getDay() !== 0 && date.getDay() !== 6) {
-        count++;
-      }
-    }
-    
-    return date.toISOString().split('T')[0];
-  }
-
-  // ✅ NEW: Batch get previous closes for multiple tickers
-  async getBatchPreviousCloses(tickers, daysBack = 1) {
-    const targetDate = this.getLastTradingDay(daysBack);
-    const results = new Map();
-    
-    console.log(`[INFO] Fetching previous closes for ${tickers.length} tickers on ${targetDate}`);
-    
-    // Process in chunks to avoid overwhelming the API
-    const chunks = [];
-    for (let i = 0; i < tickers.length; i += 10) {
-      chunks.push(tickers.slice(i, i + 10));
-    }
-    
-    for (const chunk of chunks) {
-      const promises = chunk.map(ticker => this.getPreviousDayClose(ticker, daysBack));
-      const chunkResults = await Promise.allSettled(promises);
-      
-      chunkResults.forEach((result, index) => {
-        const ticker = chunk[index];
-        if (result.status === 'fulfilled' && result.value.found) {
-          results.set(ticker, result.value);
-        } else {
-          results.set(ticker, { ticker, found: false, error: result.reason?.message });
-        }
-      });
-      
-      // Small delay between chunks
-      if (chunks.indexOf(chunk) < chunks.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-    }
-    
-    const successCount = Array.from(results.values()).filter(r => r.found).length;
-    console.log(`[INFO] Previous close fetch complete: ${successCount}/${tickers.length} successful`);
-    
-    return results;
-  }
-
   // ✅ Clear cache manually if needed
   clearCache() {
     this.cache.clear();
@@ -411,44 +388,9 @@ class PolygonService {
       totalEntries: this.cache.size,
       validEntries,
       expiredEntries,
-      cacheExpiryMs: this.cacheExpiry
+      cacheExpiryMs: this.cacheExpiry,
+      currentSession: this.getCurrentMarketSession().session
     };
-  }
-
-  // ✅ NEW: Debug method to check market data availability
-  async debugMarketData(ticker) {
-    console.log(`[DEBUG] Checking market data for ${ticker}...`);
-    
-    const marketStatus = this.getDetailedMarketStatus();
-    console.log('[DEBUG] Market Status:', marketStatus);
-    
-    try {
-      // Try current snapshot
-      const snapshot = await this.getSingleTickerSnapshot(ticker);
-      console.log('[DEBUG] Current Snapshot:', snapshot);
-      
-      // Try previous close
-      const prevClose = await this.getPreviousDayClose(ticker);
-      console.log('[DEBUG] Previous Close:', prevClose);
-      
-      return {
-        ticker,
-        marketStatus,
-        currentSnapshot: snapshot,
-        previousClose: prevClose,
-        recommendation: snapshot?.lastTrade?.p || snapshot?.day?.c ? 
-          'Use current data' : 
-          prevClose.found ? 'Use previous close' : 'No data available'
-      };
-      
-    } catch (error) {
-      console.error(`[DEBUG] Error checking ${ticker}:`, error);
-      return {
-        ticker,
-        marketStatus,
-        error: error.message
-      };
-    }
   }
 }
 

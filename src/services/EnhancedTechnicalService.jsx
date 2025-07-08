@@ -1,4 +1,6 @@
-// src/services/EnhancedTechnicalService.js - Optimized for 8-Hour Predictions
+// src/services/EnhancedTechnicalService.js - Simplified: Always Get Last 4 Hours
+import { polygonService } from './PolygonService';
+
 class EnhancedTechnicalService {
   constructor() {
     this.apiKey = import.meta.env.VITE_POLYGON_API_KEY;
@@ -28,116 +30,54 @@ class EnhancedTechnicalService {
     }
   }
 
-  // ✅ OPTIMIZED: Get current market session info
-  getCurrentMarketSession() {
-    const now = new Date();
-    const utcNow = now.getTime();
-    const etNow = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
-    
-    const day = etNow.getDay();
-    const hours = etNow.getHours();
-    const minutes = etNow.getMinutes();
-    const timeInMinutes = hours * 60 + minutes;
-    
-    // Define market periods in ET
-    const periods = {
-      preMarket: { start: 4 * 60, end: 9 * 60 + 30, name: 'premarket' },
-      regular: { start: 9 * 60 + 30, end: 16 * 60, name: 'regular' },
-      afterHours: { start: 16 * 60, end: 20 * 60, name: 'afterhours' }
-    };
-    
-    let currentSession = 'closed';
-    let nextSessionStart = null;
-    let sessionEndsAt = null;
-    
-    if (day === 0 || day === 6) {
-      currentSession = 'weekend';
-    } else {
-      for (const [key, period] of Object.entries(periods)) {
-        if (timeInMinutes >= period.start && timeInMinutes < period.end) {
-          currentSession = period.name;
-          sessionEndsAt = new Date(etNow);
-          sessionEndsAt.setHours(Math.floor(period.end / 60), period.end % 60, 0, 0);
-          break;
-        }
-      }
-      
-      // Calculate 8-hour forward prediction window
-      const eightHoursForward = new Date(utcNow + 8 * 60 * 60 * 1000);
-      const eightHourET = new Date(eightHoursForward.toLocaleString("en-US", {timeZone: "America/New_York"}));
-      
-      // Find next session
-      if (currentSession === 'closed') {
-        if (timeInMinutes < periods.preMarket.start) {
-          nextSessionStart = new Date(etNow);
-          nextSessionStart.setHours(4, 0, 0, 0);
-        } else if (timeInMinutes >= periods.afterHours.end) {
-          nextSessionStart = new Date(etNow);
-          nextSessionStart.setDate(nextSessionStart.getDate() + 1);
-          nextSessionStart.setHours(4, 0, 0, 0);
-        }
-      }
-    }
-    
-    return {
-      currentSession,
-      utcTimestamp: utcNow,
-      easternTime: etNow.toLocaleTimeString('en-US', { timeZone: 'America/New_York' }),
-      easternDate: etNow.toLocaleDateString('en-US', { timeZone: 'America/New_York' }),
-      sessionEndsAt: sessionEndsAt?.getTime() || null,
-      nextSessionStart: nextSessionStart?.getTime() || null,
-      hoursUntilNextSession: nextSessionStart ? Math.round((nextSessionStart.getTime() - utcNow) / (1000 * 60 * 60)) : null,
-      day: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][day],
-      isWeekend: day === 0 || day === 6,
-      // ✅ NEW: 8-hour forward prediction window
-      eightHourForwardTimestamp: utcNow + 8 * 60 * 60 * 1000,
-      predictionWindowEnd: new Date(utcNow + 8 * 60 * 60 * 1000).toLocaleTimeString('en-US', { timeZone: 'America/New_York' })
-    };
-  }
-
-  // ✅ OPTIMIZED: Get last 4 hours of data (much faster)
+  // ✅ SIMPLIFIED: Always get last 4 hours of data regardless of session
   async getLast4HoursData(ticker) {
     try {
       const now = new Date();
-      const marketSession = this.getCurrentMarketSession();
+      const marketSession = polygonService.getCurrentMarketSession();
       
-      // ✅ FOCUSED: Only get last 4 hours
+      console.log(`[TechnicalService] Getting last 4H data for ${ticker} (current session: ${marketSession.session})`);
+      
+      // ✅ SIMPLE: Always get exactly 4 hours back from now
       const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000);
       
-      // If it's weekend/closed, adjust to get last trading data
-      let fromTime = fourHoursAgo;
-      if (marketSession.isWeekend || marketSession.currentSession === 'closed') {
-        const lastFriday = new Date(now);
-        lastFriday.setDate(now.getDate() - (now.getDay() + 2) % 7); // Last Friday
-        lastFriday.setUTCHours(21, 0, 0, 0); // 4 PM ET = 21:00 UTC
-        fromTime = new Date(lastFriday.getTime() - 4 * 60 * 60 * 1000); // 4 hours before close
-      }
+      // Use a wider date range to ensure we get data (go back extra days to be safe)
+      const fromDate = new Date(fourHoursAgo.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days back
+      const toDate = now;
       
-      const from = fromTime.toISOString().split('T')[0];
-      const to = now.toISOString().split('T')[0];
+      const from = fromDate.toISOString().split('T')[0];
+      const to = toDate.toISOString().split('T')[0];
       
-      console.log(`[INFO] Fetching recent 4H data for ${ticker} from ${fromTime.toLocaleTimeString()} to ${now.toLocaleTimeString()}`);
-      console.log(`[INFO] Market session: ${marketSession.currentSession}, 8-hour prediction until: ${marketSession.predictionWindowEnd}`);
+      console.log(`[TechnicalService] Fetching data from ${fourHoursAgo.toISOString()} to ${now.toISOString()}`);
       
-      // ✅ STREAMLINED: Get only essential timeframes
+      // ✅ Get multiple timeframes using PolygonService (includes all sessions)
       const [minuteBars, fiveMinBars, fifteenMinBars] = await Promise.all([
-        this.getAggregatesWithExtendedHours(ticker, from, to, 1, 'minute'),   // 1-minute
-        this.getAggregatesWithExtendedHours(ticker, from, to, 5, 'minute'),   // 5-minute  
-        this.getAggregatesWithExtendedHours(ticker, from, to, 15, 'minute')   // 15-minute
+        polygonService.getAggregatesWithExtendedHours(ticker, from, to, 1, 'minute'),   // 1-minute
+        polygonService.getAggregatesWithExtendedHours(ticker, from, to, 5, 'minute'),   // 5-minute  
+        polygonService.getAggregatesWithExtendedHours(ticker, from, to, 15, 'minute')   // 15-minute
       ]);
       
-      // ✅ OPTIMIZED: Filter to exactly last 4 hours
-      const fourHoursCutoff = now.getTime() - 4 * 60 * 60 * 1000;
+      // ✅ SIMPLE: Filter to exactly last 4 hours regardless of session type
+      const fourHoursCutoff = fourHoursAgo.getTime();
       
       const recentMinuteBars = minuteBars.filter(bar => bar.timestamp >= fourHoursCutoff);
       const recentFiveMinBars = fiveMinBars.filter(bar => bar.timestamp >= fourHoursCutoff);
       const recentFifteenMinBars = fifteenMinBars.filter(bar => bar.timestamp >= fourHoursCutoff);
       
-      console.log(`[SUCCESS] Recent 4H data for ${ticker}:`, {
-        minute: recentMinuteBars.length,
+      // ✅ Count different session types
+      const extendedHoursBars = recentMinuteBars.filter(bar => bar.isExtendedHours).length;
+      const regularHoursBars = recentMinuteBars.filter(bar => !bar.isExtendedHours).length;
+      
+      // ✅ Get session breakdown
+      const sessionBreakdown = this.getSessionBreakdown(recentMinuteBars);
+      
+      console.log(`[TechnicalService] ${ticker} last 4H data:`, {
+        total: recentMinuteBars.length,
         fiveMin: recentFiveMinBars.length,
         fifteenMin: recentFifteenMinBars.length,
-        timespan: '4h recent data for 8h prediction'
+        sessions: sessionBreakdown,
+        currentSession: marketSession.session,
+        timeRange: `${fourHoursAgo.toLocaleTimeString()} - ${now.toLocaleTimeString()}`
       });
       
       return {
@@ -150,13 +90,17 @@ class EnhancedTechnicalService {
         },
         metadata: {
           totalBars: recentMinuteBars.length + recentFiveMinBars.length + recentFifteenMinBars.length,
+          extendedHoursBars,
+          regularHoursBars,
+          sessionBreakdown,
           historyTimespan: '4h',
           predictionTimespan: '8h forward',
           lastUpdate: now.toISOString(),
           fromTimestamp: fourHoursCutoff,
-          toTimestamp: marketSession.eightHourForwardTimestamp,
-          currentSession: marketSession.currentSession,
-          dataQuality: this.assessFocusedDataQuality(recentMinuteBars)
+          toTimestamp: now.getTime(),
+          currentSession: marketSession.session,
+          hasExtendedHoursData: extendedHoursBars > 0,
+          dataQuality: this.assessDataQuality(recentMinuteBars, marketSession)
         }
       };
       
@@ -165,108 +109,123 @@ class EnhancedTechnicalService {
       return {
         ticker,
         error: error.message,
-        marketSession: this.getCurrentMarketSession(),
+        marketSession: polygonService.getCurrentMarketSession(),
         timeframes: { '1min': [], '5min': [], '15min': [] },
-        metadata: { totalBars: 0, historyTimespan: '4h', predictionTimespan: '8h forward', lastUpdate: new Date().toISOString() }
+        metadata: { 
+          totalBars: 0, 
+          historyTimespan: '4h', 
+          predictionTimespan: '8h forward', 
+          lastUpdate: new Date().toISOString() 
+        }
       };
     }
   }
 
-  // ✅ UNCHANGED: Get aggregates including extended hours data
-  async getAggregatesWithExtendedHours(ticker, from, to, multiplier = 1, timespan = 'minute') {
-    try {
-      const response = await this.makeRequest(`/v2/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${from}/${to}`, {
-        adjusted: true,
-        sort: 'asc',
-        limit: 50000
-      });
-      
-      if (!response.results || response.results.length === 0) {
-        return [];
-      }
-      
-      return response.results.map(bar => {
-        const timestamp = bar.t;
-        const datetime = new Date(timestamp);
-        const etTime = new Date(datetime.toLocaleString("en-US", {timeZone: "America/New_York"}));
-        
-        const hours = etTime.getHours();
-        const minutes = etTime.getMinutes();
-        const timeInMinutes = hours * 60 + minutes;
-        
-        let sessionType = 'regular';
-        if (timeInMinutes < 4 * 60) sessionType = 'closed';
-        else if (timeInMinutes < 9 * 60 + 30) sessionType = 'premarket';
-        else if (timeInMinutes < 16 * 60) sessionType = 'regular';
-        else if (timeInMinutes < 20 * 60) sessionType = 'afterhours';
-        else sessionType = 'closed';
-        
-        return {
-          timestamp: timestamp,
-          datetime: datetime.toISOString(),
-          easternTime: etTime.toLocaleTimeString('en-US'),
-          sessionType,
-          open: parseFloat(bar.o.toFixed(4)),
-          high: parseFloat(bar.h.toFixed(4)),
-          low: parseFloat(bar.l.toFixed(4)),
-          close: parseFloat(bar.c.toFixed(4)),
-          volume: bar.v,
-          vwap: parseFloat(bar.vw?.toFixed(4) || 0),
-          trades: bar.n || 0,
-          isExtendedHours: sessionType !== 'regular'
-        };
-      });
-      
-    } catch (error) {
-      console.error(`[ERROR] Failed to get ${multiplier}${timespan} aggregates:`, error);
-      return [];
-    }
+  // ✅ NEW: Get breakdown of sessions in the data
+  getSessionBreakdown(minuteBars) {
+    const breakdown = {
+      premarket: 0,
+      regular: 0,
+      afterhours: 0,
+      closed: 0
+    };
+
+    minuteBars.forEach(bar => {
+      if (bar.sessionType === 'premarket') breakdown.premarket++;
+      else if (bar.sessionType === 'regular') breakdown.regular++;
+      else if (bar.sessionType === 'afterhours') breakdown.afterhours++;
+      else breakdown.closed++;
+    });
+
+    return breakdown;
   }
 
-  // ✅ OPTIMIZED: Focused data quality assessment
-  assessFocusedDataQuality(minuteBars) {
+  // ✅ UPDATED: Data quality assessment for any 4-hour period
+  assessDataQuality(minuteBars, marketSession) {
     const now = Date.now();
     const oneHourAgo = now - 60 * 60 * 1000;
     const twoHoursAgo = now - 2 * 60 * 60 * 1000;
     
     const veryRecentBars = minuteBars.filter(bar => bar.timestamp >= oneHourAgo);
     const recentBars = minuteBars.filter(bar => bar.timestamp >= twoHoursAgo);
+    const extendedHoursBars = minuteBars.filter(bar => bar.isExtendedHours);
+    
+    // ✅ Realistic expectations based on what sessions we have data from
+    const sessionBreakdown = this.getSessionBreakdown(minuteBars);
+    const hasRegularHours = sessionBreakdown.regular > 0;
+    const hasExtendedHours = sessionBreakdown.premarket > 0 || sessionBreakdown.afterhours > 0;
+    
+    // Adjust expectations based on session mix
+    let expectedBars = 240; // 4 hours = 240 minutes (ideal)
+    let qualityThreshold = 30;
+    
+    if (hasExtendedHours && !hasRegularHours) {
+      // Only extended hours data (lower volume expected)
+      qualityThreshold = 15;
+    } else if (hasRegularHours && hasExtendedHours) {
+      // Mixed session data (normal expectations)
+      qualityThreshold = 25;
+    }
+    
+    const latestBar = veryRecentBars.length > 0 ? veryRecentBars[veryRecentBars.length - 1] : null;
+    const latestDataAge = latestBar ? Math.round((now - latestBar.timestamp) / 60000) : null;
+    
+    let quality = 'poor';
+    if (veryRecentBars.length > qualityThreshold) {
+      quality = 'excellent';
+    } else if (veryRecentBars.length > qualityThreshold / 2) {
+      quality = 'good';
+    } else if (recentBars.length > qualityThreshold / 2) {
+      quality = 'fair';
+    }
     
     return {
       hasVeryRecentData: veryRecentBars.length > 0,
-      latestDataAge: veryRecentBars.length > 0 ? Math.round((now - veryRecentBars[veryRecentBars.length - 1].timestamp) / 60000) : null,
+      latestDataAge,
       totalMinuteBars: minuteBars.length,
       veryRecentBars: veryRecentBars.length,
       recentBars: recentBars.length,
-      expectedBars: 240, // 4 hours = 240 minutes
-      completeness: Math.min(100, Math.round((minuteBars.length / 240) * 100)),
-      hasExtendedHoursData: minuteBars.some(bar => bar.isExtendedHours),
-      extendedHoursBars: minuteBars.filter(bar => bar.isExtendedHours).length,
-      quality: veryRecentBars.length > 30 ? 'excellent' : 
-               veryRecentBars.length > 15 ? 'good' : 
-               recentBars.length > 30 ? 'fair' : 'poor'
+      expectedBars,
+      completeness: Math.min(100, Math.round((minuteBars.length / expectedBars) * 100)),
+      hasExtendedHoursData: extendedHoursBars.length > 0,
+      extendedHoursBars: extendedHoursBars.length,
+      regularHoursBars: minuteBars.filter(bar => !bar.isExtendedHours).length,
+      quality,
+      marketSession: marketSession.session,
+      sessionMix: hasRegularHours && hasExtendedHours ? 'mixed' : 
+                  hasExtendedHours ? 'extended_only' : 'regular_only',
+      // ✅ Session-specific metrics
+      avgExtendedHoursVolume: this.calculateAvgVolume(extendedHoursBars),
+      avgRegularHoursVolume: this.calculateAvgVolume(minuteBars.filter(bar => !bar.isExtendedHours))
     };
   }
 
-  // ✅ UPDATED: Main analysis function - 8-hour prediction analysis
+  // ✅ Helper to calculate average volume
+  calculateAvgVolume(bars) {
+    if (bars.length === 0) return 0;
+    const totalVolume = bars.reduce((sum, bar) => sum + (bar.volume || 0), 0);
+    return Math.round(totalVolume / bars.length);
+  }
+
+  // ✅ UPDATED: Main analysis function - Always 4 hours of data
   async analyzeStockForAI(ticker) {
     try {
-      console.log(`[INFO] Starting 8-hour prediction analysis for ${ticker}`);
+      console.log(`[TechnicalService] Starting 8-hour prediction analysis for ${ticker}`);
       
-      // ✅ FOCUSED: Get only last 4 hours
+      // ✅ Get exactly 4 hours of data regardless of session
       const focusedData = await this.getLast4HoursData(ticker);
       
       if (focusedData.error || focusedData.metadata.totalBars === 0) {
         return {
           ticker,
-          error: focusedData.error || 'No recent 4H market data available',
+          error: focusedData.error || 'No market data available in last 4 hours',
           hasData: false,
           dataPoints: 0,
           analysisType: '8h_prediction'
         };
       }
       
-      // Extract latest price info from focused dataset
+      // ✅ Extract latest price info from all timeframes
       const allBars = [
         ...focusedData.timeframes['1min'],
         ...focusedData.timeframes['5min']
@@ -275,50 +234,62 @@ class EnhancedTechnicalService {
       const latestBar = allBars[0];
       const currentPrice = latestBar?.close;
       
-      // Calculate 4-hour momentum
-      const fourHourStart = allBars[allBars.length - 1];
-      const fourHourMomentum = currentPrice && fourHourStart ? 
-        ((currentPrice - fourHourStart.close) / fourHourStart.close) * 100 : null;
+      // ✅ Calculate momentum over different periods
+      const hourlyBars = focusedData.timeframes['1min'].slice(-60); // Last hour
+      const fourHourBars = focusedData.timeframes['1min']; // All 4 hours
       
-      // ✅ STREAMLINED: Package for AI
+      const hourlyMomentum = hourlyBars.length > 1 ? 
+        ((hourlyBars[hourlyBars.length - 1].close - hourlyBars[0].close) / hourlyBars[0].close) * 100 : null;
+      
+      const fourHourMomentum = fourHourBars.length > 1 ? 
+        ((fourHourBars[fourHourBars.length - 1].close - fourHourBars[0].close) / fourHourBars[0].close) * 100 : null;
+      
+      // ✅ Calculate 8-hour forward target timestamp
+      const eightHourForwardTimestamp = Date.now() + 8 * 60 * 60 * 1000;
+      
       const result = {
         ticker,
         hasData: true,
         dataPoints: focusedData.metadata.totalBars,
         analysisType: '8h_prediction',
         
-        // Current state
+        // ✅ Current state with session awareness
         marketSession: focusedData.marketSession,
         currentPrice,
+        hourlyMomentum,
         fourHourMomentum,
         latestDataAge: Math.round((Date.now() - latestBar.timestamp) / 60000),
         
-        // ✅ FOCUSED: Time context for 8H prediction
+        // ✅ Time context for 8H prediction
         timeContext: {
-          currentUtcTime: focusedData.marketSession.utcTimestamp,
-          currentEasternTime: focusedData.marketSession.easternTime,
-          currentSession: focusedData.marketSession.currentSession,
-          eightHourTarget: focusedData.marketSession.eightHourForwardTimestamp,
-          predictionWindowEnd: focusedData.marketSession.predictionWindowEnd,
-          hoursUntilNextSession: focusedData.marketSession.hoursUntilNextSession,
-          isWeekend: focusedData.marketSession.isWeekend
+          currentUtcTime: Date.now(),
+          eightHourTarget: eightHourForwardTimestamp,
+          currentSession: focusedData.marketSession.session,
+          hasExtendedHours: focusedData.marketSession.hasExtendedHours,
+          isActive: focusedData.marketSession.isActive,
+          sessionBreakdown: focusedData.metadata.sessionBreakdown
         },
         
-        // ✅ FOCUSED: Only last 4H of data for AI
+        // ✅ Raw data for AI (4 hours regardless of session)
         rawTimeframes: focusedData.timeframes,
         
-        // Data quality
+        // ✅ Enhanced data quality with session mix info
         dataQuality: focusedData.metadata.dataQuality,
         
         timestamp: new Date().toISOString()
       };
       
-      console.log(`[SUCCESS] 8-hour prediction data ready for ${ticker}:`, {
+      console.log(`[TechnicalService] 8H prediction data ready for ${ticker}:`, {
         totalDataPoints: focusedData.metadata.totalBars,
         currentPrice,
-        session: focusedData.marketSession.currentSession,
+        currentSession: focusedData.marketSession.session,
+        sessionMix: focusedData.metadata.dataQuality.sessionMix,
+        hourlyMomentum: hourlyMomentum?.toFixed(2) + '%',
         fourHourMomentum: fourHourMomentum?.toFixed(2) + '%',
         dataQuality: focusedData.metadata.dataQuality.quality,
+        hasExtendedHours: focusedData.metadata.hasExtendedHoursData,
+        extendedHoursBars: focusedData.metadata.extendedHoursBars,
+        regularHoursBars: focusedData.metadata.regularHoursBars,
         latestDataAge: `${result.latestDataAge}m ago`
       });
       
@@ -337,11 +308,11 @@ class EnhancedTechnicalService {
     }
   }
 
-  // ✅ OPTIMIZED: Batch analysis
-  async batchAnalyzeForAI(tickers, maxConcurrent = 5) { // Increased concurrency
+  // ✅ Batch analysis
+  async batchAnalyzeForAI(tickers, maxConcurrent = 5) {
     const results = [];
     
-    console.log(`[INFO] Starting batch 8-hour prediction analysis for ${tickers.length} stocks`);
+    console.log(`[TechnicalService] Starting batch 8H prediction analysis for ${tickers.length} stocks`);
     
     for (let i = 0; i < tickers.length; i += maxConcurrent) {
       const batch = tickers.slice(i, i + maxConcurrent);
@@ -351,14 +322,14 @@ class EnhancedTechnicalService {
       
       results.push(...batchResults);
       
-      // Reduced delay for faster processing
+      // Small delay between batches
       if (i + maxConcurrent < tickers.length) {
-        await new Promise(resolve => setTimeout(resolve, 500)); // Reduced from 1000ms
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
     
     const successfulResults = results.filter(r => r.hasData);
-    console.log(`[SUCCESS] Batch 8-hour prediction analysis complete: ${successfulResults.length}/${tickers.length} successful`);
+    console.log(`[TechnicalService] Batch 8H prediction complete: ${successfulResults.length}/${tickers.length} successful`);
     
     return results;
   }

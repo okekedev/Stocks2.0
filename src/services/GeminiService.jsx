@@ -1,4 +1,4 @@
-// src/services/GeminiService.js - Clearer 8-Hour Prediction Messaging
+// src/services/GeminiService.js - FIXED: Updated for New Data Structure
 import { articleFetcher } from './ArticleFetcher';
 import { enhancedTechnicalService } from './EnhancedTechnicalService';
 
@@ -208,7 +208,7 @@ class GeminiService {
     }
   }
 
-  // ✅ CLEARER: 8-Hour Prediction Prompt
+  // ✅ FIXED: 8-Hour Prediction Prompt with Correct Data Structure
   build8HourPredictionPrompt(stock, rawMarketData, fullArticleContent) {
     // Use shorter news content to reduce token usage
     let newsText = '';
@@ -220,21 +220,73 @@ class GeminiService {
       newsText = stock.latestNews?.description || stock.latestNews?.title || 'No recent news available';
     }
     
-    // Simplified market data (reduce JSON size)
+    // ✅ FIXED: Handle the new data structure properly
     let marketDataSection = '';
     
     if (rawMarketData.error || !rawMarketData.hasData) {
       marketDataSection = `Market data unavailable: ${rawMarketData.error || 'No data'}`;
     } else {
-      // Use only the most recent critical data points
-      const recent1min = rawMarketData.rawTimeframes['1min'].slice(-20); // Last 20 minutes
-      const recent5min = rawMarketData.rawTimeframes['5min'].slice(-12); // Last hour
-      const recentDaily = rawMarketData.recentDays.slice(-5); // Last 5 days
+      // ✅ FIXED: Use the correct data structure from EnhancedTechnicalService
+      const timeframes = rawMarketData.rawTimeframes || {};
       
-      marketDataSection = `Current: $${rawMarketData.currentPrice} (${rawMarketData.todayChangePercent?.toFixed(2) || 0}% today)
-Recent 1min: ${JSON.stringify(recent1min)}
-Recent 5min: ${JSON.stringify(recent5min)}
-Recent daily: ${JSON.stringify(recentDaily)}`;
+      // Safely get recent data with proper null checks
+      const recent1min = (timeframes['1min'] && Array.isArray(timeframes['1min'])) 
+        ? timeframes['1min'].slice(-20) 
+        : [];
+      
+      const recent5min = (timeframes['5min'] && Array.isArray(timeframes['5min'])) 
+        ? timeframes['5min'].slice(-12) 
+        : [];
+      
+      const recent15min = (timeframes['15min'] && Array.isArray(timeframes['15min'])) 
+        ? timeframes['15min'].slice(-5) 
+        : [];
+      
+      // ✅ FIXED: Build market data section with what we actually have
+      let dataLines = [];
+      
+      // Current price and momentum
+      if (rawMarketData.currentPrice) {
+        const hourlyMomentum = rawMarketData.hourlyMomentum ? ` (1H: ${rawMarketData.hourlyMomentum.toFixed(2)}%)` : '';
+        const fourHourMomentum = rawMarketData.fourHourMomentum ? ` (4H: ${rawMarketData.fourHourMomentum.toFixed(2)}%)` : '';
+        dataLines.push(`Current: $${rawMarketData.currentPrice}${hourlyMomentum}${fourHourMomentum}`);
+      }
+      
+      // Market session info
+      if (rawMarketData.marketSession) {
+        dataLines.push(`Session: ${rawMarketData.marketSession.session} (${rawMarketData.marketSession.description || 'active'})`);
+      }
+      
+      // Data quality info
+      if (rawMarketData.dataQuality) {
+        const dq = rawMarketData.dataQuality;
+        dataLines.push(`Data Quality: ${dq.quality} (${dq.totalMinuteBars} bars, latest ${dq.latestDataAge}m ago)`);
+        
+        if (dq.hasExtendedHoursData) {
+          dataLines.push(`Extended Hours: ${dq.extendedHoursBars} bars, Avg Vol: ${dq.avgExtendedHoursVolume}`);
+        }
+      }
+      
+      // Recent price action (only if we have data)
+      if (recent1min.length > 0) {
+        const recentPrices = recent1min.slice(-10).map(bar => `${bar.close}`).join(',');
+        dataLines.push(`Recent 10min prices: ${recentPrices}`);
+      }
+      
+      if (recent5min.length > 0) {
+        dataLines.push(`5min bars (last ${recent5min.length}): OHLCV data available`);
+      }
+      
+      if (recent15min.length > 0) {
+        dataLines.push(`15min bars (last ${recent15min.length}): OHLCV data available`);
+      }
+      
+      // Fallback if no detailed data
+      if (recent1min.length === 0 && recent5min.length === 0 && recent15min.length === 0) {
+        dataLines.push('Limited price history - using current price data only');
+      }
+      
+      marketDataSection = dataLines.join('\n');
     }
 
     // ✅ CLEARER: Direct 8-hour prediction prompt
@@ -244,13 +296,14 @@ STOCK: ${stock.ticker}
 
 NEWS: ${newsText}
 
-MARKET DATA: ${marketDataSection}
+MARKET DATA:
+${marketDataSection}
 
 Predict the stock's price movement over the next 8 hours based on:
 1. Recent price patterns and volume
 2. News sentiment and market reactions
 3. Technical indicators and momentum
-4. Intraday trading patterns
+4. Current market session (regular/after-hours/premarket)
 
 Return JSON format:
 {
@@ -269,7 +322,7 @@ Return JSON format:
   // Batch analysis with progress tracking
   async batchAnalyzeStocks(stocks, options = {}) {
     const { 
-      maxConcurrent = 5, // ✅ Increased for better performance
+      maxConcurrent = 3, // ✅ Conservative to avoid rate limits
       onProgress = null,
       onStockComplete = null
     } = options;
