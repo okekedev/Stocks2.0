@@ -1,4 +1,4 @@
-// src/components/AIWorker.jsx - Updated to display EOD Movement
+// src/components/AIWorker.jsx - Updated with Smart Auto-Start and Re-Analyze Logic
 import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Terminal, CheckCircle, X, Zap, TrendingUp, Activity, Clock, Target } from 'lucide-react';
 import { geminiService } from '../services/GeminiService';
@@ -22,16 +22,21 @@ export function AIWorker({
   // Prevent double calls with ref
   const analysisInProgress = useRef(false);
 
-  // Auto-start analysis when modal opens (if autoStart is true)
+  // ✅ UPDATED: Smart auto-start logic - only start if no existing analysis
   useEffect(() => {
-    if (autoStart && !analyzing && !complete && !analysisInProgress.current) {
+    const hasExistingAnalysis = savedResult || (savedLogs && savedLogs.length > 0);
+    
+    if (autoStart && !analyzing && !complete && !hasExistingAnalysis && !analysisInProgress.current) {
       console.log('🚀 Auto-starting analysis for', stock.ticker);
       // Small delay to ensure modal is fully rendered
       setTimeout(() => {
         performRealAIAnalysis();
       }, 500);
+    } else if (hasExistingAnalysis) {
+      console.log('📄 Showing existing analysis for', stock.ticker);
+      // Don't auto-start - user can see existing results immediately
     }
-  }, [autoStart, stock.ticker]);
+  }, [autoStart, stock.ticker, savedResult, savedLogs]);
 
   // Load saved logs when component mounts
   useEffect(() => {
@@ -109,7 +114,7 @@ export function AIWorker({
       const log7 = addLog(`💭 ${aiResult.reasoning}`, 'reasoning');
       allLogs.push(log7);
       
-      // ✅ Updated to show EOD movement instead of absolute price
+      // ✅ Show EOD movement instead of absolute price
       if (aiResult.eodMovement !== undefined && aiResult.eodMovement !== null) {
         const movementDirection = aiResult.eodMovement > 0 ? '📈' : aiResult.eodMovement < 0 ? '📉' : '➡️';
         const log8 = addLog(`${movementDirection} EOD Movement: ${aiResult.eodMovement > 0 ? '+' : ''}${aiResult.eodMovement.toFixed(1)}%`, 'forecast');
@@ -194,14 +199,14 @@ export function AIWorker({
     return '🤔';
   };
 
-  // ✅ NEW: Format EOD movement
+  // ✅ Format EOD movement
   const formatEodMovement = (movement) => {
     if (movement === undefined || movement === null) return 'N/A';
     const sign = movement > 0 ? '+' : '';
     return `${sign}${movement.toFixed(1)}%`;
   };
 
-  // ✅ NEW: Get EOD movement color and icon
+  // ✅ Get EOD movement color and icon
   const getEodMovementColor = (movement) => {
     if (movement === undefined || movement === null) return 'text-gray-400';
     if (movement > 0) return 'text-green-400';
@@ -265,6 +270,7 @@ export function AIWorker({
             </div>
           </div>
           
+          {/* ✅ UPDATED: Enhanced button layout with re-analyze */}
           <div className="flex items-center space-x-3">
             {!analyzing && !complete && (
               <button
@@ -276,6 +282,7 @@ export function AIWorker({
               </button>
             )}
             
+            {/* ✅ NEW: Re-analyze button appears when analysis is complete */}
             {complete && !analyzing && (
               <button
                 onClick={performRealAIAnalysis}
@@ -323,17 +330,31 @@ export function AIWorker({
           </div>
         )}
         
+        {/* ✅ UPDATED: Better messaging for different states */}
         {logs.length === 0 && !analyzing && (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <Brain className="w-8 h-8 text-purple-400" />
             </div>
-            <div className="text-gray-400 text-sm">
-              Click "Analyze with AI" to start real-time analysis using Google Gemini
-            </div>
-            <div className="text-gray-500 text-xs mt-2">
-              Analysis includes technical indicators, news sentiment, and market context
-            </div>
+            {savedResult ? (
+              <div>
+                <div className="text-gray-300 text-sm mb-2">
+                  Analysis saved from previous session
+                </div>
+                <div className="text-gray-500 text-xs">
+                  Click "Re-analyze" to run fresh analysis or view results below
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-gray-400 text-sm">
+                  Click "Analyze with AI" to start real-time analysis using Google Gemini
+                </div>
+                <div className="text-gray-500 text-xs mt-2">
+                  Analysis includes technical indicators, news sentiment, and market context
+                </div>
+              </div>
+            )}
           </div>
         )}
         

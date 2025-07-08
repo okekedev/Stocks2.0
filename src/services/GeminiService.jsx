@@ -1,4 +1,4 @@
-// src/services/GeminiService.js - Optimized for Intraday Trading Analysis
+// src/services/GeminiService.js - Enhanced for 8-Hour Forward Predictions with Time Context
 import { articleFetcher } from './ArticleFetcher';
 import { enhancedTechnicalService } from './EnhancedTechnicalService';
 
@@ -33,7 +33,7 @@ class GeminiService {
             temperature: 0.1,
             topK: 40, 
             topP: 0.9, 
-            maxOutputTokens: 8192, // ✅ INCREASED - Allow longer responses
+            maxOutputTokens: 8192,
             candidateCount: 1
           }
         })
@@ -46,7 +46,6 @@ class GeminiService {
 
       const data = await response.json();
       
-      // ✅ DETAILED DEBUGGING - Log the full response structure
       console.log('🔍 [FULL DEBUG] Gemini API Response:', JSON.stringify(data, null, 2));
       
       // Enhanced error checking with fallback handling
@@ -73,7 +72,7 @@ class GeminiService {
         throw new Error('First candidate is undefined');
       }
       
-      // ✅ MORE DETAILED FINISH REASON CHECKING
+      // Enhanced finish reason checking
       if (candidate.finishReason && candidate.finishReason !== 'STOP') {
         console.warn(`[WARN] Unusual finish reason: ${candidate.finishReason}`, candidate);
         
@@ -117,30 +116,32 @@ class GeminiService {
     }
   }
 
-  // ✅ OPTIMIZED: Focused Intraday Trading Analysis
+  // ✅ OPTIMIZED: 4H History → 8H Forward Prediction Analysis
   async analyzeStock(stock, onProgress = null) {
     try {
-      onProgress?.(`🔄 Collecting intraday market data for ${stock.ticker}...`);
+      onProgress?.(`🔄 Analyzing ${stock.ticker} for 4H→8H prediction...`);
       
-      // ✅ Step 1: Get focused price/volume data (no options complexity)
-      console.log(`🔧 [${stock.ticker}] Fetching price/volume data for intraday analysis...`);
-      const rawMarketData = await enhancedTechnicalService.analyzeStockForAI(stock.ticker);
+      // ✅ Step 1: Get optimized 4H market data for 8H prediction
+      console.log(`🔧 [${stock.ticker}] Fetching focused 4H data for 8H prediction...`);
+      const marketAnalysis = await enhancedTechnicalService.analyzeStockForAI(stock.ticker);
       
-      if (rawMarketData.error) {
-        onProgress?.(`⚠️ Market Data: ${rawMarketData.error}`);
+      if (marketAnalysis.error) {
+        onProgress?.(`⚠️ Market Data: ${marketAnalysis.error}`);
       } else {
-        onProgress?.(`✅ Market Data: ${rawMarketData.dataPoints} price/volume data points`);
+        const dataAge = marketAnalysis.latestDataAge || 'unknown';
+        const session = marketAnalysis.marketSession?.currentSession || 'unknown';
+        onProgress?.(`✅ Market Data: ${marketAnalysis.dataPoints} points, ${dataAge}m old (${session})`);
       }
 
       // Step 2: Get article content
       let fullArticleContent = null;
       if (stock.latestNews?.articleUrl) {
         try {
-          onProgress?.(`📰 Fetching full article...`);
+          onProgress?.(`📰 Fetching full article content...`);
           fullArticleContent = await articleFetcher.fetchArticleContent(stock.latestNews.articleUrl);
           
           if (fullArticleContent?.success) {
-            onProgress?.(`✅ Article: ${fullArticleContent.wordCount || 0} words`);
+            onProgress?.(`✅ Article: ${fullArticleContent.wordCount || 0} words analyzed`);
           } else if (fullArticleContent?.fallback) {
             onProgress?.(`⚠️ Article unavailable: ${fullArticleContent.error}`);
           } else {
@@ -160,19 +161,19 @@ class GeminiService {
         onProgress?.(`📰 Using news summary only`);
       }
       
-      // ✅ Step 3: Build focused intraday trading prompt
-      onProgress?.(`🛠️ Building analysis prompt...`);
-      const prompt = this.buildIntradayPatternPrompt(stock, rawMarketData, fullArticleContent);
+      // ✅ Step 3: Build optimized 4H→8H prediction prompt
+      onProgress?.(`🛠️ Building focused 4H→8H analysis prompt...`);
+      const prompt = this.build4HTo8HPrompt(stock, marketAnalysis, fullArticleContent);
       
-      // Check prompt size to avoid token limits
+      // Check prompt size
       console.log(`📏 [${stock.ticker}] Prompt size: ${prompt.length} characters`);
-      if (prompt.length > 12000) {
+      if (prompt.length > 15000) {
         console.warn(`[WARN] Large prompt for ${stock.ticker}: ${prompt.length} chars`);
         onProgress?.(`⚠️ Large prompt detected (${Math.round(prompt.length/1000)}k chars)`);
       }
       
-      // ✅ Step 4: Send to AI - No fallback, let errors bubble up
-      onProgress?.(`🧠 Analyzing patterns with Gemini AI...`);
+      // ✅ Step 4: Send to AI for optimized 4H→8H prediction
+      onProgress?.(`🧠 Generating focused 4H→8H prediction with Gemini AI...`);
       
       const response = await this.makeRequest(prompt);
       const cleanResponse = response.replace(/```json\n?|\n?```/g, '').trim();
@@ -184,22 +185,29 @@ class GeminiService {
       const finalResult = {
         buyPercentage: Math.max(0, Math.min(100, result.buyPercentage || 50)),
         signal: result.signal || 'hold',
-        reasoning: result.reasoning || 'Intraday pattern analysis completed',
-        eodMovement: result.eodMovementPrediction || 0, // ✅ Updated field name
+        reasoning: result.reasoning || '4H→8H analysis completed',
+        next8Hours: result.next8Hours || 0, // ✅ 8-hour prediction
         confidence: Math.max(0, Math.min(1, result.confidence || 0.5)),
         
-        // ✅ Intraday-focused patterns
-        patternsFound: result.patternsFound || [],
-        anomalies: result.anomalies || [],
+        // ✅ Enhanced prediction details
+        targetTimeframe: '8 hours',
+        predictionType: '4H→8H',
+        keyFactors: result.keyFactors || [],
+        riskLevel: result.riskLevel || 'medium',
+        marketContext: result.marketContext || 'regular_session',
         
+        // Analysis metadata
         analysisTimestamp: new Date().toISOString(),
-        hasRawData: rawMarketData.hasData,
+        hasMarketData: marketAnalysis.hasData,
         hasFullArticle: !!(fullArticleContent?.success),
-        dataPoints: rawMarketData.dataPoints || 0,
-        technicalBars: rawMarketData.dataPoints || 0
+        dataPoints: marketAnalysis.dataPoints || 0,
+        marketSession: marketAnalysis.marketSession?.currentSession || 'unknown',
+        dataAge: marketAnalysis.latestDataAge || null,
+        analysisType: '4H→8H'
       };
       
-      onProgress?.(`✅ Complete: ${finalResult.signal.toUpperCase()} (${finalResult.buyPercentage}%)`);
+      const predictionText = finalResult.next8Hours > 0 ? `+${finalResult.next8Hours.toFixed(1)}%` : `${finalResult.next8Hours.toFixed(1)}%`;
+      onProgress?.(`✅ Complete: ${finalResult.signal.toUpperCase()} (${finalResult.buyPercentage}%) | 8h: ${predictionText}`);
       
       return finalResult;
       
@@ -210,59 +218,85 @@ class GeminiService {
     }
   }
 
-  // ✅ OPTIMIZED: Compact and Safety-Filter Friendly Prompt
-  buildIntradayPatternPrompt(stock, rawMarketData, fullArticleContent) {
-    // Use shorter news content to reduce token usage
+  // ✅ OPTIMIZED: 4H→8H prompt for focused analysis
+  build4HTo8HPrompt(stock, marketAnalysis, fullArticleContent) {
+    // Prepare news content (limit size)
     let newsText = '';
     
     if (fullArticleContent?.success && fullArticleContent?.content) {
-      // Limit article content to prevent token overflow
       newsText = fullArticleContent.content.substring(0, 1500) + (fullArticleContent.content.length > 1500 ? '...' : '');
     } else {
       newsText = stock.latestNews?.description || stock.latestNews?.title || 'No recent news available';
     }
     
-    // Simplified market data (reduce JSON size)
+    // ✅ Prepare focused 4H market data for 8H prediction
     let marketDataSection = '';
+    let timeContextSection = '';
     
-    if (rawMarketData.error || !rawMarketData.hasData) {
-      marketDataSection = `Market data unavailable: ${rawMarketData.error || 'No data'}`;
+    if (marketAnalysis.error || !marketAnalysis.hasData) {
+      marketDataSection = `Market data unavailable: ${marketAnalysis.error || 'No data'}`;
     } else {
-      // Use only the most recent critical data points
-      const recent1min = rawMarketData.rawTimeframes['1min'].slice(-20); // Last 20 minutes
-      const recent5min = rawMarketData.rawTimeframes['5min'].slice(-12); // Last hour
-      const recentDaily = rawMarketData.recentDays.slice(-5); // Last 5 days
+      // Include focused time context for AI
+      const timeContext = marketAnalysis.timeContext;
+      timeContextSection = `
+CURRENT TIME CONTEXT:
+- Current UTC Time: ${new Date(timeContext.currentUtcTime).toISOString()}
+- Current Eastern Time: ${timeContext.currentEasternTime}
+- Market Session: ${timeContext.currentSession}
+- Current Price: ${marketAnalysis.currentPrice || 'N/A'}
+- 4H Momentum: ${marketAnalysis.fourHourMomentum?.toFixed(2) || 0}%
+- Data Age: ${marketAnalysis.latestDataAge || 'unknown'} minutes
+- 8H Prediction Window Ends: ${timeContext.predictionWindowEnd}
+- Hours Until Next Session: ${timeContext.hoursUntilNextSession || 'N/A'}`;
+
+      // ✅ FOCUSED: Include only recent 4H data (much smaller)
+      const recent1min = marketAnalysis.rawTimeframes['1min'].slice(-60); // Last 1 hour of 1min
+      const recent5min = marketAnalysis.rawTimeframes['5min'].slice(-48);  // All 4H of 5min
+      const recent15min = marketAnalysis.rawTimeframes['15min'].slice(-16); // All 4H of 15min
       
-      marketDataSection = `Current: $${rawMarketData.currentPrice} (${rawMarketData.todayChangePercent?.toFixed(2) || 0}% today)
-Recent 1min: ${JSON.stringify(recent1min)}
-Recent 5min: ${JSON.stringify(recent5min)}
-Recent daily: ${JSON.stringify(recentDaily)}`;
+      marketDataSection = `FOCUSED 4H MARKET DATA (Recent Activity):
+1-minute bars (last 1H): ${JSON.stringify(recent1min)}
+5-minute bars (4H): ${JSON.stringify(recent5min)}
+15-minute bars (4H): ${JSON.stringify(recent15min)}
+Data Quality: ${marketAnalysis.dataQuality?.quality || 'unknown'} (${marketAnalysis.dataQuality?.completeness || 0}% complete)`;
     }
 
-    // Simplified, direct prompt to avoid safety filters
-    const prompt = `Analyze this stock for intraday trading opportunity. Return only valid JSON.
+    // ✅ OPTIMIZED: Focused prompt for 4H→8H analysis
+    const prompt = `You are an expert day trader analyzing ${stock.ticker} using FOCUSED 4-HOUR HISTORY to predict the NEXT 8 HOURS.
 
-STOCK: ${stock.ticker}
+${timeContextSection}
 
-NEWS: ${newsText}
+NEWS CATALYST: ${newsText}
 
-MARKET DATA: ${marketDataSection}
+${marketDataSection}
+
+ANALYSIS APPROACH: Use the last 4 hours of data to predict the next 8 hours of trading.
+
+Key Focus Areas:
+1. Recent 4H momentum and trend direction
+2. Current market session context and upcoming sessions  
+3. News catalyst timing and market reaction potential
+4. Volume patterns and session-specific behavior
+5. Support/resistance levels from recent 4H action
 
 Return JSON format:
 {
-  "buyPercentage": [number 0-100],
-  "signal": ["buy"|"sell"|"hold"],
-  "reasoning": "[brief analysis]",
-  "eodMovementPrediction": [number percentage],
-  "confidence": [number 0.0-1.0],
-  "patternsFound": ["pattern1", "pattern2"],
-  "anomalies": ["anomaly1", "anomaly2"]
-}`;
+  "buyPercentage": [0-100 confidence in upward movement],
+  "signal": ["strong_buy"|"buy"|"hold"|"sell"|"strong_sell"],
+  "reasoning": "[brief analysis focusing on 4H→8H outlook]",
+  "next8Hours": [predicted percentage change in next 8 hours],
+  "confidence": [0.0-1.0 confidence in prediction],
+  "keyFactors": ["factor1", "factor2", "factor3"],
+  "riskLevel": ["low"|"medium"|"high"],
+  "marketContext": ["premarket"|"regular"|"afterhours"|"transition"]
+}
+
+Focus on ACTIONABLE 8-HOUR PREDICTION using recent 4-hour patterns. Consider session transitions and news timing.`;
 
     return prompt;
   }
 
-  // Batch analysis with progress tracking
+  // ✅ UPDATED: Batch analysis with 8-hour forward prediction
   async batchAnalyzeStocks(stocks, options = {}) {
     const { 
       maxConcurrent = 1,
@@ -272,8 +306,8 @@ Return JSON format:
     
     const results = [];
     
-    console.log(`[INFO] AI intraday pattern analysis: ${stocks.length} stocks...`);
-    onProgress?.(`🎯 AI intraday analysis for ${stocks.length} stocks...`);
+    console.log(`[INFO] AI 4H→8H analysis: ${stocks.length} stocks...`);
+    onProgress?.(`🎯 Starting focused 4H→8H predictions for ${stocks.length} stocks...`);
     
     for (let i = 0; i < stocks.length; i += maxConcurrent) {
       const batch = stocks.slice(i, i + maxConcurrent);
@@ -293,9 +327,13 @@ Return JSON format:
           };
           
           onStockComplete?.(stock.ticker, result);
+          
           const signalText = (buySignal.signal || 'hold').toUpperCase();
-          const patterns = buySignal.patternsFound?.length > 0 ? ` | Patterns: ${buySignal.patternsFound.join(', ')}` : '';
-          onProgress?.(`✅ [${stock.ticker}] ${signalText} (${buySignal.buyPercentage}%)${patterns}`);
+          const prediction8h = buySignal.next8Hours > 0 ? `+${buySignal.next8Hours.toFixed(1)}%` : `${buySignal.next8Hours.toFixed(1)}%`;
+          const timeframe = buySignal.targetTimeframe || '8h';
+          const factors = buySignal.keyFactors?.length > 0 ? ` | Key: ${buySignal.keyFactors.slice(0, 2).join(', ')}` : '';
+          
+          onProgress?.(`✅ [${stock.ticker}] ${signalText} (${buySignal.buyPercentage}%) | ${timeframe}: ${prediction8h}${factors}`);
           return result;
           
         } catch (error) {
@@ -306,11 +344,13 @@ Return JSON format:
             buySignal: {
               buyPercentage: 20,
               signal: 'avoid',
-              reasoning: 'AI intraday analysis failed',
-              eodMovement: 0,
+              reasoning: '4H→8H analysis failed',
+              next8Hours: 0,
               confidence: 0.1,
-              patternsFound: [],
-              anomalies: []
+              targetTimeframe: '8 hours',
+              predictionType: '4H→8H',
+              keyFactors: [],
+              riskLevel: 'high'
             },
             aiAnalyzed: false
           };
@@ -336,8 +376,8 @@ Return JSON format:
       .filter(stock => stock.buySignal !== null)
       .sort((a, b) => (b.buySignal?.buyPercentage || 0) - (a.buySignal?.buyPercentage || 0));
     
-    console.log(`[INFO] AI intraday analysis complete: ${sortedResults.length} analyzed`);
-    onProgress?.(`🎯 Intraday analysis complete: ${sortedResults.length}/${stocks.length} successful`);
+    console.log(`[INFO] 4H→8H analysis complete: ${sortedResults.length} analyzed`);
+    onProgress?.(`🎯 Focused 4H→8H predictions complete: ${sortedResults.length}/${stocks.length} successful`);
     
     return sortedResults;
   }

@@ -1,4 +1,4 @@
-// src/components/NewsTable.jsx - Updated with Persistent Analysis Support
+// src/components/NewsTable.jsx - Updated with Persistent Analysis Support and Fixed Modal Behavior
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   TrendingUp, 
@@ -6,7 +6,6 @@ import {
   Clock, 
   MessageSquare, 
   Brain, 
-  Zap, 
   ChevronUp, 
   ChevronDown, 
   CheckCircle, 
@@ -82,19 +81,15 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll, persistentAnalyse
     }
   };
 
+  // ✅ UPDATED: Smart click handler that doesn't auto-start for existing analyses
   const handleAIAnalyzeClick = (stock) => {
-    // Don't open modal if already analyzing this stock
-    if (analyzingStocks.has(stock.ticker)) {
-      return;
-    }
-    
     // Close any existing modal first
     setSelectedStock(null);
     
-    // Small delay to ensure clean state, then open modal and start analysis
+    // Small delay to ensure clean state, then open modal
     setTimeout(() => {
       setSelectedStock(stock);
-      // Analysis will start automatically when AIWorker mounts
+      // ✅ AIWorker will decide whether to auto-start based on existing analysis
     }, 100);
   };
 
@@ -106,8 +101,9 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll, persistentAnalyse
     setAnalyzingStocks(prev => new Set([...prev, ticker]));
   };
 
+  // ✅ UPDATED: Don't automatically close modal after analysis completes
   const handleWorkerComplete = (ticker, result) => {
-    // ✅ FIXED: Update persistent analyses through a callback to useNewsData
+    // ✅ Update persistent analyses through a callback to useNewsData
     if (onAnalysisComplete) {
       onAnalysisComplete(ticker, result);
     }
@@ -117,6 +113,9 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll, persistentAnalyse
       newSet.delete(ticker);
       return newSet;
     });
+    
+    // ✅ MODAL STAYS OPEN - Let user read results and manually close
+    // setSelectedStock(null); // REMOVED - Modal now stays open
   };
 
   // Enhanced stock data with real-time price data
@@ -240,14 +239,14 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll, persistentAnalyse
     return '🤔';
   };
 
-  // ✅ NEW: Format EOD movement
+  // ✅ Format EOD movement
   const formatEodMovement = (movement) => {
     if (movement === undefined || movement === null) return null;
     const sign = movement > 0 ? '+' : '';
     return `${sign}${movement.toFixed(1)}%`;
   };
 
-  // ✅ NEW: Get EOD movement color
+  // ✅ Get EOD movement color
   const getEodMovementColor = (movement) => {
     if (movement === undefined || movement === null) return 'text-gray-400';
     if (movement > 0) return 'text-green-400';
@@ -308,7 +307,7 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll, persistentAnalyse
                   <div className="text-sm text-gray-400">
                     Price Updates Every Minute
                   </div>
-                  {/* ✅ NEW: Show persistent analysis count */}
+                  {/* ✅ Show persistent analysis count */}
                   {Object.keys(persistentAnalyses).length > 0 && (
                     <>
                       <div className="w-px h-4 bg-gray-500"></div>
@@ -440,17 +439,20 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll, persistentAnalyse
                     </div>
                   </td>
 
-                  {/* ✅ UPDATED: Enhanced AI Signal with EOD Movement Forecast */}
+                  {/* ✅ UPDATED: Enhanced AI Signal Display */}
                   <td className="px-6 py-5 whitespace-nowrap">
                     {stock.buySignal ? (
-                      <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-700/30 transition-all duration-300">
+                      <div 
+                        className="flex items-center space-x-3 p-3 rounded-xl bg-gradient-to-r from-purple-900/20 to-blue-900/20 border border-purple-700/30 hover:border-purple-600/50 transition-all duration-300 cursor-pointer group"
+                        onClick={() => handleAIAnalyzeClick(stock)}
+                      >
                         <span className="text-3xl">{getBuySignalIcon(stock.buySignal.buyPercentage)}</span>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
                             <div className={`font-bold text-xl ${getBuySignalColor(stock.buySignal.buyPercentage)}`}>
                               {stock.buySignal.buyPercentage}%
                             </div>
-                            {/* ✅ EOD Movement Display (instead of absolute price) */}
+                            {/* ✅ EOD Movement Display */}
                             {stock.buySignal.eodMovement !== undefined && stock.buySignal.eodMovement !== null && (
                               <div className="text-sm">
                                 <span className="text-gray-400">EOD:</span>
@@ -463,38 +465,44 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll, persistentAnalyse
                           <div className="text-xs text-gray-400 uppercase tracking-wide">
                             {stock.buySignal.signal.replace('_', ' ')}
                           </div>
-                        </div>
-                        {stock.hasCustomAnalysis && (
-                          <div className="flex items-center space-x-2">
-                            {/* Lightning bolt for re-analysis */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAIAnalyzeClick(stock);
-                              }}
-                              disabled={stock.isAnalyzing}
-                              className="p-2 bg-purple-500/20 hover:bg-purple-500/40 text-purple-400 hover:text-purple-300 rounded-lg transition-all duration-300 disabled:opacity-50 group"
-                              title="Re-analyze with AI"
-                            >
-                              <Zap className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                            </button>
+                          <div className="text-xs text-purple-300 group-hover:text-purple-200 transition-colors mt-1">
+                            Click to view analysis
                           </div>
-                        )}
+                        </div>
+                        {/* ✅ Simple analyzed badge instead of lightning bolt */}
+                        <div className="flex items-center space-x-1 text-xs bg-green-900/20 text-green-400 rounded-full px-2 py-1">
+                          <CheckCircle className="w-3 h-3" />
+                          <span>Analyzed</span>
+                        </div>
                       </div>
                     ) : (
                       <div 
-                        className="flex items-center space-x-3 p-3 rounded-xl bg-gray-700/20 hover:bg-purple-900/20 transition-all duration-300 cursor-pointer group"
+                        className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 cursor-pointer group ${
+                          stock.buySignal 
+                            ? 'bg-purple-900/20 hover:bg-purple-900/40 border border-purple-700/30'
+                            : 'bg-gray-700/20 hover:bg-purple-900/20'
+                        }`}
                         onClick={() => handleAIAnalyzeClick(stock)}
                       >
-                        <Brain className="w-6 h-6 text-gray-400 group-hover:text-purple-400 transition-colors" />
-                        <div className="text-gray-400 group-hover:text-purple-400 transition-colors">
+                        <Brain className={`w-6 h-6 transition-colors ${
+                          stock.buySignal 
+                            ? 'text-purple-400 group-hover:text-purple-300'
+                            : 'text-gray-400 group-hover:text-purple-400'
+                        }`} />
+                        <div className={`transition-colors ${
+                          stock.buySignal 
+                            ? 'text-purple-300 group-hover:text-purple-200'
+                            : 'text-gray-400 group-hover:text-purple-400'
+                        }`}>
                           {stock.isAnalyzing ? (
                             <div className="flex items-center space-x-2">
                               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400"></div>
                               <span className="text-purple-400 font-medium">Analyzing...</span>
                             </div>
                           ) : (
-                            <span className="font-medium">Click to Analyze</span>
+                            <span className="font-medium">
+                              {stock.buySignal ? 'View Analysis' : 'Click to Analyze'}
+                            </span>
                           )}
                         </div>
                       </div>
@@ -544,7 +552,7 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll, persistentAnalyse
         )}
       </div>
 
-      {/* Enhanced AI Worker Modal with Auto-Start */}
+      {/* ✅ UPDATED: AI Worker Modal - Now handles re-analyze internally */}
       {selectedStock && (
         <div 
           className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
@@ -552,7 +560,7 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll, persistentAnalyse
         >
           <AIWorker
             stock={selectedStock}
-            autoStart={true}
+            autoStart={true} // ✅ Always true, but AIWorker decides whether to actually start
             isActive={true}
             onAnalysisStart={handleWorkerStart}
             onAnalysisComplete={handleWorkerComplete}

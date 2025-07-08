@@ -1,4 +1,4 @@
-// src/services/EnhancedTechnicalService.js - Focused on price/volume data for intraday trading
+// src/services/EnhancedTechnicalService.js - Optimized for 4H History + 8H Forward
 class EnhancedTechnicalService {
   constructor() {
     this.apiKey = import.meta.env.VITE_POLYGON_API_KEY;
@@ -28,62 +28,156 @@ class EnhancedTechnicalService {
     }
   }
 
-  // Get comprehensive multi-timeframe price/volume data
-  async getRawMarketData(ticker, hours = 6) {
+  // ✅ OPTIMIZED: Get current market session info
+  getCurrentMarketSession() {
+    const now = new Date();
+    const utcNow = now.getTime();
+    const etNow = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
+    
+    const day = etNow.getDay();
+    const hours = etNow.getHours();
+    const minutes = etNow.getMinutes();
+    const timeInMinutes = hours * 60 + minutes;
+    
+    // Define market periods in ET
+    const periods = {
+      preMarket: { start: 4 * 60, end: 9 * 60 + 30, name: 'premarket' },
+      regular: { start: 9 * 60 + 30, end: 16 * 60, name: 'regular' },
+      afterHours: { start: 16 * 60, end: 20 * 60, name: 'afterhours' }
+    };
+    
+    let currentSession = 'closed';
+    let nextSessionStart = null;
+    let sessionEndsAt = null;
+    
+    if (day === 0 || day === 6) {
+      currentSession = 'weekend';
+    } else {
+      for (const [key, period] of Object.entries(periods)) {
+        if (timeInMinutes >= period.start && timeInMinutes < period.end) {
+          currentSession = period.name;
+          sessionEndsAt = new Date(etNow);
+          sessionEndsAt.setHours(Math.floor(period.end / 60), period.end % 60, 0, 0);
+          break;
+        }
+      }
+      
+      // Calculate 8-hour forward prediction window
+      const eightHoursForward = new Date(utcNow + 8 * 60 * 60 * 1000);
+      const eightHourET = new Date(eightHoursForward.toLocaleString("en-US", {timeZone: "America/New_York"}));
+      
+      // Find next session
+      if (currentSession === 'closed') {
+        if (timeInMinutes < periods.preMarket.start) {
+          nextSessionStart = new Date(etNow);
+          nextSessionStart.setHours(4, 0, 0, 0);
+        } else if (timeInMinutes >= periods.afterHours.end) {
+          nextSessionStart = new Date(etNow);
+          nextSessionStart.setDate(nextSessionStart.getDate() + 1);
+          nextSessionStart.setHours(4, 0, 0, 0);
+        }
+      }
+    }
+    
+    return {
+      currentSession,
+      utcTimestamp: utcNow,
+      easternTime: etNow.toLocaleTimeString('en-US', { timeZone: 'America/New_York' }),
+      easternDate: etNow.toLocaleDateString('en-US', { timeZone: 'America/New_York' }),
+      sessionEndsAt: sessionEndsAt?.getTime() || null,
+      nextSessionStart: nextSessionStart?.getTime() || null,
+      hoursUntilNextSession: nextSessionStart ? Math.round((nextSessionStart.getTime() - utcNow) / (1000 * 60 * 60)) : null,
+      day: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][day],
+      isWeekend: day === 0 || day === 6,
+      // ✅ NEW: 8-hour forward prediction window
+      eightHourForwardTimestamp: utcNow + 8 * 60 * 60 * 1000,
+      predictionWindowEnd: new Date(utcNow + 8 * 60 * 60 * 1000).toLocaleTimeString('en-US', { timeZone: 'America/New_York' })
+    };
+  }
+
+  // ✅ OPTIMIZED: Get last 4 hours of data (much faster)
+  async getLast4HoursData(ticker) {
     try {
-      console.log(`[INFO] Fetching market data for ${ticker}...`);
-      
       const now = new Date();
-      const fromDate = new Date(now.getTime() - hours * 60 * 60 * 1000);
+      const marketSession = this.getCurrentMarketSession();
       
-      // Format dates for Polygon API
-      const from = fromDate.toISOString().split('T')[0];
+      // ✅ FOCUSED: Only get last 4 hours
+      const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000);
+      
+      // If it's weekend/closed, adjust to get last trading data
+      let fromTime = fourHoursAgo;
+      if (marketSession.isWeekend || marketSession.currentSession === 'closed') {
+        const lastFriday = new Date(now);
+        lastFriday.setDate(now.getDate() - (now.getDay() + 2) % 7); // Last Friday
+        lastFriday.setUTCHours(21, 0, 0, 0); // 4 PM ET = 21:00 UTC
+        fromTime = new Date(lastFriday.getTime() - 4 * 60 * 60 * 1000); // 4 hours before close
+      }
+      
+      const from = fromTime.toISOString().split('T')[0];
       const to = now.toISOString().split('T')[0];
       
-      // Get multiple timeframes in parallel
-      const [minuteBars, fiveMinBars, hourlyBars] = await Promise.all([
-        this.getMinuteBars(ticker, from, to, 1),   // 1-minute bars
-        this.getMinuteBars(ticker, from, to, 5),   // 5-minute bars  
-        this.getMinuteBars(ticker, from, to, 60),  // 1-hour bars
+      console.log(`[INFO] Fetching FOCUSED 4H data for ${ticker} from ${fromTime.toLocaleTimeString()} to ${now.toLocaleTimeString()}`);
+      console.log(`[INFO] Market session: ${marketSession.currentSession}, 8h prediction until: ${marketSession.predictionWindowEnd}`);
+      
+      // ✅ STREAMLINED: Get only essential timeframes
+      const [minuteBars, fiveMinBars, fifteenMinBars] = await Promise.all([
+        this.getAggregatesWithExtendedHours(ticker, from, to, 1, 'minute'),   // 1-minute
+        this.getAggregatesWithExtendedHours(ticker, from, to, 5, 'minute'),   // 5-minute  
+        this.getAggregatesWithExtendedHours(ticker, from, to, 15, 'minute')   // 15-minute
       ]);
       
-      console.log(`[SUCCESS] Retrieved data for ${ticker}:`, {
-        minute: minuteBars.length,
-        fiveMin: fiveMinBars.length,
-        hourly: hourlyBars.length
+      // ✅ OPTIMIZED: Filter to exactly last 4 hours
+      const fourHoursCutoff = now.getTime() - 4 * 60 * 60 * 1000;
+      
+      const recentMinuteBars = minuteBars.filter(bar => bar.timestamp >= fourHoursCutoff);
+      const recentFiveMinBars = fiveMinBars.filter(bar => bar.timestamp >= fourHoursCutoff);
+      const recentFifteenMinBars = fifteenMinBars.filter(bar => bar.timestamp >= fourHoursCutoff);
+      
+      console.log(`[SUCCESS] FOCUSED 4H data for ${ticker}:`, {
+        minute: recentMinuteBars.length,
+        fiveMin: recentFiveMinBars.length,
+        fifteenMin: recentFifteenMinBars.length,
+        timespan: '4h history → 8h forward'
       });
       
       return {
         ticker,
+        marketSession,
         timeframes: {
-          '1min': minuteBars,
-          '5min': fiveMinBars, 
-          '1hour': hourlyBars
+          '1min': recentMinuteBars,
+          '5min': recentFiveMinBars,
+          '15min': recentFifteenMinBars
         },
         metadata: {
-          totalBars: minuteBars.length + fiveMinBars.length + hourlyBars.length,
-          timespan: `${hours}h`,
-          lastUpdate: now.toISOString()
+          totalBars: recentMinuteBars.length + recentFiveMinBars.length + recentFifteenMinBars.length,
+          historyTimespan: '4h',
+          predictionTimespan: '8h forward',
+          lastUpdate: now.toISOString(),
+          fromTimestamp: fourHoursCutoff,
+          toTimestamp: marketSession.eightHourForwardTimestamp,
+          currentSession: marketSession.currentSession,
+          dataQuality: this.assessFocusedDataQuality(recentMinuteBars)
         }
       };
       
     } catch (error) {
-      console.error(`[ERROR] Failed to get market data for ${ticker}:`, error);
+      console.error(`[ERROR] Failed to get 4H data for ${ticker}:`, error);
       return {
         ticker,
         error: error.message,
-        timeframes: { '1min': [], '5min': [], '1hour': [] },
-        metadata: { totalBars: 0, timespan: `${hours}h`, lastUpdate: new Date().toISOString() }
+        marketSession: this.getCurrentMarketSession(),
+        timeframes: { '1min': [], '5min': [], '15min': [] },
+        metadata: { totalBars: 0, historyTimespan: '4h', predictionTimespan: '8h forward', lastUpdate: new Date().toISOString() }
       };
     }
   }
 
-  // Get minute bars for specific timeframe
-  async getMinuteBars(ticker, from, to, multiplier = 1) {
+  // ✅ UNCHANGED: Get aggregates including extended hours data
+  async getAggregatesWithExtendedHours(ticker, from, to, multiplier = 1, timespan = 'minute') {
     try {
-      const response = await this.makeRequest(`/v2/aggs/ticker/${ticker}/range/${multiplier}/minute/${from}/${to}`, {
+      const response = await this.makeRequest(`/v2/aggs/ticker/${ticker}/range/${multiplier}/${timespan}/${from}/${to}`, {
         adjusted: true,
-        sort: 'asc', // Chronological order for pattern detection
+        sort: 'asc',
         limit: 50000
       });
       
@@ -91,140 +185,163 @@ class EnhancedTechnicalService {
         return [];
       }
       
-      // Return clean OHLCV data with timestamps
-      return response.results.map(bar => ({
-        timestamp: bar.t,
-        datetime: new Date(bar.t).toISOString(),
-        open: parseFloat(bar.o.toFixed(4)),
-        high: parseFloat(bar.h.toFixed(4)), 
-        low: parseFloat(bar.l.toFixed(4)),
-        close: parseFloat(bar.c.toFixed(4)),
-        volume: bar.v,
-        vwap: parseFloat(bar.vw?.toFixed(4) || 0),
-        trades: bar.n || 0
-      }));
-      
-    } catch (error) {
-      console.error(`[ERROR] Failed to get ${multiplier}min bars:`, error);
-      return [];
-    }
-  }
-
-  // Get recent daily data for context
-  async getRecentDailyData(ticker, days = 10) {
-    try {
-      const now = new Date();
-      const fromDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-      
-      const from = fromDate.toISOString().split('T')[0];
-      const to = now.toISOString().split('T')[0];
-      
-      const response = await this.makeRequest(`/v2/aggs/ticker/${ticker}/range/1/day/${from}/${to}`, {
-        adjusted: true,
-        sort: 'asc',
-        limit: days
+      return response.results.map(bar => {
+        const timestamp = bar.t;
+        const datetime = new Date(timestamp);
+        const etTime = new Date(datetime.toLocaleString("en-US", {timeZone: "America/New_York"}));
+        
+        const hours = etTime.getHours();
+        const minutes = etTime.getMinutes();
+        const timeInMinutes = hours * 60 + minutes;
+        
+        let sessionType = 'regular';
+        if (timeInMinutes < 4 * 60) sessionType = 'closed';
+        else if (timeInMinutes < 9 * 60 + 30) sessionType = 'premarket';
+        else if (timeInMinutes < 16 * 60) sessionType = 'regular';
+        else if (timeInMinutes < 20 * 60) sessionType = 'afterhours';
+        else sessionType = 'closed';
+        
+        return {
+          timestamp: timestamp,
+          datetime: datetime.toISOString(),
+          easternTime: etTime.toLocaleTimeString('en-US'),
+          sessionType,
+          open: parseFloat(bar.o.toFixed(4)),
+          high: parseFloat(bar.h.toFixed(4)),
+          low: parseFloat(bar.l.toFixed(4)),
+          close: parseFloat(bar.c.toFixed(4)),
+          volume: bar.v,
+          vwap: parseFloat(bar.vw?.toFixed(4) || 0),
+          trades: bar.n || 0,
+          isExtendedHours: sessionType !== 'regular'
+        };
       });
       
-      if (!response.results) return [];
-      
-      return response.results.map(bar => ({
-        date: new Date(bar.t).toISOString().split('T')[0],
-        timestamp: bar.t,
-        open: parseFloat(bar.o.toFixed(4)),
-        high: parseFloat(bar.h.toFixed(4)),
-        low: parseFloat(bar.l.toFixed(4)), 
-        close: parseFloat(bar.c.toFixed(4)),
-        volume: bar.v,
-        vwap: parseFloat(bar.vw?.toFixed(4) || 0)
-      }));
-      
     } catch (error) {
-      console.error(`[ERROR] Failed to get daily data:`, error);
+      console.error(`[ERROR] Failed to get ${multiplier}${timespan} aggregates:`, error);
       return [];
     }
   }
 
-  // Main analysis function - focused on price/volume patterns
+  // ✅ OPTIMIZED: Focused data quality assessment
+  assessFocusedDataQuality(minuteBars) {
+    const now = Date.now();
+    const oneHourAgo = now - 60 * 60 * 1000;
+    const twoHoursAgo = now - 2 * 60 * 60 * 1000;
+    
+    const veryRecentBars = minuteBars.filter(bar => bar.timestamp >= oneHourAgo);
+    const recentBars = minuteBars.filter(bar => bar.timestamp >= twoHoursAgo);
+    
+    return {
+      hasVeryRecentData: veryRecentBars.length > 0,
+      latestDataAge: veryRecentBars.length > 0 ? Math.round((now - veryRecentBars[veryRecentBars.length - 1].timestamp) / 60000) : null,
+      totalMinuteBars: minuteBars.length,
+      veryRecentBars: veryRecentBars.length,
+      recentBars: recentBars.length,
+      expectedBars: 240, // 4 hours = 240 minutes
+      completeness: Math.min(100, Math.round((minuteBars.length / 240) * 100)),
+      hasExtendedHoursData: minuteBars.some(bar => bar.isExtendedHours),
+      extendedHoursBars: minuteBars.filter(bar => bar.isExtendedHours).length,
+      quality: veryRecentBars.length > 30 ? 'excellent' : 
+               veryRecentBars.length > 15 ? 'good' : 
+               recentBars.length > 30 ? 'fair' : 'poor'
+    };
+  }
+
+  // ✅ UPDATED: Main analysis function - 4H history for 8H prediction
   async analyzeStockForAI(ticker) {
     try {
-      console.log(`[INFO] Starting AI data collection for ${ticker}`);
+      console.log(`[INFO] Starting 4H→8H analysis for ${ticker}`);
       
-      // Get essential data for intraday pattern recognition
-      const [rawData, dailyData] = await Promise.all([
-        this.getRawMarketData(ticker, 6), // 6 hours of intraday data
-        this.getRecentDailyData(ticker, 10) // 10 days of daily context
-      ]);
+      // ✅ FOCUSED: Get only last 4 hours
+      const focusedData = await this.getLast4HoursData(ticker);
       
-      const totalDataPoints = rawData.metadata.totalBars + dailyData.length;
-      
-      if (totalDataPoints === 0) {
+      if (focusedData.error || focusedData.metadata.totalBars === 0) {
         return {
           ticker,
-          error: 'No market data available',
+          error: focusedData.error || 'No recent 4H market data available',
           hasData: false,
-          dataPoints: 0
+          dataPoints: 0,
+          analysisType: '4H→8H'
         };
       }
       
-      // Calculate basic statistics for context
-      const current1min = rawData.timeframes['1min'];
-      const currentPrice = current1min.length > 0 ? current1min[current1min.length - 1].close : null;
+      // Extract latest price info from focused dataset
+      const allBars = [
+        ...focusedData.timeframes['1min'],
+        ...focusedData.timeframes['5min']
+      ].sort((a, b) => b.timestamp - a.timestamp);
       
-      const todayOpen = current1min.length > 0 ? current1min[0].open : null;
-      const todayChange = currentPrice && todayOpen ? ((currentPrice - todayOpen) / todayOpen) * 100 : null;
+      const latestBar = allBars[0];
+      const currentPrice = latestBar?.close;
       
-      // Package everything for AI analysis (focused on price/volume)
+      // Calculate 4-hour momentum
+      const fourHourStart = allBars[allBars.length - 1];
+      const fourHourMomentum = currentPrice && fourHourStart ? 
+        ((currentPrice - fourHourStart.close) / fourHourStart.close) * 100 : null;
+      
+      // ✅ STREAMLINED: Package for AI
       const result = {
         ticker,
         hasData: true,
-        dataPoints: totalDataPoints,
+        dataPoints: focusedData.metadata.totalBars,
+        analysisType: '4H→8H',
         
         // Current state
+        marketSession: focusedData.marketSession,
         currentPrice,
-        todayChangePercent: todayChange,
+        fourHourMomentum,
+        latestDataAge: Math.round((Date.now() - latestBar.timestamp) / 60000),
         
-        // Raw data for AI pattern recognition (price/volume focus)
-        rawTimeframes: rawData.timeframes,
-        recentDays: dailyData,
-        
-        // Metadata for AI context
-        dataQuality: {
-          minuteBars: rawData.timeframes['1min'].length,
-          fiveMinBars: rawData.timeframes['5min'].length, 
-          hourlyBars: rawData.timeframes['1hour'].length,
-          dailyBars: dailyData.length,
-          timespan: '6h intraday + 10d daily',
-          focus: 'price_volume_patterns'
+        // ✅ FOCUSED: Time context for 8H prediction
+        timeContext: {
+          currentUtcTime: focusedData.marketSession.utcTimestamp,
+          currentEasternTime: focusedData.marketSession.easternTime,
+          currentSession: focusedData.marketSession.currentSession,
+          eightHourTarget: focusedData.marketSession.eightHourForwardTimestamp,
+          predictionWindowEnd: focusedData.marketSession.predictionWindowEnd,
+          hoursUntilNextSession: focusedData.marketSession.hoursUntilNextSession,
+          isWeekend: focusedData.marketSession.isWeekend
         },
+        
+        // ✅ FOCUSED: Only last 4H of data for AI
+        rawTimeframes: focusedData.timeframes,
+        
+        // Data quality
+        dataQuality: focusedData.metadata.dataQuality,
         
         timestamp: new Date().toISOString()
       };
       
-      console.log(`[SUCCESS] Price/volume data ready for ${ticker}:`, {
-        totalDataPoints,
+      console.log(`[SUCCESS] 4H→8H analysis ready for ${ticker}:`, {
+        totalDataPoints: focusedData.metadata.totalBars,
         currentPrice,
-        todayChange: todayChange?.toFixed(2) + '%'
+        session: focusedData.marketSession.currentSession,
+        fourHourMomentum: fourHourMomentum?.toFixed(2) + '%',
+        dataQuality: focusedData.metadata.dataQuality.quality,
+        latestDataAge: `${result.latestDataAge}m ago`
       });
       
       return result;
       
     } catch (error) {
-      console.error(`[ERROR] AI data collection failed for ${ticker}:`, error);
+      console.error(`[ERROR] 4H→8H analysis failed for ${ticker}:`, error);
       return {
         ticker,
         error: error.message,
         hasData: false,
         dataPoints: 0,
+        analysisType: '4H→8H',
         timestamp: new Date().toISOString()
       };
     }
   }
 
-  // Batch analysis for multiple stocks
-  async batchAnalyzeForAI(tickers, maxConcurrent = 3) {
+  // ✅ OPTIMIZED: Batch analysis
+  async batchAnalyzeForAI(tickers, maxConcurrent = 5) { // Increased concurrency
     const results = [];
     
-    console.log(`[INFO] Starting batch AI data collection for ${tickers.length} stocks`);
+    console.log(`[INFO] Starting batch 4H→8H analysis for ${tickers.length} stocks`);
     
     for (let i = 0; i < tickers.length; i += maxConcurrent) {
       const batch = tickers.slice(i, i + maxConcurrent);
@@ -234,14 +351,14 @@ class EnhancedTechnicalService {
       
       results.push(...batchResults);
       
-      // Rate limiting delay
+      // Reduced delay for faster processing
       if (i + maxConcurrent < tickers.length) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500)); // Reduced from 1000ms
       }
     }
     
     const successfulResults = results.filter(r => r.hasData);
-    console.log(`[SUCCESS] Batch analysis complete: ${successfulResults.length}/${tickers.length} successful`);
+    console.log(`[SUCCESS] Batch 4H→8H analysis complete: ${successfulResults.length}/${tickers.length} successful`);
     
     return results;
   }
