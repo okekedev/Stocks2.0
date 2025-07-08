@@ -1,4 +1,4 @@
-// src/components/AIWorker.jsx - Updated with Smart Auto-Start and Re-Analyze Logic
+// src/components/AIWorker.jsx - Updated with Smart Auto-Start and Clear 8-Hour Prediction Messaging
 import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Terminal, CheckCircle, X, Zap, TrendingUp, Activity, Clock, Target } from 'lucide-react';
 import { geminiService } from '../services/GeminiService';
@@ -22,19 +22,19 @@ export function AIWorker({
   // Prevent double calls with ref
   const analysisInProgress = useRef(false);
 
-  // ✅ UPDATED: Smart auto-start logic - only start if no existing analysis
+  // ✅ SMART AUTO-START: Only auto-start if no existing analysis AND autoStart is true
   useEffect(() => {
-    const hasExistingAnalysis = savedResult || (savedLogs && savedLogs.length > 0);
+    const hasExistingAnalysis = !!(savedResult || (savedLogs && savedLogs.length > 0));
     
-    if (autoStart && !analyzing && !complete && !hasExistingAnalysis && !analysisInProgress.current) {
-      console.log('🚀 Auto-starting analysis for', stock.ticker);
-      // Small delay to ensure modal is fully rendered
+    if (autoStart && !analyzing && !complete && !analysisInProgress.current && !hasExistingAnalysis) {
+      console.log('🚀 Auto-starting 8-hour prediction for', stock.ticker);
       setTimeout(() => {
         performRealAIAnalysis();
       }, 500);
     } else if (hasExistingAnalysis) {
-      console.log('📄 Showing existing analysis for', stock.ticker);
-      // Don't auto-start - user can see existing results immediately
+      console.log('📊 Loading existing analysis for', stock.ticker);
+      // Just load the existing analysis, don't auto-start
+      setComplete(true);
     }
   }, [autoStart, stock.ticker, savedResult, savedLogs]);
 
@@ -87,16 +87,16 @@ export function AIWorker({
     const allLogs = [];
 
     try {
-      const log1 = addLog(`🤖 Starting AI analysis for ${stock.ticker}...`, 'system');
+      const log1 = addLog(`🤖 Starting 8-hour prediction analysis for ${stock.ticker}...`, 'system');
       allLogs.push(log1);
       
-      const log2 = addLog(`📊 Price: $${stock.currentPrice?.toFixed(2)} (${stock.changePercent > 0 ? '+' : ''}${stock.changePercent?.toFixed(2)}%)`, 'info');
+      const log2 = addLog(`📊 Current Price: $${stock.currentPrice?.toFixed(2)} (${stock.changePercent > 0 ? '+' : ''}${stock.changePercent?.toFixed(2)}%)`, 'info');
       allLogs.push(log2);
       
-      const log3 = addLog(`📰 Analyzing ${stock.newsCount} news articles...`, 'info');
+      const log3 = addLog(`📰 Analyzing ${stock.newsCount} recent news articles...`, 'info');
       allLogs.push(log3);
       
-      const log4 = addLog(`🧠 Sending to Gemini AI...`, 'system');
+      const log4 = addLog(`🧠 Sending to Gemini AI for 8-hour prediction...`, 'system');
       allLogs.push(log4);
 
       // Call real Gemini API with progress callback
@@ -105,7 +105,7 @@ export function AIWorker({
         allLogs.push(progressLog);
       });
       
-      const log5 = addLog(`✅ AI analysis complete`, 'success');
+      const log5 = addLog(`✅ 8-hour prediction complete`, 'success');
       allLogs.push(log5);
       
       const log6 = addLog(`🎯 Signal: ${aiResult.signal.toUpperCase()} (${aiResult.buyPercentage}%)`, 'result');
@@ -114,10 +114,10 @@ export function AIWorker({
       const log7 = addLog(`💭 ${aiResult.reasoning}`, 'reasoning');
       allLogs.push(log7);
       
-      // ✅ Show EOD movement instead of absolute price
-      if (aiResult.eodMovement !== undefined && aiResult.eodMovement !== null) {
-        const movementDirection = aiResult.eodMovement > 0 ? '📈' : aiResult.eodMovement < 0 ? '📉' : '➡️';
-        const log8 = addLog(`${movementDirection} EOD Movement: ${aiResult.eodMovement > 0 ? '+' : ''}${aiResult.eodMovement.toFixed(1)}%`, 'forecast');
+      // ✅ Updated to show 8-hour prediction
+      if (aiResult.next8Hours !== undefined && aiResult.next8Hours !== null) {
+        const predictionDirection = aiResult.next8Hours > 0 ? '📈' : aiResult.next8Hours < 0 ? '📉' : '➡️';
+        const log8 = addLog(`${predictionDirection} 8-Hour Prediction: ${aiResult.next8Hours > 0 ? '+' : ''}${aiResult.next8Hours.toFixed(1)}%`, 'forecast');
         allLogs.push(log8);
       }
 
@@ -132,16 +132,17 @@ export function AIWorker({
       onAnalysisComplete?.(stock.ticker, finalResult);
 
     } catch (error) {
-      const errorLog = addLog(`❌ Analysis failed: ${error.message}`, 'error');
+      const errorLog = addLog(`❌ 8-hour prediction failed: ${error.message}`, 'error');
       allLogs.push(errorLog);
       
       // Return fallback result
       const fallbackResult = {
         buyPercentage: 30,
         signal: 'hold',
-        reasoning: 'AI service unavailable',
-        eodMovement: 0, // ✅ Updated field name
+        reasoning: '8-hour prediction service unavailable',
+        next8Hours: 0, // ✅ Correct field name
         confidence: 0.2,
+        predictionWindow: '8 hours',
         savedLogs: allLogs
       };
       
@@ -199,25 +200,25 @@ export function AIWorker({
     return '🤔';
   };
 
-  // ✅ Format EOD movement
-  const formatEodMovement = (movement) => {
-    if (movement === undefined || movement === null) return 'N/A';
-    const sign = movement > 0 ? '+' : '';
-    return `${sign}${movement.toFixed(1)}%`;
+  // ✅ Format 8-hour prediction
+  const format8HourPrediction = (prediction) => {
+    if (prediction === undefined || prediction === null) return 'N/A';
+    const sign = prediction > 0 ? '+' : '';
+    return `${sign}${prediction.toFixed(1)}%`;
   };
 
-  // ✅ Get EOD movement color and icon
-  const getEodMovementColor = (movement) => {
-    if (movement === undefined || movement === null) return 'text-gray-400';
-    if (movement > 0) return 'text-green-400';
-    if (movement < 0) return 'text-red-400';
+  // ✅ Get 8-hour prediction color and icon
+  const get8HourPredictionColor = (prediction) => {
+    if (prediction === undefined || prediction === null) return 'text-gray-400';
+    if (prediction > 0) return 'text-green-400';
+    if (prediction < 0) return 'text-red-400';
     return 'text-gray-400';
   };
 
-  const getEodMovementIcon = (movement) => {
-    if (movement === undefined || movement === null) return '➡️';
-    if (movement > 0) return '📈';
-    if (movement < 0) return '📉';
+  const get8HourPredictionIcon = (prediction) => {
+    if (prediction === undefined || prediction === null) return '➡️';
+    if (prediction > 0) return '📈';
+    if (prediction < 0) return '📉';
     return '➡️';
   };
 
@@ -250,7 +251,7 @@ export function AIWorker({
                 </span>
               </div>
               <div className="flex items-center space-x-4 mt-1">
-                <span className="text-sm text-gray-400">AI Market Analysis</span>
+                <span className="text-sm text-gray-400">8-Hour Price Prediction</span>
                 {analyzing && (
                   <div className="flex items-center space-x-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400"></div>
@@ -270,7 +271,6 @@ export function AIWorker({
             </div>
           </div>
           
-          {/* ✅ UPDATED: Enhanced button layout with re-analyze */}
           <div className="flex items-center space-x-3">
             {!analyzing && !complete && (
               <button
@@ -278,11 +278,10 @@ export function AIWorker({
                 className="neo-button bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-4 py-2 rounded-xl flex items-center space-x-2 transition-all duration-300"
               >
                 <Brain className="w-4 h-4" />
-                <span>Analyze with AI</span>
+                <span>Predict 8 Hours</span>
               </button>
             )}
             
-            {/* ✅ NEW: Re-analyze button appears when analysis is complete */}
             {complete && !analyzing && (
               <button
                 onClick={performRealAIAnalysis}
@@ -307,9 +306,11 @@ export function AIWorker({
       <div className="neo-terminal-content bg-gray-900/90 p-6 h-96 overflow-y-auto">
         <div className="text-green-400 text-sm mb-4 font-mono flex items-center space-x-2">
           <Terminal className="w-4 h-4" />
-          <span>AI-TRADER v3.0 › {stock.ticker}</span>
+          <span>AI-PREDICTOR v3.0 › {stock.ticker}</span>
           <span className="text-gray-500">•</span>
           <span className="text-blue-400">${stock.currentPrice?.toFixed(2)}</span>
+          <span className="text-gray-500">•</span>
+          <span className="text-purple-400">8H Forecast</span>
         </div>
         
         {logs.map((log) => (
@@ -326,42 +327,28 @@ export function AIWorker({
         {analyzing && (
           <div className="flex items-center space-x-3 text-cyan-400 text-sm animate-pulse">
             <div className="w-2 h-2 bg-cyan-400 rounded-full animate-ping"></div>
-            <span>Processing real-time data...</span>
+            <span>Processing market data for 8-hour prediction...</span>
           </div>
         )}
         
-        {/* ✅ UPDATED: Better messaging for different states */}
         {logs.length === 0 && !analyzing && (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <Brain className="w-8 h-8 text-purple-400" />
             </div>
-            {savedResult ? (
-              <div>
-                <div className="text-gray-300 text-sm mb-2">
-                  Analysis saved from previous session
-                </div>
-                <div className="text-gray-500 text-xs">
-                  Click "Re-analyze" to run fresh analysis or view results below
-                </div>
-              </div>
-            ) : (
-              <div>
-                <div className="text-gray-400 text-sm">
-                  Click "Analyze with AI" to start real-time analysis using Google Gemini
-                </div>
-                <div className="text-gray-500 text-xs mt-2">
-                  Analysis includes technical indicators, news sentiment, and market context
-                </div>
-              </div>
-            )}
+            <div className="text-gray-400 text-sm">
+              {complete && result ? 'Analysis complete - View results below' : 'Click "Predict 8 Hours" to start AI analysis using Google Gemini'}
+            </div>
+            <div className="text-gray-500 text-xs mt-2">
+              Analysis includes technical patterns, news sentiment, and 8-hour price prediction
+            </div>
           </div>
         )}
         
         <div ref={logsEndRef} />
       </div>
 
-      {/* ✅ Enhanced Summary with EOD Movement */}
+      {/* ✅ Enhanced Summary with 8-Hour Prediction */}
       {complete && result && (
         <div className="bg-gradient-to-r from-gray-800/80 to-gray-700/80 border-t border-gray-600/50 p-6">
           <div className="grid grid-cols-3 gap-6">
@@ -384,20 +371,20 @@ export function AIWorker({
               </div>
             </div>
 
-            {/* ✅ EOD Movement (instead of Confidence) */}
+            {/* ✅ 8-Hour Prediction (clear and prominent) */}
             <div className="text-center">
               <div className="text-sm text-gray-400 mb-2 flex items-center justify-center space-x-1">
                 <Target className="w-4 h-4" />
-                <span>EOD Movement</span>
+                <span>8-Hour Prediction</span>
               </div>
               <div className="flex items-center justify-center space-x-2">
-                <span className="text-2xl">{getEodMovementIcon(result.eodMovement)}</span>
+                <span className="text-2xl">{get8HourPredictionIcon(result.next8Hours)}</span>
                 <div>
-                  <div className={`text-xl font-bold ${getEodMovementColor(result.eodMovement)}`}>
-                    {formatEodMovement(result.eodMovement)}
+                  <div className={`text-xl font-bold ${get8HourPredictionColor(result.next8Hours)}`}>
+                    {format8HourPrediction(result.next8Hours)}
                   </div>
                   <div className="text-xs text-gray-400">
-                    From current price
+                    Price movement
                   </div>
                 </div>
               </div>

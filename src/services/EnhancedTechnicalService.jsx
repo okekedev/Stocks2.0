@@ -1,4 +1,4 @@
-// src/services/EnhancedTechnicalService.js - Optimized for 4H History + 8H Forward
+// src/services/EnhancedTechnicalService.js - Optimized for 8-Hour Predictions
 class EnhancedTechnicalService {
   constructor() {
     this.apiKey = import.meta.env.VITE_POLYGON_API_KEY;
@@ -116,8 +116,8 @@ class EnhancedTechnicalService {
       const from = fromTime.toISOString().split('T')[0];
       const to = now.toISOString().split('T')[0];
       
-      console.log(`[INFO] Fetching FOCUSED 4H data for ${ticker} from ${fromTime.toLocaleTimeString()} to ${now.toLocaleTimeString()}`);
-      console.log(`[INFO] Market session: ${marketSession.currentSession}, 8h prediction until: ${marketSession.predictionWindowEnd}`);
+      console.log(`[INFO] Fetching recent 4H data for ${ticker} from ${fromTime.toLocaleTimeString()} to ${now.toLocaleTimeString()}`);
+      console.log(`[INFO] Market session: ${marketSession.currentSession}, 8-hour prediction until: ${marketSession.predictionWindowEnd}`);
       
       // ✅ STREAMLINED: Get only essential timeframes
       const [minuteBars, fiveMinBars, fifteenMinBars] = await Promise.all([
@@ -133,11 +133,11 @@ class EnhancedTechnicalService {
       const recentFiveMinBars = fiveMinBars.filter(bar => bar.timestamp >= fourHoursCutoff);
       const recentFifteenMinBars = fifteenMinBars.filter(bar => bar.timestamp >= fourHoursCutoff);
       
-      console.log(`[SUCCESS] FOCUSED 4H data for ${ticker}:`, {
+      console.log(`[SUCCESS] Recent 4H data for ${ticker}:`, {
         minute: recentMinuteBars.length,
         fiveMin: recentFiveMinBars.length,
         fifteenMin: recentFifteenMinBars.length,
-        timespan: '4h history → 8h forward'
+        timespan: '4h recent data for 8h prediction'
       });
       
       return {
@@ -248,10 +248,10 @@ class EnhancedTechnicalService {
     };
   }
 
-  // ✅ UPDATED: Main analysis function - 4H history for 8H prediction
+  // ✅ UPDATED: Main analysis function - 8-hour prediction analysis
   async analyzeStockForAI(ticker) {
     try {
-      console.log(`[INFO] Starting 4H→8H analysis for ${ticker}`);
+      console.log(`[INFO] Starting 8-hour prediction analysis for ${ticker}`);
       
       // ✅ FOCUSED: Get only last 4 hours
       const focusedData = await this.getLast4HoursData(ticker);
@@ -262,7 +262,7 @@ class EnhancedTechnicalService {
           error: focusedData.error || 'No recent 4H market data available',
           hasData: false,
           dataPoints: 0,
-          analysisType: '4H→8H'
+          analysisType: '8h_prediction'
         };
       }
       
@@ -285,7 +285,7 @@ class EnhancedTechnicalService {
         ticker,
         hasData: true,
         dataPoints: focusedData.metadata.totalBars,
-        analysisType: '4H→8H',
+        analysisType: '8h_prediction',
         
         // Current state
         marketSession: focusedData.marketSession,
@@ -313,7 +313,7 @@ class EnhancedTechnicalService {
         timestamp: new Date().toISOString()
       };
       
-      console.log(`[SUCCESS] 4H→8H analysis ready for ${ticker}:`, {
+      console.log(`[SUCCESS] 8-hour prediction data ready for ${ticker}:`, {
         totalDataPoints: focusedData.metadata.totalBars,
         currentPrice,
         session: focusedData.marketSession.currentSession,
@@ -325,13 +325,13 @@ class EnhancedTechnicalService {
       return result;
       
     } catch (error) {
-      console.error(`[ERROR] 4H→8H analysis failed for ${ticker}:`, error);
+      console.error(`[ERROR] 8-hour prediction analysis failed for ${ticker}:`, error);
       return {
         ticker,
         error: error.message,
         hasData: false,
         dataPoints: 0,
-        analysisType: '4H→8H',
+        analysisType: '8h_prediction',
         timestamp: new Date().toISOString()
       };
     }
@@ -341,7 +341,7 @@ class EnhancedTechnicalService {
   async batchAnalyzeForAI(tickers, maxConcurrent = 5) { // Increased concurrency
     const results = [];
     
-    console.log(`[INFO] Starting batch 4H→8H analysis for ${tickers.length} stocks`);
+    console.log(`[INFO] Starting batch 8-hour prediction analysis for ${tickers.length} stocks`);
     
     for (let i = 0; i < tickers.length; i += maxConcurrent) {
       const batch = tickers.slice(i, i + maxConcurrent);
@@ -358,7 +358,7 @@ class EnhancedTechnicalService {
     }
     
     const successfulResults = results.filter(r => r.hasData);
-    console.log(`[SUCCESS] Batch 4H→8H analysis complete: ${successfulResults.length}/${tickers.length} successful`);
+    console.log(`[SUCCESS] Batch 8-hour prediction analysis complete: ${successfulResults.length}/${tickers.length} successful`);
     
     return results;
   }

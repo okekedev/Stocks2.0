@@ -1,4 +1,4 @@
-// src/components/NewsTable.jsx - Updated with Persistent Analysis Support and Fixed Modal Behavior
+// src/components/NewsTable.jsx - Updated with Fixed Field Names and Smart Modal Behavior
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   TrendingUp, 
@@ -239,18 +239,18 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll, persistentAnalyse
     return '🤔';
   };
 
-  // ✅ Format EOD movement
-  const formatEodMovement = (movement) => {
-    if (movement === undefined || movement === null) return null;
-    const sign = movement > 0 ? '+' : '';
-    return `${sign}${movement.toFixed(1)}%`;
+  // ✅ FIXED: Format 8-hour prediction (correct field name)
+  const format8HourPrediction = (prediction) => {
+    if (prediction === undefined || prediction === null) return null;
+    const sign = prediction > 0 ? '+' : '';
+    return `${sign}${prediction.toFixed(1)}%`;
   };
 
-  // ✅ Get EOD movement color
-  const getEodMovementColor = (movement) => {
-    if (movement === undefined || movement === null) return 'text-gray-400';
-    if (movement > 0) return 'text-green-400';
-    if (movement < 0) return 'text-red-400';
+  // ✅ FIXED: Get 8-hour prediction color (correct field name)
+  const get8HourPredictionColor = (prediction) => {
+    if (prediction === undefined || prediction === null) return 'text-gray-400';
+    if (prediction > 0) return 'text-green-400';
+    if (prediction < 0) return 'text-red-400';
     return 'text-gray-400';
   };
 
@@ -439,7 +439,7 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll, persistentAnalyse
                     </div>
                   </td>
 
-                  {/* ✅ UPDATED: Enhanced AI Signal Display */}
+                  {/* ✅ FIXED: Enhanced AI Signal Display with Correct Field Name */}
                   <td className="px-6 py-5 whitespace-nowrap">
                     {stock.buySignal ? (
                       <div 
@@ -452,12 +452,12 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll, persistentAnalyse
                             <div className={`font-bold text-xl ${getBuySignalColor(stock.buySignal.buyPercentage)}`}>
                               {stock.buySignal.buyPercentage}%
                             </div>
-                            {/* ✅ EOD Movement Display */}
-                            {stock.buySignal.eodMovement !== undefined && stock.buySignal.eodMovement !== null && (
+                            {/* ✅ FIXED: 8-Hour Prediction Display with Correct Field Name */}
+                            {stock.buySignal.next8Hours !== undefined && stock.buySignal.next8Hours !== null && (
                               <div className="text-sm">
-                                <span className="text-gray-400">EOD:</span>
-                                <span className={`ml-1 font-semibold ${getEodMovementColor(stock.buySignal.eodMovement)}`}>
-                                  {formatEodMovement(stock.buySignal.eodMovement)}
+                                <span className="text-gray-400">8H:</span>
+                                <span className={`ml-1 font-semibold ${get8HourPredictionColor(stock.buySignal.next8Hours)}`}>
+                                  {format8HourPrediction(stock.buySignal.next8Hours)}
                                 </span>
                               </div>
                             )}
@@ -477,32 +477,18 @@ export function NewsTable({ stocks, allArticles, onAnalyzeAll, persistentAnalyse
                       </div>
                     ) : (
                       <div 
-                        className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 cursor-pointer group ${
-                          stock.buySignal 
-                            ? 'bg-purple-900/20 hover:bg-purple-900/40 border border-purple-700/30'
-                            : 'bg-gray-700/20 hover:bg-purple-900/20'
-                        }`}
+                        className="flex items-center space-x-3 p-3 rounded-xl bg-gray-700/20 hover:bg-purple-900/20 transition-all duration-300 cursor-pointer group"
                         onClick={() => handleAIAnalyzeClick(stock)}
                       >
-                        <Brain className={`w-6 h-6 transition-colors ${
-                          stock.buySignal 
-                            ? 'text-purple-400 group-hover:text-purple-300'
-                            : 'text-gray-400 group-hover:text-purple-400'
-                        }`} />
-                        <div className={`transition-colors ${
-                          stock.buySignal 
-                            ? 'text-purple-300 group-hover:text-purple-200'
-                            : 'text-gray-400 group-hover:text-purple-400'
-                        }`}>
+                        <Brain className="w-6 h-6 text-gray-400 group-hover:text-purple-400 transition-colors" />
+                        <div className="text-gray-400 group-hover:text-purple-400 transition-colors">
                           {stock.isAnalyzing ? (
                             <div className="flex items-center space-x-2">
                               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400"></div>
                               <span className="text-purple-400 font-medium">Analyzing...</span>
                             </div>
                           ) : (
-                            <span className="font-medium">
-                              {stock.buySignal ? 'View Analysis' : 'Click to Analyze'}
-                            </span>
+                            <span className="font-medium">Click to Analyze</span>
                           )}
                         </div>
                       </div>

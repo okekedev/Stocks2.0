@@ -1,4 +1,4 @@
-// src/hooks/useNewsData.js - Updated with persistent analysis storage
+// src/hooks/useNewsData.js - Updated with 8-hour prediction messaging and consistent field names
 import { useState, useEffect, useCallback } from 'react';
 import { polygonService } from '../services/PolygonService';
 import { newsProcessor } from '../services/NewsProcessor';
@@ -12,7 +12,7 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
   const [error, setError] = useState(null);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [persistentAnalyses, setPersistentAnalyses] = useState({}); // ✅ NEW: Store AI analyses separately
+  const [persistentAnalyses, setPersistentAnalyses] = useState({}); // ✅ Store AI analyses separately
 
   const applyPriceFilters = useCallback((stocks) => {
     if (!stocks || stocks.length === 0) return stocks;
@@ -100,7 +100,7 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
     }
   }, [applyPriceFilters, persistentAnalyses]);
 
-  // ✅ AI Analysis function that App.jsx can call - Now updates persistent state
+  // ✅ UPDATED: 8-hour prediction analysis function that App.jsx can call
   const performAnalysis = useCallback(async (stocksToAnalyze = null) => {
     try {
       setAnalysisLoading(true);
@@ -117,12 +117,12 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
       );
       
       if (candidateStocks.length === 0) {
-        console.log('[INFO] No candidate stocks for AI analysis');
+        console.log('[INFO] No candidate stocks for 8-hour prediction analysis');
         setAnalysisLoading(false);
         return;
       }
 
-      console.log(`[INFO] Starting AI analysis of ${candidateStocks.length} stocks...`);
+      console.log(`[INFO] Starting 8-hour prediction analysis of ${candidateStocks.length} stocks...`);
       const stocksWithBuySignals = await geminiService.batchAnalyzeStocks(candidateStocks);
       
       // ✅ Update persistent analyses state FIRST
@@ -176,18 +176,18 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
         };
       });
 
-      console.log(`[SUCCESS] AI analysis complete. ${Object.keys(newAnalyses).length} new analyses saved.`);
+      console.log(`[SUCCESS] 8-hour prediction analysis complete. ${Object.keys(newAnalyses).length} new predictions saved.`);
       
     } catch (error) {
-      console.error('[ERROR] AI analysis failed:', error);
+      console.error('[ERROR] 8-hour prediction analysis failed:', error);
     } finally {
       setAnalysisLoading(false);
     }
   }, [newsData?.stocks, persistentAnalyses]);
 
-  // ✅ NEW: Function to handle individual analysis completion
+  // ✅ UPDATED: Function to handle individual analysis completion with correct field names
   const updateSingleAnalysis = useCallback((ticker, result) => {
-    console.log(`[INFO] Updating single analysis for ${ticker}:`, result);
+    console.log(`[INFO] Updating single 8-hour prediction for ${ticker}:`, result);
     
     // Update persistent analyses
     setPersistentAnalyses(prev => ({
@@ -241,10 +241,10 @@ export function useNewsData(refreshInterval = 5 * 60 * 1000) {
     analysisPerformed,
     error,
     refresh: fetchNewsData,
-    performAnalysis, // ✅ Now returns the analysis function
-    updateSingleAnalysis, // ✅ NEW: Function to update individual analysis
-    persistentAnalyses, // ✅ NEW: Expose persistent analyses
-    clearAnalyses: () => setPersistentAnalyses({}), // ✅ NEW: Allow manual clearing
+    performAnalysis, // ✅ Returns the 8-hour prediction analysis function
+    updateSingleAnalysis, // ✅ Function to update individual analysis
+    persistentAnalyses, // ✅ Expose persistent analyses
+    clearAnalyses: () => setPersistentAnalyses({}), // ✅ Allow manual clearing
     minPrice,
     setMinPrice,
     maxPrice,
