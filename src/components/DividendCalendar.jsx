@@ -13,27 +13,7 @@ import {
   ChevronUp,
   ChevronDown
 } from 'lucide-react';
-import { polygonService } from '../services/PolygonService';
-
-// Note: Add this method to your PolygonService.jsx file:
-/*
-// Get dividends for date range
-async getDividends(params = {}) {
-  try {
-    const response = await this.makeRequest('/v3/reference/dividends', {
-      limit: 1000,
-      order: 'asc',
-      sort: 'ex_dividend_date',
-      ...params
-    });
-    
-    return response;
-  } catch (error) {
-    console.error('[ERROR] Failed to fetch dividends:', error);
-    throw error;
-  }
-}
-*/
+import { dividendService } from '../services/DividendService';
 
 export function DividendCalendar() {
   const [dividends, setDividends] = useState([]);
@@ -57,7 +37,7 @@ export function DividendCalendar() {
     };
   };
 
-  // Fetch dividend data for next week with stock prices and historical data
+  // Fetch dividend data for next week using the clean dividend service
   const fetchDividends = async () => {
     try {
       setLoading(true);
@@ -66,138 +46,13 @@ export function DividendCalendar() {
       const { start, end } = getNextWeekRange();
       console.log(`[DividendCalendar] Fetching dividends from ${start} to ${end}`);
       
-      // Query dividends with ex-dividend date in next week
-      const response = await polygonService.makeRequest('/v3/reference/dividends', {
-        'ex_dividend_date.gte': start,
-        'ex_dividend_date.lte': end,
-        order: 'asc',
-        sort: 'ex_dividend_date',
-        limit: 1000
-      });
+      // Use the new clean dividend service
+      const dividends = await dividendService.getNextWeekDividends();
       
-      if (response.results && response.results.length > 0) {
-        // Get unique tickers for price lookup
-        const tickers = [...new Set(response.results.map(div => div.ticker))];
-        console.log(`[DividendCalendar] Fetching prices for ${tickers.length} dividend stocks...`);
-        
-        // Get current stock prices
-        const marketData = await polygonService.getMarketData(tickers);
-        const priceMap = new Map();
-        marketData.forEach(stock => {
-          const price = stock.lastTrade?.p || stock.day?.c;
-          if (price) {
-            priceMap.set(stock.ticker, price);
-          }
-        });
-        
-        // Process and enhance dividend data with historical price analysis
-        const processedDividends = await Promise.all(response.results.map(async (div) => {
-          const frequency = div.frequency || 4; // Default to quarterly
-          const annualizedAmount = frequency > 0 ? div.cash_amount * frequency : div.cash_amount;
-          const currentPrice = priceMap.get(div.ticker);
-          
-          // Calculate dividend yield (this specific dividend payment / current price)
-          const dividendYield = currentPrice ? (div.cash_amount / currentPrice) * 100 : 0;
-          
-          // Also calculate annualized yield for reference
-          const annualizedYield = currentPrice ? (annualizedAmount / currentPrice) * 100 : 0;
-          
-          // Calculate buy-by and sell-after dates
-          const exDate = new Date(div.ex_dividend_date);
-          
-          // Find the last trading day before ex-dividend date
-          const buyByDate = new Date(exDate);
-          buyByDate.setDate(exDate.getDate() - 1);
-          
-          // If buy-by date falls on weekend, move to Friday
-          while (buyByDate.getDay() === 0 || buyByDate.getDay() === 6) {
-            buyByDate.setDate(buyByDate.getDate() - 1);
-          }
-          
-          const sellAfterDate = new Date(div.record_date || exDate);
-          
-          // Fetch historical dividend and price data for last dividend
-          let historicalData = null;
-          try {
-            // Get last dividend for this ticker (before current one)
-            const lastDividendResponse = await polygonService.makeRequest('/v3/reference/dividends', {
-              ticker: div.ticker,
-              'ex_dividend_date.lt': div.ex_dividend_date,
-              order: 'desc',
-              sort: 'ex_dividend_date',
-              limit: 1
-            });
-            
-            if (lastDividendResponse.results && lastDividendResponse.results.length > 0) {
-              const lastDividend = lastDividendResponse.results[0];
-              const lastExDate = new Date(lastDividend.ex_dividend_date);
-              
-              // Get the trading day before last ex-dividend date
-              const dayBeforeEx = new Date(lastExDate);
-              dayBeforeEx.setDate(lastExDate.getDate() - 1);
-              while (dayBeforeEx.getDay() === 0 || dayBeforeEx.getDay() === 6) {
-                dayBeforeEx.setDate(dayBeforeEx.getDate() - 1);
-              }
-              
-              // Get price data for day before and day of last ex-dividend
-              const dayBeforeStr = dayBeforeEx.toISOString().split('T')[0];
-              const exDateStr = lastExDate.toISOString().split('T')[0];
-              
-              const [dayBeforeData, exDayData] = await Promise.all([
-                polygonService.makeRequest(`/v2/aggs/ticker/${div.ticker}/range/1/day/${dayBeforeStr}/${dayBeforeStr}`),
-                polygonService.makeRequest(`/v2/aggs/ticker/${div.ticker}/range/1/day/${exDateStr}/${exDateStr}`)
-              ]);
-              
-              if (dayBeforeData.results?.[0] && exDayData.results?.[0]) {
-                const dayBefore = dayBeforeData.results[0];
-                const exDay = exDayData.results[0];
-                
-                historicalData = {
-                  lastDividendAmount: lastDividend.cash_amount,
-                  lastExDate: lastExDate.toISOString().split('T')[0],
-                  dayBeforeOpen: dayBefore.o,
-                  dayBeforeClose: dayBefore.c,
-                  exDayOpen: exDay.o,
-                  exDayClose: exDay.c,
-                  dropAmount: dayBefore.c - exDay.o, // Overnight drop
-                  dropPercentage: ((dayBefore.c - exDay.o) / dayBefore.c) * 100,
-                  recoveryAmount: exDay.c - exDay.o, // Recovery during ex-day
-                  recoveryPercentage: ((exDay.c - exDay.o) / exDay.o) * 100
-                };
-              }
-            }
-          } catch (error) {
-            console.warn(`[DividendCalendar] Could not fetch historical data for ${div.ticker}:`, error.message);
-          }
-          
-          return {
-            ...div,
-            currentPrice,
-            annualizedAmount,
-            dividendYield,
-            annualizedYield,
-            buyByDate: buyByDate.toISOString().split('T')[0],
-            sellAfterDate: sellAfterDate.toISOString().split('T')[0],
-            daysUntilEx: Math.ceil((new Date(div.ex_dividend_date) - new Date()) / (1000 * 60 * 60 * 24)),
-            daysUntilPay: div.pay_date ? Math.ceil((new Date(div.pay_date) - new Date()) / (1000 * 60 * 60 * 24)) : null,
-            hasPrice: !!currentPrice,
-            historicalData
-          };
-        }));
-        
-        // Filter out dividends without prices and low yields
-        const validDividends = processedDividends.filter(div => 
-          div.hasPrice && div.dividendYield >= 2.0  // Only show 2%+ yields
-        );
-        
-        setDividends(validDividends);
-        console.log(`[DividendCalendar] Found ${validDividends.length} high-yield dividends (2%+) for next week`);
-      } else {
-        setDividends([]);
-        console.log('[DividendCalendar] No dividends found for next week');
-      }
-      
+      setDividends(dividends);
       setLastUpdate(new Date().toISOString());
+      
+      console.log(`[DividendCalendar] Successfully loaded ${dividends.length} high-yield US dividends`);
       
     } catch (err) {
       console.error('[DividendCalendar] Failed to fetch dividends:', err);
@@ -367,7 +222,7 @@ export function DividendCalendar() {
               </h3>
               <div className="flex items-center space-x-4 mt-1">
                 <div className="text-sm text-green-100">
-                  {sortedDividends.length} high-yield dividends (2%+ per payment)
+                  {sortedDividends.length} high-yield US dividends (2%+ per payment)
                 </div>
                 <div className="w-px h-4 bg-green-300"></div>
                 <div className="text-sm text-green-200">
@@ -431,6 +286,9 @@ export function DividendCalendar() {
                 <SortHeader field="yield">Yield %</SortHeader>
                 <SortHeader field="ex_dividend_date">Buy By / Sell After</SortHeader>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                  Last Dividend
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
                   Pay Date
                 </th>
               </tr>
@@ -445,91 +303,18 @@ export function DividendCalendar() {
                     className="hover:bg-gray-700/50 transition-all duration-300"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    {/* Stock with Historical Data Tooltip */}
+                    {/* Stock */}
                     <td className="px-6 py-5 whitespace-nowrap relative">
-                      <div className="space-y-1 group cursor-pointer">
-                        <div className="font-bold text-lg text-white group-hover:text-blue-300 transition-colors flex items-center space-x-2">
-                          <span>{dividend.ticker}</span>
-                          {dividend.historicalData && (
-                            <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" title="Historical data available - hover for details"></div>
-                          )}
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${typeInfo.bg} ${typeInfo.color}`}>
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-3">
+                          <div className="text-white font-bold text-lg">{dividend.ticker}</div>
+                          <div className={`px-2 py-1 rounded-full text-xs font-medium ${typeInfo.bg} ${typeInfo.color}`}>
                             {typeInfo.name}
                           </div>
-                          <div className="text-xs text-gray-400">
-                            {getFrequencyText(dividend.frequency)}
-                          </div>
-                          {dividend.historicalData && (
-                            <div className="text-xs text-blue-400 bg-blue-900/20 px-2 py-1 rounded-full border border-blue-700/30">
-                              📊 Hover for last dividend data
-                            </div>
-                          )}
                         </div>
-
-                        {/* Historical Data Tooltip */}
-                        {dividend.historicalData && (
-                          <div className="absolute left-0 top-full mt-2 w-80 bg-gray-800/95 backdrop-blur-sm border border-gray-600/50 rounded-xl p-4 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                            <div className="text-sm">
-                              <div className="text-white font-semibold mb-3 flex items-center">
-                                📈 Last Dividend Performance
-                                <span className="ml-2 text-xs text-gray-400">
-                                  {formatDate(dividend.historicalData.lastExDate)}
-                                </span>
-                              </div>
-                              
-                              <div className="space-y-2 text-xs">
-                                {/* Day Before Ex-Dividend */}
-                                <div className="bg-gray-700/50 rounded-lg p-2">
-                                  <div className="text-gray-300 mb-1">📅 Day Before Ex-Dividend</div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-400">Open:</span>
-                                    <span className="text-white font-medium">${dividend.historicalData.dayBeforeOpen.toFixed(2)}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-400">Close:</span>
-                                    <span className="text-white font-medium">${dividend.historicalData.dayBeforeClose.toFixed(2)}</span>
-                                  </div>
-                                </div>
-
-                                {/* Ex-Dividend Day */}
-                                <div className="bg-gray-700/50 rounded-lg p-2">
-                                  <div className="text-gray-300 mb-1">🎯 Ex-Dividend Day</div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-400">Open:</span>
-                                    <span className="text-white font-medium">${dividend.historicalData.exDayOpen.toFixed(2)}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-400">Close:</span>
-                                    <span className="text-white font-medium">${dividend.historicalData.exDayClose.toFixed(2)}</span>
-                                  </div>
-                                </div>
-
-                                {/* Performance Analysis */}
-                                <div className="bg-gray-700/50 rounded-lg p-2">
-                                  <div className="text-gray-300 mb-1">📊 Performance</div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-400">Overnight Drop:</span>
-                                    <span className={`font-medium ${dividend.historicalData.dropAmount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                      ${dividend.historicalData.dropAmount.toFixed(2)} ({dividend.historicalData.dropPercentage.toFixed(1)}%)
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-400">Day Recovery:</span>
-                                    <span className={`font-medium ${dividend.historicalData.recoveryAmount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                      ${dividend.historicalData.recoveryAmount.toFixed(2)} ({dividend.historicalData.recoveryPercentage.toFixed(1)}%)
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between border-t border-gray-600 pt-1 mt-1">
-                                    <span className="text-gray-400">Last Dividend:</span>
-                                    <span className="text-purple-300 font-medium">${dividend.historicalData.lastDividendAmount.toFixed(4)}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                        <div className="text-xs text-gray-400">
+                          {getFrequencyText(dividend.frequency)} dividend
+                        </div>
                       </div>
                     </td>
 
@@ -603,6 +388,29 @@ export function DividendCalendar() {
                       </div>
                     </td>
 
+                    {/* Last Dividend Column */}
+                    <td className="px-6 py-5 whitespace-nowrap">
+                      <div className="group cursor-pointer relative">
+                        {dividend.lastDividend ? (
+                          <div className="space-y-1">
+                            <div className="text-sm text-purple-400 font-medium">
+                              ${dividend.lastDividend.amount.toFixed(4)}
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              {formatDate(dividend.lastDividend.exDate)}
+                            </div>
+                            <div className="text-xs text-blue-300">
+                              {getFrequencyText(dividend.lastDividend.frequency)}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-gray-500">
+                            No dividend data
+                          </div>
+                        )}
+                      </div>
+                    </td>
+
                     {/* Pay Date */}
                     <td className="px-6 py-5 whitespace-nowrap">
                       <div className="space-y-1">
@@ -628,38 +436,11 @@ export function DividendCalendar() {
           <div className="w-16 h-16 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <DollarSign className="w-8 h-8 text-green-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-300 mb-2">No High-Yield Dividends Next Week</h3>
-          <p className="text-gray-400">No stocks have dividend yields of 2%+ per payment in the next 7 days</p>
-          <p className="text-gray-500 text-sm mt-2">Only showing dividend payments with 2%+ yield to filter out tiny dividends</p>
+          <h3 className="text-lg font-medium text-gray-300 mb-2">No High-Yield US Dividends Next Week</h3>
+          <p className="text-gray-400">No US stocks have dividend yields of 2%+ per payment in the next 7 days</p>
+          <p className="text-gray-500 text-sm mt-2">Only showing US dividend payments with 2%+ yield to filter out tiny dividends</p>
         </div>
       )}
-
-      {/* Info Footer */}
-      <div className="bg-gray-700/30 border-t border-gray-600/30 px-6 py-4">
-        <div className="space-y-3">
-          <div className="flex items-center space-x-4 text-sm text-gray-400">
-            <div className="flex items-center space-x-2">
-              <Info className="w-4 h-4" />
-              <span><strong>Dividend Rules:</strong></span>
-            </div>
-            <div>📈 Must <strong>BUY BY</strong> the last trading day before ex-dividend date</div>
-            <div>📉 Can <strong>SELL AFTER</strong> ex-dividend date (you'll still get dividend)</div>
-          </div>
-          
-          <div className="flex items-center space-x-4 text-sm text-gray-400">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4 text-green-400" />
-              <span><strong>Note:</strong> No minimum holding period required</span>
-            </div>
-            <div>•</div>
-            <div>Sorted by dividend yield (highest first)</div>
-            <div>•</div>
-            <div>Only showing dividend yields of 2%+ per payment</div>
-            <div>•</div>
-            <div>Filters out tiny dividends automatically</div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
