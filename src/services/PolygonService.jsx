@@ -1,4 +1,4 @@
-// src/services/PolygonService.js - UTC-Based with Proper After-Hours Support
+// src/services/PolygonService.js - UTC-Based with Proper After-Hours Support + Dividend Methods
 class PolygonService {
   constructor() {
     this.apiKey = import.meta.env.VITE_POLYGON_API_KEY;
@@ -362,6 +362,108 @@ class PolygonService {
     }
     
     return companyNames;
+  }
+
+  // ✅ NEW: Get dividends with optional filtering
+  async getDividends(params = {}) {
+    try {
+      console.log('[PolygonService] Fetching dividends with params:', params);
+      
+      const response = await this.makeRequest('/v3/reference/dividends', {
+        limit: 1000,
+        order: 'asc',
+        sort: 'ex_dividend_date',
+        ...params
+      });
+      
+      if (response.results) {
+        console.log(`[PolygonService] Found ${response.results.length} dividends`);
+        
+        // Enhance dividend data with additional calculations
+        response.results = response.results.map(dividend => {
+          const frequency = dividend.frequency || 4; // Default to quarterly
+          const annualizedAmount = frequency > 0 ? dividend.cash_amount * frequency : dividend.cash_amount;
+          
+          return {
+            ...dividend,
+            annualizedAmount,
+            // Add helper fields for UI
+            daysUntilEx: dividend.ex_dividend_date ? 
+              Math.ceil((new Date(dividend.ex_dividend_date) - new Date()) / (1000 * 60 * 60 * 24)) : null,
+            daysUntilPay: dividend.pay_date ? 
+              Math.ceil((new Date(dividend.pay_date) - new Date()) / (1000 * 60 * 60 * 24)) : null
+          };
+        });
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('[ERROR] Failed to fetch dividends:', error);
+      throw error;
+    }
+  }
+
+  // ✅ NEW: Get dividends for next week specifically
+  async getNextWeekDividends() {
+    const today = new Date();
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
+    const endOfNextWeek = new Date(nextWeek);
+    endOfNextWeek.setDate(nextWeek.getDate() + 6);
+    
+    const start = nextWeek.toISOString().split('T')[0];
+    const end = endOfNextWeek.toISOString().split('T')[0];
+    
+    return this.getDividends({
+      'ex_dividend_date.gte': start,
+      'ex_dividend_date.lte': end
+    });
+  }
+
+  // ✅ NEW: Get dividends for a specific ticker
+  async getTickerDividends(ticker, fromDate = null, toDate = null) {
+    const params = { ticker };
+    
+    if (fromDate) {
+      params['ex_dividend_date.gte'] = fromDate;
+    }
+    
+    if (toDate) {
+      params['ex_dividend_date.lte'] = toDate;
+    }
+    
+    return this.getDividends(params);
+  }
+
+  // ✅ NEW: Get upcoming dividends (next 30 days)
+  async getUpcomingDividends(days = 30) {
+    const today = new Date();
+    const future = new Date(today);
+    future.setDate(today.getDate() + days);
+    
+    const start = today.toISOString().split('T')[0];
+    const end = future.toISOString().split('T')[0];
+    
+    return this.getDividends({
+      'ex_dividend_date.gte': start,
+      'ex_dividend_date.lte': end
+    });
+  }
+
+  // ✅ NEW: Get dividend history for a ticker
+  async getDividendHistory(ticker, months = 12) {
+    const today = new Date();
+    const pastDate = new Date(today);
+    pastDate.setMonth(today.getMonth() - months);
+    
+    const start = pastDate.toISOString().split('T')[0];
+    const end = today.toISOString().split('T')[0];
+    
+    return this.getDividends({
+      ticker,
+      'ex_dividend_date.gte': start,
+      'ex_dividend_date.lte': end
+    });
   }
 
   // ✅ Clear cache manually if needed

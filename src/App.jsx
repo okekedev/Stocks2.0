@@ -1,9 +1,10 @@
-// src/App.jsx - Fixed Version with Persistent Analysis Support
+// src/App.jsx - Updated with Dividend Calendar
 import React from 'react';
 import { useNewsData } from './hooks/useNewsData';
 import { Header } from './components/Header';
 import { FilteringStats } from './components/FilteringStats';
 import { NewsTable } from './components/NewsTable';
+import { DividendCalendar } from './components/DividendCalendar';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ErrorDisplay } from './components/ErrorDisplay';
 import { Footer } from './components/Footer';
@@ -16,22 +17,20 @@ export default function App() {
     analysisPerformed,
     error, 
     refresh, 
-    performAnalysis, // ✅ This should be returned from useNewsData
-    updateSingleAnalysis, // ✅ NEW: Function to update individual analysis
-    persistentAnalyses, // ✅ NEW: Get persistent analyses
-    clearAnalyses, // ✅ NEW: Clear function
+    performAnalysis,
+    updateSingleAnalysis,
+    persistentAnalyses,
+    clearAnalyses,
     minPrice,
     setMinPrice,
     maxPrice,
     setMaxPrice
   } = useNewsData();
 
-  // ✅ Handler for individual analysis completion
   const handleAnalysisComplete = (ticker, result) => {
     updateSingleAnalysis(ticker, result);
   };
 
-  // ✅ Handler for batch AI analysis - connects NewsTable to performAnalysis
   const handleAnalyzeAll = async (stocks) => {
     if (stocks && stocks.length > 0) {
       await performAnalysis(stocks);
@@ -40,13 +39,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* Clean Header - Only branding and last update */}
+      {/* Header */}
       <Header 
         lastUpdate={newsData?.timestamp}
       />
       
       <div className="container mx-auto px-4 py-6">
-        {/* Simple News Loading State */}
+        {/* News Loading State */}
         {newsLoading && (
           <div className="flex items-center justify-center py-8 mb-6">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mr-3"></div>
@@ -63,7 +62,7 @@ export default function App() {
         {/* Main Content */}
         {newsData && !newsLoading && (
           <>
-            {/* Stats Overview with Price Filter - All in one place */}
+            {/* Stats Overview with Price Filter */}
             <FilteringStats 
               newsData={newsData} 
               loading={false}
@@ -73,24 +72,26 @@ export default function App() {
               setMaxPrice={setMaxPrice}
             />
 
-            {/* All Stocks Table with AIWorker modal and batch analysis */}
+            {/* Stock Analysis Table */}
             <NewsTable 
               stocks={newsData.stocks}
               allArticles={newsData.articles}
-              onAnalyzeAll={handleAnalyzeAll} // ✅ Now properly connected
-              persistentAnalyses={persistentAnalyses} // ✅ NEW: Pass persistent analyses
-              onAnalysisComplete={handleAnalysisComplete} // ✅ NEW: Pass individual analysis handler
+              onAnalyzeAll={handleAnalyzeAll}
+              persistentAnalyses={persistentAnalyses}
+              onAnalysisComplete={handleAnalysisComplete}
             />
 
-            {/* Analysis Complete - No Signals State */}
+            {/* ✅ NEW: Dividend Calendar */}
+            <DividendCalendar />
+
+            {/* Analysis Complete State */}
             {!analysisLoading && analysisPerformed && (
-              <div className="bg-gray-800 rounded-lg p-6 text-center mb-6">
+              <div className="bg-gray-800 rounded-lg p-6 text-center mb-6 mt-8">
                 <div className="text-gray-400 mb-2">🤖</div>
                 <h3 className="text-lg font-medium text-gray-300 mb-2">AI Analysis Complete</h3>
                 <p className="text-gray-400">
                   Analysis results are now available in the stocks table above. Click on any stock to see detailed AI insights.
                 </p>
-                {/* ✅ NEW: Optional clear button for debugging */}
                 {Object.keys(persistentAnalyses).length > 0 && (
                   <button
                     onClick={clearAnalyses}
