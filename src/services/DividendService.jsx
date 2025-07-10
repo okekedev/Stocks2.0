@@ -19,7 +19,6 @@ class DividendService {
           url.searchParams.set(key, params[key]);
         }
       });
-
       console.log(`[DividendService] Making request to: ${url.toString()}`);
       
       const response = await fetch(url.toString());
