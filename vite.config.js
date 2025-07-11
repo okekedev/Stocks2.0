@@ -9,6 +9,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: true,
+    target: ['es2022', 'chrome94', 'safari15', 'firefox91', 'edge94']
   }
 })
