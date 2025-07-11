@@ -113,7 +113,6 @@ jobs:
       run: |
         echo "🔍 Verifying deployment status..."
         sleep 30
-      
         az containerapp revision list \
           --name stocks2-app \
           --resource-group stocks2-rg \
