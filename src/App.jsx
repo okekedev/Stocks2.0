@@ -1,5 +1,7 @@
-// src/App.jsx - Updated with Dividend Calendar
+// src/App.jsx - Updated with Authentication
 import React from 'react';
+import { AuthProvider, useAuth } from './context/AuthProvider';
+import { LoginPage } from './components/LoginPage';
 import { useNewsData } from './hooks/useNewsData';
 import { Header } from './components/Header';
 import { FilteringStats } from './components/FilteringStats';
@@ -9,7 +11,8 @@ import { LoadingSpinner } from './components/LoadingSpinner';
 import { ErrorDisplay } from './components/ErrorDisplay';
 import { Footer } from './components/Footer';
 
-export default function App() {
+// Main App Component (authenticated)
+function AuthenticatedApp() {
   const { 
     newsData, 
     newsLoading,
@@ -66,62 +69,71 @@ export default function App() {
             <FilteringStats 
               newsData={newsData} 
               loading={false}
+              onRefresh={refresh}
               minPrice={minPrice}
               setMinPrice={setMinPrice}
               maxPrice={maxPrice}
               setMaxPrice={setMaxPrice}
+              persistentAnalyses={persistentAnalyses}
+              onClearAnalyses={clearAnalyses}
+              onAnalyzeAll={handleAnalyzeAll}
             />
-
-            {/* Stock Analysis Table */}
+            
+            {/* News Table */}
             <NewsTable 
               stocks={newsData.stocks}
-              allArticles={newsData.articles}
-              onAnalyzeAll={handleAnalyzeAll}
-              persistentAnalyses={persistentAnalyses}
               onAnalysisComplete={handleAnalysisComplete}
+              persistentAnalyses={persistentAnalyses}
             />
-
-            {/* ✅ NEW: Dividend Calendar */}
+            
+            {/* Dividend Calendar */}
             <DividendCalendar />
-
-            {/* Analysis Complete State */}
-            {!analysisLoading && analysisPerformed && (
-              <div className="bg-gray-800 rounded-lg p-6 text-center mb-6 mt-8">
-                <div className="text-gray-400 mb-2">🤖</div>
-                <h3 className="text-lg font-medium text-gray-300 mb-2">AI Analysis Complete</h3>
-                <p className="text-gray-400">
-                  Analysis results are now available in the stocks table above. Click on any stock to see detailed AI insights.
-                </p>
-                {Object.keys(persistentAnalyses).length > 0 && (
-                  <button
-                    onClick={clearAnalyses}
-                    className="mt-3 text-sm text-red-400 hover:text-red-300 underline transition-colors"
-                  >
-                    Clear All Analyses ({Object.keys(persistentAnalyses).length})
-                  </button>
-                )}
-              </div>
-            )}
           </>
-        )}
-        
-        {/* Empty State */}
-        {newsData && !newsLoading && newsData.stocks.length === 0 && (
-          <div className="bg-gray-800 rounded-lg p-12 text-center">
-            <div className="text-6xl mb-4">📰</div>
-            <h3 className="text-xl font-medium text-gray-300 mb-2">No Trading Opportunities</h3>
-            <p className="text-gray-400">
-              {(minPrice !== '' || maxPrice !== '') 
-                ? `No stocks found in price range ${minPrice || '0'} - ${maxPrice || '∞'}. Try adjusting the price filter.`
-                : 'No positive sentiment news found for tradeable stocks. Auto-refreshing every 5 minutes.'
-              }
-            </p>
-          </div>
         )}
       </div>
       
       {/* Footer */}
       <Footer />
     </div>
+  );
+}
+
+// Loading Component
+function AppLoading() {
+  return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+        <div className="text-white text-lg">Loading Stocks2...</div>
+        <div className="text-gray-400 text-sm mt-2">Initializing authentication</div>
+      </div>
+    </div>
+  );
+}
+
+// App Router Component
+function AppRouter() {
+  const { isAuthenticated, isLoading, loginLoading, login } = useAuth();
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return <AppLoading />;
+  }
+
+  // Show login page if not authenticated
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={login} isLoading={loginLoading} />;
+  }
+
+  // Show main app if authenticated
+  return <AuthenticatedApp />;
+}
+
+// Root App Component
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppRouter />
+    </AuthProvider>
   );
 }
