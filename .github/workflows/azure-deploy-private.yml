@@ -86,25 +86,25 @@ jobs:
         
         echo "✅ Registry access configured with PAT"
         
-    - name: Deploy to Azure Container Apps
+    - name: Deploy to Azure Container Apps with Environment Variables
       if: github.ref == 'refs/heads/main'
       run: |
-        echo "🚀 Deploying to Azure Container Apps..."
-        
-    - name: Deploy to Azure Container Apps
-      if: github.ref == 'refs/heads/main'
-      run: |
-        echo "🚀 Deploying to Azure Container Apps..."
+        echo "🚀 Deploying to Azure Container Apps with environment variables..."
         
         # Create unique revision suffix with date and short commit
         REVISION_SUFFIX=$(date +%Y%m%d-%H%M%S)-${{ steps.short_sha.outputs.sha }}
         echo "📋 Creating revision: $REVISION_SUFFIX"
         
+        # Deploy with environment variables
         az containerapp update \
           --name stocks2-app \
           --resource-group stocks2-rg \
           --image ghcr.io/${{ github.repository_owner }}/stocks2:latest \
-          --revision-suffix $REVISION_SUFFIX
+          --revision-suffix $REVISION_SUFFIX \
+          --set-env-vars \
+            VITE_POLYGON_API_KEY="${{ secrets.VITE_POLYGON_API_KEY }}" \
+            VITE_GEMINI_API_KEY="${{ secrets.VITE_GEMINI_API_KEY }}" \
+            NODE_ENV=production
         
         echo "✅ Deployment completed successfully!"
         
@@ -141,4 +141,5 @@ jobs:
         echo "- Build: v${{ github.run_number }}"
         echo "- Commit: ${{ steps.short_sha.outputs.sha }}"
         echo "- Registry: Private GitHub Container Registry (ghcr.io) with PAT"
+        echo "- Environment Variables: ✅ API Keys configured"
         echo "- Status: ✅ Deployed"
