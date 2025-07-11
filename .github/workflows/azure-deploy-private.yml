@@ -54,6 +54,9 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        build-args: |
+          VITE_POLYGON_API_KEY=${{ secrets.VITE_POLYGON_API_KEY }}
+          VITE_GEMINI_API_KEY=${{ secrets.VITE_GEMINI_API_KEY }}
 
     # Deploy only on main branch
     - name: Azure Login with OIDC
@@ -86,25 +89,21 @@ jobs:
         
         echo "✅ Registry access configured with PAT"
         
-    - name: Deploy to Azure Container Apps with Environment Variables
+    - name: Deploy to Azure Container Apps
       if: github.ref == 'refs/heads/main'
       run: |
-        echo "🚀 Deploying to Azure Container Apps with environment variables..."
+        echo "🚀 Deploying to Azure Container Apps..."
         
         # Create unique revision suffix with date and short commit
         REVISION_SUFFIX=$(date +%Y%m%d-%H%M%S)-${{ steps.short_sha.outputs.sha }}
         echo "📋 Creating revision: $REVISION_SUFFIX"
         
-        # Deploy with environment variables
+        # Deploy (environment variables are already baked into the image)
         az containerapp update \
           --name stocks2-app \
           --resource-group stocks2-rg \
           --image ghcr.io/${{ github.repository_owner }}/stocks2:latest \
-          --revision-suffix $REVISION_SUFFIX \
-          --set-env-vars \
-            VITE_POLYGON_API_KEY="${{ secrets.VITE_POLYGON_API_KEY }}" \
-            VITE_GEMINI_API_KEY="${{ secrets.VITE_GEMINI_API_KEY }}" \
-            NODE_ENV=production
+          --revision-suffix $REVISION_SUFFIX
         
         echo "✅ Deployment completed successfully!"
         
@@ -113,6 +112,7 @@ jobs:
       run: |
         echo "🔍 Verifying deployment status..."
         sleep 30
+      
         az containerapp revision list \
           --name stocks2-app \
           --resource-group stocks2-rg \
