@@ -1,5 +1,5 @@
-// src/components/FilteringStats.jsx - Enhanced Modern Stats Dashboard
-import React, { useState, useEffect } from "react";
+// src/components/FilteringStats.jsx - Enhanced with Articles Dropdown
+import React, { useState, useEffect, useRef } from "react";
 import {
   Filter,
   TrendingUp,
@@ -12,6 +12,9 @@ import {
   Activity,
   RefreshCw,
   DollarSign,
+  X,
+  ExternalLink,
+  Search,
 } from "lucide-react";
 
 export function FilteringStats({
@@ -23,6 +26,21 @@ export function FilteringStats({
   setMaxPrice,
 }) {
   const [countdown, setCountdown] = useState(300); // 5 minutes in seconds
+  const [showArticlesDropdown, setShowArticlesDropdown] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowArticlesDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Countdown timer effect
   useEffect(() => {
@@ -57,6 +75,15 @@ export function FilteringStats({
     return "text-orange-400"; // Orange for stale
   };
 
+  // Format time ago
+  const formatTimeAgo = (minutes) => {
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  };
+
   if (loading || !newsData) {
     return (
       <div className="mb-8">
@@ -84,8 +111,17 @@ export function FilteringStats({
     allStocks = [],
     totalArticles = 0,
     recentArticles = 0,
+    articles = [],
   } = newsData;
   const aiAnalyzedCount = stocks.filter((s) => s.buySignal).length;
+
+  // Filter articles based on search
+  const filteredArticles = articles.filter(
+    (article) =>
+      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (article.ticker &&
+        article.ticker.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   const stats = [
     {
@@ -97,6 +133,8 @@ export function FilteringStats({
       change: `+${recentArticles}`,
       gradient: "from-blue-500 to-cyan-500",
       iconColor: "text-blue-400",
+      isClickable: true,
+      onClick: () => setShowArticlesDropdown(!showArticlesDropdown),
     },
     {
       icon: TrendingUp,
@@ -137,7 +175,7 @@ export function FilteringStats({
   ];
 
   return (
-    <div className="mb-8">
+    <div className="mb-8 relative">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         {stats.map((stat, index) => {
@@ -146,7 +184,10 @@ export function FilteringStats({
           return (
             <div
               key={index}
-              className="group relative bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-300 overflow-hidden"
+              className={`group relative bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-300 overflow-hidden ${
+                stat.isClickable ? "cursor-pointer" : ""
+              }`}
+              onClick={stat.onClick}
             >
               {/* Background Gradient Effect */}
               <div
@@ -157,7 +198,13 @@ export function FilteringStats({
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
                   <div
-                    className={`w-12 h-12 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center shadow-lg`}
+                    className={`w-12 h-12 bg-gradient-to-br ${
+                      stat.gradient
+                    } rounded-xl flex items-center justify-center shadow-lg ${
+                      stat.isClickable
+                        ? "group-hover:scale-110 transition-transform"
+                        : ""
+                    }`}
                   >
                     <Icon className="w-6 h-6 text-white" />
                   </div>
@@ -206,6 +253,11 @@ export function FilteringStats({
                   {stat.label === "AI Analyzed" && aiAnalyzedCount === 0 && (
                     <Target className="w-3 h-3 ml-1 text-purple-400" />
                   )}
+                  {stat.isClickable && (
+                    <span className="ml-1 text-xs text-gray-500">
+                      (Click to view)
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -215,6 +267,116 @@ export function FilteringStats({
           );
         })}
       </div>
+
+      {/* Articles Dropdown */}
+      {showArticlesDropdown && (
+        <div
+          ref={dropdownRef}
+          className="absolute top-0 left-0 right-0 z-50 mt-2 bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-700/50 max-w-4xl mx-auto"
+        >
+          {/* Header */}
+          <div className="sticky top-0 bg-gray-900/95 backdrop-blur-xl p-6 border-b border-gray-700/50 rounded-t-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <Newspaper className="w-6 h-6 text-blue-400" />
+                <h3 className="text-xl font-bold text-white">All Articles</h3>
+                <span className="text-sm text-gray-400">
+                  ({filteredArticles.length} articles)
+                </span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowArticlesDropdown(false);
+                }}
+                className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search articles by title or ticker..."
+                className="w-full bg-gray-800/50 text-white pl-10 pr-4 py-2 rounded-lg border border-gray-700 focus:border-blue-500 focus:outline-none transition-colors text-sm"
+              />
+            </div>
+          </div>
+
+          {/* Articles List */}
+          <div className="max-h-[500px] overflow-y-auto p-4">
+            <div className="space-y-3">
+              {filteredArticles.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  <Newspaper className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No articles found</p>
+                </div>
+              ) : (
+                filteredArticles.map((article, index) => (
+                  <div
+                    key={article.id || index}
+                    className="bg-gray-800/50 rounded-lg p-4 hover:bg-gray-800/70 transition-all group"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          {article.ticker && (
+                            <span className="text-xs font-bold bg-blue-500/20 text-blue-400 px-2 py-1 rounded">
+                              {article.ticker}
+                            </span>
+                          )}
+                          <span className="text-xs text-gray-500">
+                            {formatTimeAgo(article.minutesAgo)}
+                          </span>
+                          {article.sentiment && (
+                            <span
+                              className={`text-xs px-2 py-1 rounded ${
+                                article.sentiment === "positive"
+                                  ? "bg-green-500/20 text-green-400"
+                                  : article.sentiment === "negative"
+                                  ? "bg-red-500/20 text-red-400"
+                                  : "bg-gray-600/20 text-gray-400"
+                              }`}
+                            >
+                              {article.sentiment}
+                            </span>
+                          )}
+                        </div>
+
+                        <h4 className="text-white font-medium text-sm mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors">
+                          {article.title}
+                        </h4>
+
+                        {article.description && (
+                          <p className="text-gray-400 text-sm line-clamp-2 mb-3">
+                            {article.description}
+                          </p>
+                        )}
+
+                        <a
+                          href={article.articleUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                          <span>Read full article</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions Bar */}
       <div className="mt-6 bg-gray-800/30 backdrop-blur-sm rounded-xl p-4 border border-gray-700/30">
