@@ -24,6 +24,8 @@ export function FilteringStats({
   setMinPrice,
   maxPrice,
   setMaxPrice,
+  sentimentFilter,
+  setSentimentFilter,
 }) {
   const [countdown, setCountdown] = useState(300); // 5 minutes in seconds
   const [showArticlesDropdown, setShowArticlesDropdown] = useState(false);
@@ -112,8 +114,25 @@ export function FilteringStats({
     totalArticles = 0,
     recentArticles = 0,
     articles = [],
+    sentimentFilter: currentFilter = "positive",
   } = newsData;
   const aiAnalyzedCount = stocks.filter((s) => s.buySignal).length;
+
+  // Get sentiment label for display
+  const getSentimentLabel = () => {
+    switch (currentFilter) {
+      case "positive":
+        return "Positive";
+      case "negative":
+        return "Negative";
+      case "neutral":
+        return "Neutral";
+      case "all":
+        return "All";
+      default:
+        return "Positive";
+    }
+  };
 
   // Filter articles based on search
   const filteredArticles = articles.filter(
@@ -138,7 +157,7 @@ export function FilteringStats({
     },
     {
       icon: TrendingUp,
-      label: "Positive Stocks",
+      label: `${getSentimentLabel()} Stocks`,
       value: stocks.length,
       subtitle: `From ${allStocks.length} total`,
       trend: stocks.length > 0 ? "up" : "neutral",
@@ -146,8 +165,22 @@ export function FilteringStats({
         stocks.length > 0
           ? `${((stocks.length / allStocks.length) * 100).toFixed(0)}%`
           : "0%",
-      gradient: "from-green-500 to-emerald-500",
-      iconColor: "text-green-400",
+      gradient:
+        currentFilter === "negative"
+          ? "from-red-500 to-rose-500"
+          : currentFilter === "neutral"
+          ? "from-gray-500 to-slate-500"
+          : currentFilter === "all"
+          ? "from-indigo-500 to-purple-500"
+          : "from-green-500 to-emerald-500",
+      iconColor:
+        currentFilter === "negative"
+          ? "text-red-400"
+          : currentFilter === "neutral"
+          ? "text-gray-400"
+          : currentFilter === "all"
+          ? "text-indigo-400"
+          : "text-green-400",
     },
     {
       icon: Brain,
@@ -390,10 +423,17 @@ export function FilteringStats({
             <div className="w-px h-4 bg-gray-600"></div>
             <div className="flex items-center space-x-2">
               <Filter className="w-4 h-4 text-blue-400" />
-              <span className="text-sm text-gray-300">Filters:</span>
-              <span className="text-sm text-blue-400">
-                Positive Sentiment Only
-              </span>
+              <span className="text-sm text-gray-300">Sentiment:</span>
+              <select
+                value={sentimentFilter}
+                onChange={(e) => setSentimentFilter(e.target.value)}
+                className="bg-gray-700/80 text-white text-sm rounded px-3 py-1 border border-gray-600 focus:border-blue-400 outline-none transition-all cursor-pointer hover:bg-gray-700"
+              >
+                <option value="positive">Positive Only</option>
+                <option value="negative">Negative Only</option>
+                <option value="neutral">Neutral Only</option>
+                <option value="all">All Sentiments</option>
+              </select>
             </div>
           </div>
 

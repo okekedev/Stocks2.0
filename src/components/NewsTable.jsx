@@ -289,7 +289,8 @@ export function NewsTable({
                     !persistentAnalyses[stock.ticker] && // Use persistent analyses
                     !analyzingStocks.has(stock.ticker) &&
                     stock.latestNews?.minutesAgo < 120 &&
-                    stock.currentPrice
+                    stock.currentPrice &&
+                    stock.dominantSentiment === "positive" // Only positive sentiment for AI analysis
                 );
 
                 if (unanalyzedStocks.length > 0 && onAnalyzeAll) {
@@ -301,7 +302,8 @@ export function NewsTable({
                   persistentAnalyses[stock.ticker] ||
                   analyzingStocks.has(stock.ticker) ||
                   stock.latestNews?.minutesAgo >= 120 ||
-                  !stock.currentPrice
+                  !stock.currentPrice ||
+                  stock.dominantSentiment !== "positive"
               )}
               className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:from-gray-700 disabled:to-gray-800 disabled:cursor-not-allowed rounded-lg transition-all duration-200 shadow-lg disabled:shadow-none"
             >
@@ -314,7 +316,8 @@ export function NewsTable({
                       !persistentAnalyses[stock.ticker] &&
                       !analyzingStocks.has(stock.ticker) &&
                       stock.latestNews?.minutesAgo < 120 &&
-                      stock.currentPrice
+                      stock.currentPrice &&
+                      stock.dominantSentiment === "positive"
                   ).length
                 }
                 )
@@ -401,16 +404,40 @@ export function NewsTable({
                         : stock.priceAnimation === "price-down"
                         ? "animate-flash-red"
                         : ""
-                    } cursor-pointer`}
+                    } cursor-pointer ${
+                      stock.dominantSentiment === "negative"
+                        ? "bg-red-900/5 hover:bg-red-900/10"
+                        : stock.dominantSentiment === "neutral"
+                        ? "bg-gray-800/20 hover:bg-gray-800/40"
+                        : ""
+                    }`}
                     onClick={() => toggleRow(stock.ticker)}
                   >
-                    {/* Enhanced Stock Info */}
+                    {/* Enhanced Stock Info with Sentiment */}
                     <td className="px-6 py-5 whitespace-nowrap">
                       <div className="flex items-center space-x-3">
                         <div className="flex items-center space-x-2">
                           <span className="text-lg font-bold text-white">
                             {stock.ticker}
                           </span>
+                          {/* Sentiment Indicator */}
+                          {stock.dominantSentiment && (
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                stock.dominantSentiment === "positive"
+                                  ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                                  : stock.dominantSentiment === "negative"
+                                  ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                                  : "bg-gray-500/20 text-gray-400 border border-gray-500/30"
+                              }`}
+                            >
+                              {stock.dominantSentiment === "positive"
+                                ? "↑"
+                                : stock.dominantSentiment === "negative"
+                                ? "↓"
+                                : "→"}
+                            </span>
+                          )}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -431,7 +458,7 @@ export function NewsTable({
                       </div>
                     </td>
 
-                    {/* Enhanced Price Display with Animations */}
+                    {/* Enhanced Price Display with Sentiment Awareness */}
                     <td className="px-6 py-5 whitespace-nowrap">
                       <div className="space-y-1">
                         <div
@@ -459,103 +486,154 @@ export function NewsTable({
                           )}
                           <span>{formatPercent(stock.changePercent)}</span>
                         </div>
+                        {/* Sentiment Context */}
+                        {stock.dominantSentiment === "negative" &&
+                          stock.changePercent > 0 && (
+                            <div className="text-xs text-orange-400 flex items-center">
+                              <AlertCircle className="w-3 h-3 mr-1" />
+                              <span>Bearish news</span>
+                            </div>
+                          )}
+                        {stock.dominantSentiment === "positive" &&
+                          stock.changePercent < -1 && (
+                            <div className="text-xs text-yellow-400 flex items-center">
+                              <AlertCircle className="w-3 h-3 mr-1" />
+                              <span>Dip opportunity?</span>
+                            </div>
+                          )}
                       </div>
                     </td>
 
-                    {/* Enhanced News Count */}
+                    {/* Enhanced News Count with Sentiment Breakdown */}
                     <td className="px-6 py-5 whitespace-nowrap">
-                      <div className="flex items-center justify-center">
+                      <div className="flex flex-col items-center space-y-1">
                         <div className="flex items-center space-x-2 bg-blue-500/10 rounded-full px-3 py-2">
                           <MessageSquare className="w-4 h-4 text-blue-400" />
                           <span className="text-white font-bold">
                             {stock.newsCount}
                           </span>
                         </div>
+                        {/* Sentiment Breakdown */}
+                        {stock.sentimentBreakdown && (
+                          <div className="flex items-center space-x-1 text-xs">
+                            {stock.sentimentBreakdown.positive > 0 && (
+                              <span className="text-green-400">
+                                +{stock.sentimentBreakdown.positive}
+                              </span>
+                            )}
+                            {stock.sentimentBreakdown.negative > 0 && (
+                              <span className="text-red-400">
+                                -{stock.sentimentBreakdown.negative}
+                              </span>
+                            )}
+                            {stock.sentimentBreakdown.neutral > 0 && (
+                              <span className="text-gray-400">
+                                ={stock.sentimentBreakdown.neutral}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </td>
 
-                    {/* Enhanced AI Signal Display */}
+                    {/* Enhanced AI Signal Display - Only for Positive Sentiment */}
                     <td className="px-6 py-5 whitespace-nowrap">
-                      {stock.buySignal ? (
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAIAnalyzeClick(stock);
-                          }}
-                          className="cursor-pointer group"
-                        >
+                      {stock.dominantSentiment === "positive" ? (
+                        stock.buySignal ? (
                           <div
-                            className={`flex flex-col items-center space-y-2 px-4 py-2 rounded-lg transition-all ${
-                              stock.buySignal.buyPercentage >= 70
-                                ? "bg-gradient-to-r from-green-900/40 to-green-800/40 group-hover:from-green-900/60 group-hover:to-green-800/60"
-                                : stock.buySignal.buyPercentage >= 40
-                                ? "bg-gradient-to-r from-yellow-900/40 to-yellow-800/40 group-hover:from-yellow-900/60 group-hover:to-yellow-800/60"
-                                : "bg-gradient-to-r from-red-900/40 to-red-800/40 group-hover:from-red-900/60 group-hover:to-red-800/60"
-                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAIAnalyzeClick(stock);
+                            }}
+                            className="cursor-pointer group"
                           >
-                            <div className="flex items-center space-x-2">
-                              <Target
-                                className={`w-4 h-4 ${
-                                  stock.buySignal.buyPercentage >= 70
-                                    ? "text-green-400"
-                                    : stock.buySignal.buyPercentage >= 40
-                                    ? "text-yellow-400"
-                                    : "text-red-400"
-                                }`}
-                              />
-                              <span
-                                className={`text-lg font-bold ${
-                                  stock.buySignal.buyPercentage >= 70
-                                    ? "text-green-400"
-                                    : stock.buySignal.buyPercentage >= 40
-                                    ? "text-yellow-400"
-                                    : "text-red-400"
-                                }`}
-                              >
-                                {stock.buySignal.buyPercentage}%
-                              </span>
-                            </div>
-                            <span
-                              className={`text-xs font-medium ${
+                            <div
+                              className={`flex flex-col items-center space-y-2 px-4 py-2 rounded-lg transition-all ${
                                 stock.buySignal.buyPercentage >= 70
-                                  ? "text-green-300"
+                                  ? "bg-gradient-to-r from-green-900/40 to-green-800/40 group-hover:from-green-900/60 group-hover:to-green-800/60"
                                   : stock.buySignal.buyPercentage >= 40
-                                  ? "text-yellow-300"
-                                  : "text-red-300"
+                                  ? "bg-gradient-to-r from-yellow-900/40 to-yellow-800/40 group-hover:from-yellow-900/60 group-hover:to-yellow-800/60"
+                                  : "bg-gradient-to-r from-red-900/40 to-red-800/40 group-hover:from-red-900/60 group-hover:to-red-800/60"
                               }`}
                             >
-                              8hr:{" "}
-                              {stock.buySignal.targetPrice8h
-                                ? `$${stock.buySignal.targetPrice8h}`
-                                : "N/A"}
-                            </span>
-                            {stock.hasSavedLogs && (
-                              <CheckCircle className="w-3 h-3 text-purple-400" />
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAIAnalyzeClick(stock);
-                          }}
-                          className="cursor-pointer group"
-                        >
-                          <div className="flex items-center justify-center px-4 py-3 bg-gray-800/50 rounded-lg hover:bg-purple-900/30 transition-all group-hover:scale-105">
-                            <Brain className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors mr-2" />
-                            {stock.isAnalyzing ? (
                               <div className="flex items-center space-x-2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400"></div>
-                                <span className="text-purple-400 font-medium">
-                                  Analyzing...
+                                <Target
+                                  className={`w-4 h-4 ${
+                                    stock.buySignal.buyPercentage >= 70
+                                      ? "text-green-400"
+                                      : stock.buySignal.buyPercentage >= 40
+                                      ? "text-yellow-400"
+                                      : "text-red-400"
+                                  }`}
+                                />
+                                <span
+                                  className={`text-lg font-bold ${
+                                    stock.buySignal.buyPercentage >= 70
+                                      ? "text-green-400"
+                                      : stock.buySignal.buyPercentage >= 40
+                                      ? "text-yellow-400"
+                                      : "text-red-400"
+                                  }`}
+                                >
+                                  {stock.buySignal.buyPercentage}%
                                 </span>
                               </div>
-                            ) : (
-                              <span className="font-medium">
-                                Click to Analyze
+                              <span
+                                className={`text-xs font-medium ${
+                                  stock.buySignal.buyPercentage >= 70
+                                    ? "text-green-300"
+                                    : stock.buySignal.buyPercentage >= 40
+                                    ? "text-yellow-300"
+                                    : "text-red-300"
+                                }`}
+                              >
+                                8hr:{" "}
+                                {stock.buySignal.targetPrice8h
+                                  ? `${stock.buySignal.targetPrice8h}`
+                                  : "N/A"}
                               </span>
-                            )}
+                              {stock.hasSavedLogs && (
+                                <CheckCircle className="w-3 h-3 text-purple-400" />
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAIAnalyzeClick(stock);
+                            }}
+                            className="cursor-pointer group"
+                          >
+                            <div className="flex items-center justify-center px-4 py-3 bg-gray-800/50 rounded-lg hover:bg-purple-900/30 transition-all group-hover:scale-105">
+                              <Brain className="w-5 h-5 text-gray-400 group-hover:text-purple-400 transition-colors mr-2" />
+                              {stock.isAnalyzing ? (
+                                <div className="flex items-center space-x-2">
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400"></div>
+                                  <span className="text-purple-400 font-medium">
+                                    Analyzing...
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="font-medium">
+                                  Click to Analyze
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      ) : (
+                        <div className="flex items-center justify-center">
+                          <div
+                            className={`text-xs px-3 py-2 rounded-lg font-medium ${
+                              stock.dominantSentiment === "negative"
+                                ? "bg-red-900/20 text-red-400 border border-red-500/20"
+                                : "bg-gray-700/20 text-gray-400 border border-gray-600/20"
+                            }`}
+                          >
+                            {stock.dominantSentiment === "negative"
+                              ? "Bearish Sentiment"
+                              : "Neutral Sentiment"}
                           </div>
                         </div>
                       )}

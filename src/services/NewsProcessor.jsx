@@ -1,5 +1,5 @@
-// src/services/NewsProcessor.js - Optimized version
-import { polygonService } from './PolygonService';
+// src/services/NewsProcessor.js - Updated with dynamic sentiment filtering
+import { polygonService } from "./PolygonService";
 
 class NewsProcessor {
   constructor() {
@@ -9,94 +9,106 @@ class NewsProcessor {
 
   // Enhanced ticker validation
   isValidTicker(ticker) {
-    return ticker &&
-           typeof ticker === 'string' &&
-           ticker.length <= 5 &&
-           ticker.length >= 1 &&
-           /^[A-Z]+$/.test(ticker);
+    return (
+      ticker &&
+      typeof ticker === "string" &&
+      ticker.length <= 5 &&
+      ticker.length >= 1 &&
+      /^[A-Z]+$/.test(ticker)
+    );
   }
 
   // Extract all possible tickers from article content and insights
   extractAllTickers(article) {
     const tickers = new Set();
-    
+
     // 1. From article.tickers array
     if (article.tickers && article.tickers.length > 0) {
       article.tickers
-        .map(t => t.toString().toUpperCase().trim())
-        .filter(ticker => this.isValidTicker(ticker))
-        .forEach(ticker => tickers.add(ticker));
+        .map((t) => t.toString().toUpperCase().trim())
+        .filter((ticker) => this.isValidTicker(ticker))
+        .forEach((ticker) => tickers.add(ticker));
     }
-    
+
     // 2. From insights (this was the main source of mismatches)
     if (article.insights && article.insights.length > 0) {
-      article.insights.forEach(insight => {
-        if (insight.ticker && this.isValidTicker(insight.ticker.toUpperCase())) {
+      article.insights.forEach((insight) => {
+        if (
+          insight.ticker &&
+          this.isValidTicker(insight.ticker.toUpperCase())
+        ) {
           tickers.add(insight.ticker.toUpperCase());
         }
       });
     }
-    
+
     return Array.from(tickers);
   }
 
   // Get sentiment for a specific ticker from insights
   getTickerSentiment(article, ticker) {
-    if (!article.insights) return 'neutral';
-    
-    const insight = article.insights.find(i => 
-      i.ticker && i.ticker.toUpperCase() === ticker.toUpperCase()
+    if (!article.insights) return "neutral";
+
+    const insight = article.insights.find(
+      (i) => i.ticker && i.ticker.toUpperCase() === ticker.toUpperCase()
     );
-    
-    return insight?.sentiment || 'neutral';
+
+    return insight?.sentiment || "neutral";
   }
 
   // Get reasoning for a specific ticker
   getTickerReasoning(article, ticker) {
-    if (!article.insights) return 'No specific insight available';
-    
-    const insight = article.insights.find(i => 
-      i.ticker && i.ticker.toUpperCase() === ticker.toUpperCase()
+    if (!article.insights) return "No specific insight available";
+
+    const insight = article.insights.find(
+      (i) => i.ticker && i.ticker.toUpperCase() === ticker.toUpperCase()
     );
-    
-    return insight?.sentiment_reasoning || 'No specific insight available';
+
+    return insight?.sentiment_reasoning || "No specific insight available";
   }
 
-  // Main processing function
-  async processNewsForStocks(articles) {
+  // Main processing function with sentiment filter parameter
+  async processNewsForStocks(articles, sentimentFilter = "positive") {
     const stocksWithNews = new Map();
     const processedArticles = [];
-    
+
     // Filter for articles from last 4 hours only
-    const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
-    const recentArticles = articles.filter(article => {
+    const fourHoursAgo = Date.now() - 4 * 60 * 60 * 1000;
+    const recentArticles = articles.filter((article) => {
       const articleTime = new Date(article.published_utc).getTime();
       return articleTime >= fourHoursAgo;
     });
-    
-    console.log(`[INFO] Filtered to ${recentArticles.length} articles from last 4 hours`);
-    
+
+    console.log(
+      `[INFO] Filtered to ${recentArticles.length} articles from last 4 hours`
+    );
+    console.log(`[INFO] Using sentiment filter: ${sentimentFilter}`);
+
     // Sort by time (newest first)
-    const sortedArticles = recentArticles.sort((a, b) =>
-      new Date(b.published_utc).getTime() - new Date(a.published_utc).getTime()
+    const sortedArticles = recentArticles.sort(
+      (a, b) =>
+        new Date(b.published_utc).getTime() -
+        new Date(a.published_utc).getTime()
     );
 
     // Collect all unique tickers from both sources
     const allTickers = new Set();
-    sortedArticles.forEach(article => {
+    sortedArticles.forEach((article) => {
       const tickers = this.extractAllTickers(article);
-      tickers.forEach(ticker => allTickers.add(ticker));
+      tickers.forEach((ticker) => allTickers.add(ticker));
     });
 
     console.log(`[INFO] Found ${allTickers.size} unique tickers`);
 
     // Fetch company names (with caching)
-    const companyNames = await this.getCompanyNamesWithCache(Array.from(allTickers));
+    const companyNames = await this.getCompanyNamesWithCache(
+      Array.from(allTickers)
+    );
 
     // Process articles with enhanced ticker extraction
-    sortedArticles.forEach(article => {
+    sortedArticles.forEach((article) => {
       const tickers = this.extractAllTickers(article);
-      
+
       if (tickers.length === 0) return;
 
       const minutesAgo = Math.floor(
@@ -104,24 +116,31 @@ class NewsProcessor {
       );
 
       // Create processed article for each ticker with its specific sentiment
-      tickers.forEach(ticker => {
+      tickers.forEach((ticker) => {
         const tickerSentiment = this.getTickerSentiment(article, ticker);
         const tickerReasoning = this.getTickerReasoning(article, ticker);
-        
-        // Only process positive sentiment tickers
-        if (tickerSentiment !== 'positive') return;
-        
+
+        // Apply sentiment filter based on user selection
+        if (sentimentFilter !== "all") {
+          if (sentimentFilter === "positive" && tickerSentiment !== "positive")
+            return;
+          if (sentimentFilter === "negative" && tickerSentiment !== "negative")
+            return;
+          if (sentimentFilter === "neutral" && tickerSentiment !== "neutral")
+            return;
+        }
+
         const processedArticle = {
           id: article.id,
           title: article.title,
-          description: article.description || '',
+          description: article.description || "",
           publishedUtc: article.published_utc,
           articleUrl: article.article_url,
           ticker: ticker, // Specific to this ticker
           sentiment: tickerSentiment,
           reasoning: tickerReasoning,
           minutesAgo: minutesAgo,
-          allTickers: tickers // Keep reference to all tickers in article
+          allTickers: tickers, // Keep reference to all tickers in article
         };
 
         processedArticles.push(processedArticle);
@@ -129,13 +148,17 @@ class NewsProcessor {
         // Add to stock data
         if (!stocksWithNews.has(ticker)) {
           const apiCompanyName = companyNames.get(ticker);
-          
+
           stocksWithNews.set(ticker, {
             ticker,
-            companyName: (apiCompanyName && apiCompanyName !== ticker) ? apiCompanyName : null,
+            companyName:
+              apiCompanyName && apiCompanyName !== ticker
+                ? apiCompanyName
+                : null,
             articles: [],
             newsCount: 0,
-            latestMinutesAgo: Infinity
+            latestMinutesAgo: Infinity,
+            sentiment: tickerSentiment, // Track dominant sentiment
           });
         }
 
@@ -147,27 +170,47 @@ class NewsProcessor {
     });
 
     // Convert to array and sort by recency
-    const stocks = Array.from(stocksWithNews.values()).map(stock => {
+    const stocks = Array.from(stocksWithNews.values()).map((stock) => {
       // Sort articles by recency (newest first)
       stock.articles.sort((a, b) => a.minutesAgo - b.minutesAgo);
-      
+
+      // Calculate sentiment breakdown
+      const sentimentCounts = {
+        positive: 0,
+        negative: 0,
+        neutral: 0,
+      };
+
+      stock.articles.forEach((article) => {
+        sentimentCounts[article.sentiment]++;
+      });
+
       return {
         ...stock,
-        latestNews: stock.articles[0] // Most recent article
+        latestNews: stock.articles[0], // Most recent article
+        sentimentBreakdown: sentimentCounts,
+        dominantSentiment: Object.entries(sentimentCounts).sort(
+          ([, a], [, b]) => b - a
+        )[0][0],
       };
     });
 
     // Sort stocks by most recent news
     stocks.sort((a, b) => a.latestMinutesAgo - b.latestMinutesAgo);
 
-    console.log(`[INFO] Final result: ${stocks.length} stocks with positive sentiment from last 4 hours`);
+    const sentimentText =
+      sentimentFilter === "all" ? "" : `${sentimentFilter} sentiment `;
+    console.log(
+      `[INFO] Final result: ${stocks.length} stocks with ${sentimentText}from last 4 hours`
+    );
 
     return {
       articles: processedArticles,
       stocks,
       totalArticles: articles.length,
       recentArticles: recentArticles.length,
-      positiveStocks: stocks.length
+      filteredStocks: stocks.length,
+      sentimentFilter,
     };
   }
 
@@ -175,12 +218,12 @@ class NewsProcessor {
   async getCompanyNamesWithCache(tickers) {
     const companyNames = new Map();
     const tickersToFetch = [];
-    
+
     // Check cache first
     const now = Date.now();
-    tickers.forEach(ticker => {
+    tickers.forEach((ticker) => {
       const cached = this.tickerCache.get(ticker);
-      if (cached && (now - cached.timestamp) < this.cacheExpiry) {
+      if (cached && now - cached.timestamp < this.cacheExpiry) {
         companyNames.set(ticker, cached.name);
       } else {
         tickersToFetch.push(ticker);
@@ -189,9 +232,11 @@ class NewsProcessor {
 
     // Fetch missing tickers
     if (tickersToFetch.length > 0) {
-      console.log(`[INFO] Fetching company names for ${tickersToFetch.length} tickers...`);
+      console.log(
+        `[INFO] Fetching company names for ${tickersToFetch.length} tickers...`
+      );
       const freshNames = await polygonService.getCompanyNames(tickersToFetch);
-      
+
       // Update cache and results
       freshNames.forEach((name, ticker) => {
         this.tickerCache.set(ticker, { name, timestamp: now });
