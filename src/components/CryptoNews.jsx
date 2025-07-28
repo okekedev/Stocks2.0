@@ -13,11 +13,17 @@ import {
   Hash,
   Filter,
   Search,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 // CryptoCompare News API Configuration
 const CRYPTOCOMPARE_NEWS_URL =
   "https://min-api.cryptocompare.com/data/v2/news/";
+
+// CoinDesk API Configuration
+const COINDESK_API_KEY = import.meta.env.VITE_COINDESK_API_KEY;
+const COINDESK_BASE_URL = "https://data-api.coindesk.com/news/v1/article/list";
 
 export default function CryptoNews() {
   const [articles, setArticles] = useState([]);
@@ -27,6 +33,7 @@ export default function CryptoNews() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [feeds, setFeeds] = useState([]); // Available news feeds
   const [selectedFeed, setSelectedFeed] = useState("all");
+  const [expandedArticles, setExpandedArticles] = useState(new Set());
 
   // Predefined categories for crypto news
   const categories = [
@@ -38,6 +45,19 @@ export default function CryptoNews() {
     { value: "Regulation", label: "Regulation", icon: Filter },
     { value: "Trading", label: "Trading", icon: TrendingUp },
   ];
+
+  // Toggle expanded state for an article
+  const toggleExpanded = (articleId) => {
+    setExpandedArticles((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(articleId)) {
+        newSet.delete(articleId);
+      } else {
+        newSet.add(articleId);
+      }
+      return newSet;
+    });
+  };
 
   // Calculate time ago
   const getTimeAgo = (timestamp) => {
@@ -54,20 +74,61 @@ export default function CryptoNews() {
     return `${days}d ago`;
   };
 
-  // Fetch news from CryptoCompare API
-  const fetchNews = async () => {
-    try {
-      setRefreshing(true);
-      setError(null);
+  // Fetch news from CoinDesk API
+  const fetchCoinDeskNews = async () => {
+    if (!COINDESK_API_KEY) {
+      console.log("CoinDesk API key not configured, skipping CoinDesk fetch");
+      return [];
+    }
 
+    try {
+      const params = new URLSearchParams({
+        lang: "EN",
+        limit: "50", // Reasonable limit for frontend
+        api_key: COINDESK_API_KEY,
+      });
+
+      const response = await fetch(`${COINDESK_BASE_URL}?${params}`);
+
+      if (!response.ok) {
+        console.error(`CoinDesk API error: ${response.status}`);
+        return [];
+      }
+
+      const data = await response.json();
+
+      if (!data.Data || !Array.isArray(data.Data)) {
+        console.error("Invalid CoinDesk response format");
+        return [];
+      }
+
+      // Transform CoinDesk articles to our format
+      return data.Data.map((article) => ({
+        id: article.GUID || Math.random().toString(),
+        title: article.TITLE || "Untitled",
+        description: article.BODY ? article.BODY.substring(0, 200) + "..." : "",
+        fullText: article.BODY || "", // Store full article body
+        url: article.URL || "#",
+        imageUrl: article.IMAGE_URL || null,
+        publishedAt: article.PUBLISHED_ON || Date.now() / 1000,
+        timeAgo: getTimeAgo(article.PUBLISHED_ON || Date.now() / 1000),
+        author: "CoinDesk",
+        categories: article.CATEGORIES || [],
+        tags: article.TAGS || [],
+        source: "coindesk",
+      }));
+    } catch (error) {
+      console.error("Error fetching CoinDesk news:", error);
+      return [];
+    }
+  };
+
+  // Fetch news from CryptoCompare API
+  const fetchCryptoCompareNews = async () => {
+    try {
       // Build the URL based on selected options
       let url = CRYPTOCOMPARE_NEWS_URL;
       const params = new URLSearchParams();
-
-      // Add feed filter if specific feed selected
-      if (selectedFeed !== "all") {
-        params.append("feeds", selectedFeed);
-      }
 
       // Add category filter if specific category selected
       if (selectedCategory !== "all") {
@@ -81,8 +142,6 @@ export default function CryptoNews() {
         url += "?" + params.toString();
       }
 
-      console.log("Fetching crypto news from:", url);
-
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -90,38 +149,70 @@ export default function CryptoNews() {
       }
 
       const data = await response.json();
-      console.log("News API Response:", data);
 
-      // Process articles
-      const processedArticles = [];
-
-      if (data.Data && Array.isArray(data.Data)) {
-        data.Data.forEach((article) => {
-          processedArticles.push({
-            id: article.id || Math.random().toString(),
-            title: article.title || "Untitled",
-            description: article.body
-              ? article.body.substring(0, 200) + "..."
-              : "",
-            url: article.url || article.guid || "#",
-            imageUrl: article.imageurl || null,
-            publishedAt: article.published_on || Date.now() / 1000,
-            timeAgo: getTimeAgo(article.published_on || Date.now() / 1000),
-            author: article.source || "Unknown",
-            categories: article.categories ? article.categories.split("|") : [],
-            tags: article.tags ? article.tags.split("|") : [],
-            source: article.source_info?.name || article.source || "Unknown",
-            upvotes: article.upvotes || 0,
-            downvotes: article.downvotes || 0,
-          });
-        });
+      if (!data.Data || !Array.isArray(data.Data)) {
+        throw new Error("Invalid response format");
       }
 
-      // Sort by publish date (most recent first)
-      processedArticles.sort((a, b) => b.publishedAt - a.publishedAt);
+      // Transform CryptoCompare articles to our format
+      return data.Data.map((article) => ({
+        id: article.id || Math.random().toString(),
+        title: article.title || "Untitled",
+        description: article.body ? article.body.substring(0, 200) + "..." : "",
+        fullText: article.body || "", // Store full article body
+        url: article.url || article.guid || "#",
+        imageUrl: article.imageurl || null,
+        publishedAt: article.published_on || Date.now() / 1000,
+        timeAgo: getTimeAgo(article.published_on || Date.now() / 1000),
+        author: article.source || "Unknown",
+        categories: article.categories ? article.categories.split("|") : [],
+        tags: article.tags ? article.tags.split("|") : [],
+        source: "cryptocompare",
+      }));
+    } catch (error) {
+      console.error("Error fetching CryptoCompare news:", error);
+      throw error;
+    }
+  };
 
-      setArticles(processedArticles);
-      console.log(`Loaded ${processedArticles.length} articles`);
+  // Main fetch function that combines both sources
+  const fetchNews = async () => {
+    try {
+      setRefreshing(true);
+      setError(null);
+
+      // Fetch from both sources in parallel
+      const [coindeskArticles, cryptocompareArticles] = await Promise.all([
+        fetchCoinDeskNews(),
+        fetchCryptoCompareNews(),
+      ]);
+
+      // Combine articles from both sources
+      let allArticles = [...coindeskArticles, ...cryptocompareArticles];
+
+      // Filter by selected feed/source
+      if (selectedFeed !== "all") {
+        allArticles = allArticles.filter(
+          (article) => article.source === selectedFeed
+        );
+      }
+
+      // Sort by publish date (newest first)
+      allArticles.sort((a, b) => b.publishedAt - a.publishedAt);
+
+      // Remove duplicates based on title similarity
+      const uniqueArticles = [];
+      const seenTitles = new Set();
+
+      for (const article of allArticles) {
+        const titleKey = article.title.toLowerCase().substring(0, 50);
+        if (!seenTitles.has(titleKey)) {
+          seenTitles.add(titleKey);
+          uniqueArticles.push(article);
+        }
+      }
+
+      setArticles(uniqueArticles);
     } catch (err) {
       console.error("Error fetching news:", err);
       setError(err.message || "Failed to fetch news");
@@ -131,218 +222,220 @@ export default function CryptoNews() {
     }
   };
 
-  // Fetch available news feeds
-  const fetchFeeds = async () => {
-    try {
-      const response = await fetch(
-        "https://min-api.cryptocompare.com/data/news/feeds"
-      );
-      if (response.ok) {
-        const data = await response.json();
-        if (data.Data) {
-          setFeeds(data.Data);
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching feeds:", err);
-    }
-  };
-
-  // Fetch news on mount and when filters change
+  // Fetch news on mount and when category/feed changes
   useEffect(() => {
     fetchNews();
-    fetchFeeds();
   }, [selectedCategory, selectedFeed]);
+
+  // Auto-refresh every 5 minutes
+  useEffect(() => {
+    const interval = setInterval(fetchNews, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
-        <span className="ml-3 text-gray-400">Loading news...</span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="ultra-glass p-6">
-        <div className="flex items-center justify-center py-12">
-          <AlertCircle className="w-8 h-8 text-red-400 mr-3" />
-          <div>
-            <span className="text-red-400">{error}</span>
-            <button
-              onClick={fetchNews}
-              className="ml-4 px-4 py-2 bg-red-900/20 hover:bg-red-900/30 text-red-400 rounded-lg transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
+        <span className="ml-3 text-gray-400">Loading crypto news...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 mt-8">
-      {/* News Header */}
+    <div className="space-y-6">
+      {/* Header */}
       <div className="ultra-glass p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-xl font-bold text-white mb-1 flex items-center">
-              <Newspaper className="w-6 h-6 mr-2 text-blue-400" />
-              Latest Crypto News
-            </h3>
-            <p className="text-gray-400 text-sm">
-              Real-time news from multiple crypto sources
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <Newspaper className="w-6 h-6 text-blue-400" />
+              Crypto News Feed
+            </h2>
+            <p className="text-gray-400 mt-1">
+              Latest updates from multiple sources
             </p>
           </div>
-
           <button
             onClick={fetchNews}
             disabled={refreshing}
-            className="px-4 py-2 bg-gray-700/50 hover:bg-gray-600/50 rounded-lg transition-all duration-300 flex items-center space-x-2"
+            className="cyber-button px-4 py-2 flex items-center gap-2"
           >
             <RefreshCw
               className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
             />
-            <span>Refresh</span>
+            Refresh
           </button>
         </div>
 
-        {/* Filters */}
-        <div className="space-y-4">
-          {/* Category Pills */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => {
-              const Icon = cat.icon;
-              return (
-                <button
-                  key={cat.value}
-                  onClick={() => setSelectedCategory(cat.value)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center space-x-2 ${
-                    selectedCategory === cat.value
-                      ? "bg-blue-600 text-white shadow-lg transform scale-105"
-                      : "bg-gray-700/50 text-gray-300 hover:bg-gray-600/50"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{cat.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* News Source Filter */}
-          {feeds.length > 0 && (
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-400">Source:</span>
-              <select
-                value={selectedFeed}
-                onChange={(e) => setSelectedFeed(e.target.value)}
-                className="px-3 py-1 bg-gray-700/50 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
-              >
-                <option value="all">All Sources</option>
-                {feeds.map((feed) => (
-                  <option key={feed.key} value={feed.key}>
-                    {feed.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+        {/* Source Filter */}
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setSelectedFeed("all")}
+            className={`filter-button ${
+              selectedFeed === "all" ? "active" : ""
+            }`}
+          >
+            All Sources
+          </button>
+          {COINDESK_API_KEY && (
+            <button
+              onClick={() => setSelectedFeed("coindesk")}
+              className={`filter-button ${
+                selectedFeed === "coindesk" ? "active" : ""
+              }`}
+            >
+              CoinDesk
+            </button>
           )}
+          <button
+            onClick={() => setSelectedFeed("cryptocompare")}
+            className={`filter-button ${
+              selectedFeed === "cryptocompare" ? "active" : ""
+            }`}
+          >
+            CryptoCompare
+          </button>
+        </div>
+
+        {/* Category Filters */}
+        <div className="flex flex-wrap gap-2">
+          {categories.map((category) => {
+            const Icon = category.icon;
+            return (
+              <button
+                key={category.value}
+                onClick={() => setSelectedCategory(category.value)}
+                className={`filter-button ${
+                  selectedCategory === category.value ? "active" : ""
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {category.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* News Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {articles.map((article) => (
-          <div
-            key={article.id}
-            className="ultra-glass p-6 hover:shadow-xl transition-all duration-300 group"
-          >
-            {/* Article Header */}
-            <div className="mb-4">
-              <h4 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors line-clamp-2 mb-2">
-                {article.title}
-              </h4>
-              <div className="flex items-center space-x-4 text-sm text-gray-400">
-                <div className="flex items-center space-x-1">
-                  <Clock className="w-3 h-3" />
-                  <span>{article.timeAgo}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <User className="w-3 h-3" />
-                  <span>{article.author}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Article Image */}
-            {article.imageUrl && (
-              <div className="mb-4 rounded-lg overflow-hidden">
-                <img
-                  src={article.imageUrl}
-                  alt={article.title}
-                  className="w-full h-48 object-cover"
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Article Description */}
-            <p className="text-sm text-gray-400 mb-4 line-clamp-3">
-              {article.description}
-            </p>
-
-            {/* Categories */}
-            {article.categories.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                {article.categories.slice(0, 3).map((cat, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-gray-700/50 text-gray-300 text-xs rounded"
-                  >
-                    {cat}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Article Footer */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4 text-sm">
-                <span className="text-gray-500">Source: {article.source}</span>
-                {(article.upvotes > 0 || article.downvotes > 0) && (
-                  <div className="flex items-center space-x-2 text-gray-400">
-                    <span>👍 {article.upvotes}</span>
-                    <span>👎 {article.downvotes}</span>
-                  </div>
-                )}
-              </div>
-
-              <a
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center space-x-1 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                <span>Read More</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
+      {/* Error Message */}
+      {error && (
+        <div className="ultra-glass p-4 border-l-4 border-red-500">
+          <div className="flex items-center gap-2 text-red-400">
+            <AlertCircle className="w-5 h-5" />
+            <span>{error}</span>
           </div>
-        ))}
+        </div>
+      )}
+
+      {/* Articles */}
+      <div className="grid gap-4">
+        {articles.length === 0 ? (
+          <div className="ultra-glass p-8 text-center">
+            <p className="text-gray-400">No articles found.</p>
+            <p className="text-gray-500 text-sm mt-2">
+              Try selecting a different category or refreshing the feed.
+            </p>
+          </div>
+        ) : (
+          articles.map((article, index) => (
+            <article
+              key={article.id}
+              className="news-card hover:scale-[1.02] transition-all duration-300"
+              style={{
+                animationDelay: `${index * 50}ms`,
+              }}
+            >
+              <div className="flex gap-4">
+                {article.imageUrl && (
+                  <img
+                    src={article.imageUrl}
+                    alt=""
+                    className="w-24 h-24 object-cover rounded-lg"
+                    onError={(e) => (e.target.style.display = "none")}
+                  />
+                )}
+                <div className="flex-1">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">
+                        {article.title}
+                      </h3>
+                      <p className="text-gray-400 text-sm line-clamp-2 mb-3">
+                        {article.description}
+                      </p>
+
+                      {/* Expandable full text section */}
+                      {article.fullText && article.fullText.length > 200 && (
+                        <>
+                          <button
+                            onClick={() => toggleExpanded(article.id)}
+                            className="flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm mb-2 transition-colors"
+                          >
+                            {expandedArticles.has(article.id) ? (
+                              <>
+                                <ChevronUp className="w-4 h-4" />
+                                Show less
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="w-4 h-4" />
+                                Read full article
+                              </>
+                            )}
+                          </button>
+
+                          {expandedArticles.has(article.id) && (
+                            <div className="mt-3 p-4 bg-black/30 rounded-lg border border-gray-700/50">
+                              <div className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
+                                {article.fullText}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 mt-3">
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {article.timeAgo}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <User className="w-3 h-3" />
+                          {article.author}
+                        </span>
+                        {article.categories.length > 0 && (
+                          <div className="flex gap-1">
+                            {article.categories.slice(0, 3).map((cat, idx) => (
+                              <span key={idx} className="tag-badge">
+                                {cat}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <a
+                      href={article.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="cyber-button p-2 hover:scale-110 transition-transform"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))
+        )}
       </div>
 
-      {/* No Articles Message */}
-      {articles.length === 0 && !loading && (
-        <div className="ultra-glass p-12 text-center">
-          <Newspaper className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-          <p className="text-gray-400">
-            No articles found. Try adjusting your filters.
-          </p>
+      {/* Status */}
+      {articles.length > 0 && (
+        <div className="text-center text-gray-500 text-sm">
+          Showing {articles.length} articles • Last updated{" "}
+          {new Date().toLocaleTimeString()}
         </div>
       )}
     </div>
