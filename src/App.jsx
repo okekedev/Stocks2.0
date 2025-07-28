@@ -1,5 +1,5 @@
-// src/App.jsx - Updated with Authentication
-import React from "react";
+// src/App.jsx - Updated with Tab Navigation for Stocks/Crypto
+import React, { useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthProvider";
 import { LoginPage } from "./components/LoginPage";
 import { useNewsData } from "./hooks/useNewsData";
@@ -10,9 +10,50 @@ import { DividendCalendar } from "./components/DividendCalendar";
 import { LoadingSpinner } from "./components/LoadingSpinner";
 import { ErrorDisplay } from "./components/ErrorDisplay";
 import { Footer } from "./components/Footer";
+import CryptoTab from "./components/CryptoTab"; // Import your new crypto component
+import { TrendingUp, Bitcoin } from "lucide-react";
+
+// Tab Navigation Component
+function TabNavigation({ activeTab, onTabChange }) {
+  return (
+    <div className="flex items-center space-x-1 p-1 bg-gray-800/50 rounded-lg mb-6">
+      <button
+        onClick={() => onTabChange("stocks")}
+        className={`
+          flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300
+          ${
+            activeTab === "stocks"
+              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105"
+              : "text-gray-400 hover:text-white hover:bg-gray-700/50"
+          }
+        `}
+      >
+        <TrendingUp className="w-4 h-4" />
+        <span>Stocks</span>
+      </button>
+
+      <button
+        onClick={() => onTabChange("crypto")}
+        className={`
+          flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300
+          ${
+            activeTab === "crypto"
+              ? "bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg transform scale-105"
+              : "text-gray-400 hover:text-white hover:bg-gray-700/50"
+          }
+        `}
+      >
+        <Bitcoin className="w-4 h-4" />
+        <span>Crypto</span>
+      </button>
+    </div>
+  );
+}
 
 // Main App Component (authenticated)
 function AuthenticatedApp() {
+  const [activeTab, setActiveTab] = useState("stocks");
+
   const {
     newsData,
     newsLoading,
@@ -48,50 +89,65 @@ function AuthenticatedApp() {
       <Header lastUpdate={newsData?.timestamp} />
 
       <div className="container mx-auto px-4 py-6">
-        {/* News Loading State */}
-        {newsLoading && (
-          <div className="flex items-center justify-center py-8 mb-6">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mr-3"></div>
-            <span className="text-blue-400">
-              Fetching latest market news...
-            </span>
-          </div>
-        )}
+        {/* Tab Navigation */}
+        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {/* AI Analysis Loading State */}
-        {analysisLoading && <LoadingSpinner />}
-
-        {/* Error State */}
-        {error && <ErrorDisplay error={error} onRetry={refresh} />}
-
-        {/* Main Content */}
-        {newsData && !newsLoading && (
+        {/* Stocks Tab Content */}
+        {activeTab === "stocks" && (
           <>
-            {/* Stats Overview with Price and Sentiment Filters */}
-            <FilteringStats
-              newsData={newsData}
-              loading={false}
-              minPrice={minPrice}
-              setMinPrice={setMinPrice}
-              maxPrice={maxPrice}
-              setMaxPrice={setMaxPrice}
-              sentimentFilter={sentimentFilter}
-              setSentimentFilter={setSentimentFilter}
-            />
+            {/* News Loading State */}
+            {newsLoading && (
+              <div className="flex items-center justify-center py-8 mb-6">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mr-3"></div>
+                <span className="text-blue-400">
+                  Fetching latest market news...
+                </span>
+              </div>
+            )}
 
-            {/* News Table */}
-            <NewsTable
-              stocks={newsData.stocks}
-              allArticles={newsData.articles}
-              onAnalyzeAll={handleAnalyzeAll}
-              persistentAnalyses={persistentAnalyses}
-              onAnalysisComplete={handleAnalysisComplete}
-            />
+            {/* AI Analysis Loading State */}
+            {analysisLoading && <LoadingSpinner />}
 
-            {/* Dividend Calendar */}
-            <DividendCalendar />
+            {/* Error State */}
+            {error && <ErrorDisplay error={error} onRetry={refresh} />}
+
+            {/* Main Content */}
+            {newsData && !newsLoading && (
+              <>
+                {/* Stats Overview with Price and Sentiment Filters */}
+                <FilteringStats
+                  newsData={newsData}
+                  loading={false}
+                  onRefresh={refresh}
+                  minPrice={minPrice}
+                  setMinPrice={setMinPrice}
+                  maxPrice={maxPrice}
+                  setMaxPrice={setMaxPrice}
+                  sentimentFilter={sentimentFilter}
+                  setSentimentFilter={setSentimentFilter}
+                  persistentAnalyses={persistentAnalyses}
+                  onClearAnalyses={clearAnalyses}
+                  onAnalyzeAll={handleAnalyzeAll}
+                />
+
+                {/* News Table */}
+                <NewsTable
+                  stocks={newsData.stocks}
+                  allArticles={newsData.articles}
+                  onAnalyzeAll={handleAnalyzeAll}
+                  persistentAnalyses={persistentAnalyses}
+                  onAnalysisComplete={handleAnalysisComplete}
+                />
+
+                {/* Dividend Calendar */}
+                <DividendCalendar />
+              </>
+            )}
           </>
         )}
+
+        {/* Crypto Tab Content */}
+        {activeTab === "crypto" && <CryptoTab />}
       </div>
 
       {/* Footer */}
