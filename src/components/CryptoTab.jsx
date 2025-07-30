@@ -1,245 +1,130 @@
+// src/components/CryptoTab.jsx - Updated with Coinbase API
 import React, { useState, useEffect } from "react";
 import {
+  Bitcoin,
   TrendingUp,
   TrendingDown,
-  DollarSign,
-  Clock,
-  Newspaper,
-  AlertCircle,
-  Brain,
-  Loader2,
-  RefreshCw,
-  Activity,
-  BarChart3,
-  Target,
-  Globe,
   ExternalLink,
-  ChevronUp,
+  Brain,
   ChevronDown,
-  Terminal,
-  CheckCircle,
+  ChevronUp,
+  RefreshCw,
+  Clock,
+  Loader2,
+  AlertCircle,
   X,
-  Zap,
-  Bitcoin,
-  Info,
+  Newspaper,
 } from "lucide-react";
 import CryptoNews from "./CryptoNews"; // Import the news component
+// Removed AnalysisModal import - will create inline modal
 
-// CoinDesk API Configuration
-const API_KEY = import.meta.env.VITE_COINDESK_API_KEY;
-const COINDESK_BASE_URL = "https://data-api.coindesk.com";
+// Coinbase API Configuration
+const EXCHANGE_BASE_URL = "https://api.exchange.coinbase.com";
+const V3_BASE_URL = "https://api.coinbase.com";
+const API_KEY = import.meta.env.VITE_COINBASE_API_KEY;
 
-// Since CoinDesk API doesn't provide the same comprehensive market data,
-// we'll use CryptoCompare for price data (free tier, no key needed for basic requests)
-const CRYPTOCOMPARE_URL =
-  "https://min-api.cryptocompare.com/data/top/mktcapfull";
+// Helper function to add delay
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Mock Gemini Service for AI Analysis (replace with your actual service)
-const geminiService = {
-  async analyzeStock(stock, onProgress) {
-    // Simulate API call with progress updates
-    onProgress?.("📊 Analyzing price movements...");
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    onProgress?.("📰 Processing market sentiment...");
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    onProgress?.("🧠 Generating 8-hour prediction...");
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Mock result
-    const basePrice = stock.currentPrice || 100;
-    return {
-      buyPercentage: Math.floor(Math.random() * 40) + 40,
-      signal: Math.random() > 0.5 ? "buy" : "hold",
-      reasoning: "Based on recent momentum and market sentiment analysis",
-      next8Hours: (Math.random() - 0.5) * 10,
-      confidence: Math.random() * 0.3 + 0.6,
-      patternsFound: [
-        "Bullish Flag",
-        `Support at $${(basePrice * 0.95).toFixed(2)}`,
-      ],
-      analysisTimestamp: new Date().toISOString(),
-    };
-  },
-};
-
-// AI Analysis Worker Component
-function AIWorker({ stock, onAnalysisComplete, onClose, isActive }) {
-  const [logs, setLogs] = useState([]);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [complete, setComplete] = useState(false);
-  const [result, setResult] = useState(null);
-
-  const addLog = (message, type = "info") => {
-    const timestamp = new Date().toLocaleTimeString();
-    setLogs((prev) => [...prev, { timestamp, message, type }]);
-  };
-
-  const performAnalysis = async () => {
-    setAnalyzing(true);
-    setLogs([]);
-
-    addLog(
-      `🤖 Starting 8-hour prediction analysis for ${stock.ticker}...`,
-      "system"
-    );
-    addLog(
-      `📊 Current Price: $${stock.currentPrice?.toFixed(2)} (${
-        stock.changePercent24h > 0 ? "+" : ""
-      }${stock.changePercent24h?.toFixed(2)}%)`,
-      "info"
-    );
-    addLog(`📰 Analyzing recent market activity...`, "info");
-
-    try {
-      const aiResult = await geminiService.analyzeStock(
-        stock,
-        (progressMessage) => {
-          addLog(progressMessage, "progress");
-        }
-      );
-
-      addLog("✅ 8-hour prediction complete", "success");
-      addLog(
-        `🎯 Signal: ${aiResult.signal.toUpperCase()} (${
-          aiResult.buyPercentage
-        }%)`,
-        "result"
-      );
-      addLog(`💭 ${aiResult.reasoning}`, "reasoning");
-
-      const predictionDirection =
-        aiResult.next8Hours > 0 ? "📈" : aiResult.next8Hours < 0 ? "📉" : "➡️";
-      addLog(
-        `${predictionDirection} 8-Hour Prediction: ${
-          aiResult.next8Hours > 0 ? "+" : ""
-        }${aiResult.next8Hours.toFixed(1)}%`,
-        "forecast"
-      );
-
-      setResult(aiResult);
-      setComplete(true);
-      onAnalysisComplete?.(stock.ticker, aiResult);
-    } catch (error) {
-      addLog(`❌ Analysis failed: ${error.message}`, "error");
-      setComplete(true);
-    }
-
-    setAnalyzing(false);
-  };
-
-  useEffect(() => {
-    if (isActive && !analyzing && !complete) {
-      performAnalysis();
-    }
-  }, [isActive]);
-
-  if (!isActive) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-900/95 border border-gray-700 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-2xl">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 border-b border-gray-700 p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
-                <Brain className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white">
-                  AI Analysis Engine
-                </h3>
-                <p className="text-sm text-gray-300">
-                  8-Hour Price Prediction for {stock.ticker}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              <X className="w-5 h-5 text-gray-400 hover:text-white" />
-            </button>
-          </div>
-        </div>
-
-        {/* Terminal Content */}
-        <div className="bg-black/90 p-6 h-96 overflow-y-auto font-mono text-sm space-y-2">
-          {logs.map((log, index) => (
-            <div
-              key={index}
-              className={`${
-                log.type === "error"
-                  ? "text-red-400"
-                  : log.type === "success"
-                  ? "text-green-400"
-                  : log.type === "system"
-                  ? "text-blue-400"
-                  : log.type === "result"
-                  ? "text-yellow-400"
-                  : log.type === "reasoning"
-                  ? "text-purple-400"
-                  : log.type === "forecast"
-                  ? "text-cyan-400"
-                  : "text-gray-300"
-              }`}
-            >
-              <span className="text-gray-500">[{log.timestamp}]</span>{" "}
-              {log.message}
-            </div>
-          ))}
-          {analyzing && (
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Processing...</span>
-            </div>
-          )}
-        </div>
-
-        {/* Results Summary */}
-        {complete && result && (
-          <div className="border-t border-gray-700 p-6 bg-gray-800/50">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div
-                  className={`text-2xl font-bold ${
-                    result.signal === "buy"
-                      ? "text-green-400"
-                      : "text-yellow-400"
-                  }`}
-                >
-                  {result.signal.toUpperCase()}
-                </div>
-                <div className="text-sm text-gray-400">Signal</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">
-                  {result.buyPercentage}%
-                </div>
-                <div className="text-sm text-gray-400">Confidence</div>
-              </div>
-              <div className="text-center">
-                <div
-                  className={`text-2xl font-bold ${
-                    result.next8Hours > 0 ? "text-green-400" : "text-red-400"
-                  }`}
-                >
-                  {result.next8Hours > 0 ? "+" : ""}
-                  {result.next8Hours.toFixed(1)}%
-                </div>
-                <div className="text-sm text-gray-400">8H Prediction</div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+// Calculate percentage change
+function calculatePercentageChange(current, previous) {
+  if (!current || !previous || previous === "0") return 0;
+  const change =
+    ((parseFloat(current) - parseFloat(previous)) / parseFloat(previous)) * 100;
+  return change;
 }
 
-// Stock Card Component (matching crypto section style)
+// Fetch all products from Exchange API
+async function getExchangeProducts() {
+  try {
+    const response = await fetch(`${EXCHANGE_BASE_URL}/products`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Exchange API Error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching Exchange products:", error.message);
+    throw error;
+  }
+}
+
+// Fetch market stats (24hr ticker) from Exchange API
+async function getMarketStats(productId) {
+  try {
+    const [tickerResponse, statsResponse] = await Promise.all([
+      fetch(`${EXCHANGE_BASE_URL}/products/${productId}/ticker`),
+      fetch(`${EXCHANGE_BASE_URL}/products/${productId}/stats`),
+    ]);
+
+    if (!tickerResponse.ok || !statsResponse.ok) {
+      return null;
+    }
+
+    const ticker = await tickerResponse.json();
+    const stats = await statsResponse.json();
+
+    return {
+      price: ticker.price,
+      volume_24h: stats.volume,
+      high_24h: stats.high,
+      low_24h: stats.low,
+      open_24h: stats.open,
+      last_24h: stats.last,
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+// Get crypto metadata (name, description, etc.)
+function getCryptoMetadata(baseCurrency, displayName) {
+  // Use display name from Coinbase if available, otherwise use ticker
+  const name = displayName || baseCurrency;
+
+  // Basic descriptions for popular cryptos, fallback to generic
+  const descriptions = {
+    BTC: "The world's first cryptocurrency, Bitcoin is a decentralized digital currency.",
+    ETH: "A decentralized platform that runs smart contracts and decentralized applications.",
+    SOL: "A high-performance blockchain supporting builders around the world.",
+    USDC: "A digital stablecoin that is pegged to the United States dollar.",
+    USDT: "A stablecoin that mirrors the price of the U.S. dollar.",
+    XRP: "Digital payment protocol and cryptocurrency for financial transactions.",
+    ADA: "A proof-of-stake blockchain platform founded on peer-reviewed research.",
+    DOGE: "A cryptocurrency featuring a likeness of the Shiba Inu dog from the 'Doge' meme.",
+    AVAX: "A layer one blockchain that functions as a platform for decentralized applications.",
+    LINK: "A decentralized oracle network that provides real-world data to smart contracts.",
+  };
+
+  return {
+    name: name,
+    description: descriptions[baseCurrency] || `${name} - Trading on Coinbase`,
+  };
+}
+
+// Generate mock news for demo
+function generateMockNews(ticker) {
+  const newsOptions = [
+    `${ticker} shows strong momentum amid institutional interest`,
+    `Technical analysis suggests bullish pattern for ${ticker}`,
+    `${ticker} network activity reaches new highs`,
+    `Major upgrade announced for ${ticker} ecosystem`,
+    `${ticker} trading volume surges on positive sentiment`,
+  ];
+
+  return {
+    title: newsOptions[Math.floor(Math.random() * newsOptions.length)],
+    url: `https://www.coindesk.com/search?q=${ticker}`,
+    minutesAgo: Math.floor(Math.random() * 60) + 1,
+  };
+}
+
+// Stock Card Component
 function StockCard({ stock, onAnalyze, hasAnalysis, analysisResult }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -309,84 +194,26 @@ function StockCard({ stock, onAnalyze, hasAnalysis, analysisResult }) {
           <div className="text-sm font-semibold text-gray-300">
             $
             {stock.volume24h >= 1e9
-              ? `${(stock.volume24h / 1e9).toFixed(1)}B`
+              ? `${(stock.volume24h / 1e9).toFixed(2)}B`
               : stock.volume24h >= 1e6
-              ? `${(stock.volume24h / 1e6).toFixed(1)}M`
-              : `${(stock.volume24h / 1e3).toFixed(1)}K`}
+              ? `${(stock.volume24h / 1e6).toFixed(2)}M`
+              : stock.volume24h.toLocaleString()}
           </div>
         </div>
       </div>
 
-      {/* AI Analysis Result */}
-      {hasAnalysis && analysisResult && (
-        <div className="mb-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center space-x-2">
-              <Brain className="w-4 h-4 text-purple-400" />
-              <span className="text-sm font-medium text-gray-300">
-                AI Prediction
-              </span>
-            </div>
-            <span
-              className={`px-2 py-1 rounded text-xs font-bold ${getSignalColor(
-                analysisResult.signal
-              )}`}
-            >
-              {analysisResult.signal?.toUpperCase()}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div>
-              <span className="text-gray-500">8H Forecast:</span>
-              <span
-                className={`ml-1 font-medium ${
-                  analysisResult.next8Hours > 0
-                    ? "text-green-400"
-                    : "text-red-400"
-                }`}
-              >
-                {analysisResult.next8Hours > 0 ? "+" : ""}
-                {analysisResult.next8Hours?.toFixed(1)}%
-              </span>
-            </div>
-            <div>
-              <span className="text-gray-500">Confidence:</span>
-              <span className="ml-1 font-medium text-blue-400">
-                {analysisResult.buyPercentage}%
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Latest News */}
-      {stock.latestNews && (
-        <div className="mb-4">
-          <div className="flex items-center space-x-2 mb-2">
-            <Newspaper className="w-4 h-4 text-blue-400" />
-            <span className="text-sm font-medium text-gray-300">
-              Latest News
-            </span>
-            <span className="text-xs text-gray-500">
-              {stock.newsMinutesAgo}m ago
-            </span>
-          </div>
-          <p className="text-sm text-gray-400 line-clamp-2">
-            {stock.latestNews.title}
-          </p>
-        </div>
-      )}
-
-      {/* Action Buttons */}
-      <div className="flex items-center space-x-2">
+      {/* Analysis Section */}
+      <div className="flex items-center justify-between">
         <button
           onClick={() => onAnalyze(stock)}
           disabled={hasAnalysis}
-          className={`flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-all duration-300 flex items-center justify-center space-x-2 ${
-            hasAnalysis
-              ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-              : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transform hover:scale-105"
-          }`}
+          className={`
+            px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2
+            ${
+              hasAnalysis
+                ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transform hover:scale-105"
+            }`}
         >
           <Brain className="w-4 h-4" />
           <span>{hasAnalysis ? "Analyzed" : "Predict 8H"}</span>
@@ -425,6 +252,24 @@ function StockCard({ stock, onAnalyze, hasAnalysis, analysisResult }) {
             </div>
           </div>
 
+          {/* Latest News */}
+          {stock.latestNews && (
+            <div className="bg-gray-800/30 rounded-lg p-3">
+              <div className="flex items-center space-x-2 mb-2">
+                <Newspaper className="w-4 h-4 text-blue-400" />
+                <span className="text-sm font-medium text-gray-300">
+                  Latest News
+                </span>
+                <span className="text-xs text-gray-500">
+                  {stock.newsMinutesAgo}m ago
+                </span>
+              </div>
+              <p className="text-sm text-gray-400 line-clamp-2">
+                {stock.latestNews.title}
+              </p>
+            </div>
+          )}
+
           {stock.description && (
             <p className="text-sm text-gray-400 leading-relaxed">
               {stock.description}
@@ -437,9 +282,40 @@ function StockCard({ stock, onAnalyze, hasAnalysis, analysisResult }) {
             rel="noopener noreferrer"
             className="inline-flex items-center space-x-1 text-sm text-blue-400 hover:text-blue-300 transition-colors"
           >
-            <span>Read Full Article</span>
+            <span>View More News</span>
             <ExternalLink className="w-3 h-3" />
           </a>
+        </div>
+      )}
+
+      {/* Analysis Results */}
+      {hasAnalysis && analysisResult && (
+        <div className="mt-4 pt-4 border-t border-gray-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs text-gray-500 uppercase">AI Signal</div>
+              <div
+                className={`text-sm font-bold ${getSignalColor(
+                  analysisResult.signal
+                )} px-2 py-1 rounded inline-block`}
+              >
+                {analysisResult.signal?.toUpperCase()}
+              </div>
+            </div>
+            <div className="text-right">
+              <div
+                className={`text-lg font-bold ${
+                  analysisResult.next8Hours > 0
+                    ? "text-green-400"
+                    : "text-red-400"
+                }`}
+              >
+                {analysisResult.next8Hours > 0 ? "+" : ""}
+                {analysisResult.next8Hours.toFixed(1)}%
+              </div>
+              <div className="text-sm text-gray-400">8H Prediction</div>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -455,107 +331,110 @@ export default function CryptoTab() {
   const [analyses, setAnalyses] = useState({});
   const [lastUpdate, setLastUpdate] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
-  // Fetch crypto data from multiple sources
+  // Fetch crypto data from Coinbase
   const fetchCryptoData = async () => {
     try {
       setRefreshing(true);
       setError(null);
 
-      if (!API_KEY) {
-        throw new Error(
-          "CoinDesk API key not found. Please add VITE_COINDESK_API_KEY to your .env file"
-        );
-      }
+      console.log("Fetching cryptocurrency data from Coinbase...");
 
-      // First, get list of cryptocurrencies and their 24hr data from CryptoCompare
-      // (CoinDesk API is primarily for news, not comprehensive market data)
-      const cryptoParams = new URLSearchParams({
-        limit: 50,
-        tsym: "USD",
-      });
+      // Step 1: Get all products
+      const exchangeProducts = await getExchangeProducts();
+      console.log(`Found ${exchangeProducts.length} products`);
 
-      const cryptoUrl = `${CRYPTOCOMPARE_URL}?${cryptoParams}`;
+      // Filter for active USD products
+      const usdProducts = exchangeProducts.filter(
+        (p) => p.quote_currency === "USD" && p.status === "online"
+      );
 
-      console.log("Fetching cryptocurrency market data...");
-      const marketResponse = await fetch(cryptoUrl);
+      // We'll need to fetch market data for all products to sort by price change
+      console.log(
+        `Fetching market data for ${usdProducts.length} USD pairs...`
+      );
 
-      if (!marketResponse.ok) {
-        throw new Error(
-          `Market API Error: ${marketResponse.status} ${marketResponse.statusText}`
-        );
-      }
-
-      const marketData = await marketResponse.json();
-
-      if (marketData.Response === "Error") {
-        throw new Error(marketData.Message || "Market API Error");
-      }
-
-      // Transform the data into our component format
+      // Step 2: Enrich with market data
       const cryptoData = [];
+      const batchSize = 5; // Increased batch size for faster loading
 
-      if (marketData.Data && Array.isArray(marketData.Data)) {
-        // Process each cryptocurrency
-        for (let i = 0; i < Math.min(marketData.Data.length, 20); i++) {
-          const crypto = marketData.Data[i];
-          if (crypto.RAW && crypto.RAW.USD) {
-            const data = crypto.RAW.USD;
-            const coinInfo = crypto.CoinInfo;
+      for (let i = 0; i < usdProducts.length; i += batchSize) {
+        const batch = usdProducts.slice(i, i + batchSize);
+        console.log(
+          `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(
+            usdProducts.length / batchSize
+          )}...`
+        );
 
-            // Try to fetch news from CoinDesk for this cryptocurrency
-            let latestNews = null;
+        const batchPromises = batch.map(async (product) => {
+          try {
+            const marketStats = await getMarketStats(product.id);
 
-            // Skip news fetching for now since we're getting 404 errors
-            // We'll use mock news until we can verify the correct endpoint
-            const newsOptions = [
-              `${coinInfo.Name} shows strong momentum amid institutional interest`,
-              `Technical analysis suggests bullish pattern for ${coinInfo.Name}`,
-              `${coinInfo.Name} network activity reaches new highs`,
-              `Major upgrade announced for ${coinInfo.Name} ecosystem`,
-              `${coinInfo.Name} trading volume surges on positive sentiment`,
-            ];
+            const metadata = getCryptoMetadata(
+              product.base_currency,
+              product.display_name
+            );
+            const mockNews = generateMockNews(product.base_currency);
+            const changePercent = calculatePercentageChange(
+              marketStats.price,
+              marketStats.open_24h
+            );
 
-            latestNews = {
-              title:
-                newsOptions[Math.floor(Math.random() * newsOptions.length)],
-              url: `https://www.coindesk.com/search?q=${coinInfo.Name}`,
-              minutesAgo: Math.floor(Math.random() * 60) + 1,
-            };
+            // Calculate approximate market cap (simplified)
+            const price = parseFloat(marketStats.price);
+            const volume = parseFloat(marketStats.volume_24h);
+            const estimatedMarketCap = volume * 100; // Very rough estimate
 
-            cryptoData.push({
-              ticker: coinInfo.Name,
-              name: coinInfo.FullName,
-              rank: i + 1,
-              currentPrice: data.PRICE,
-              changePercent24h: data.CHANGEPCT24HOUR,
-              high24h: data.HIGH24HOUR,
-              low24h: data.LOW24HOUR,
-              volume24h: data.VOLUME24HOUR,
-              marketCap: data.MKTCAP,
+            return {
+              ticker: product.base_currency,
+              name: metadata.name,
+              currentPrice: price,
+              changePercent24h: changePercent,
+              high24h: parseFloat(marketStats.high_24h),
+              low24h: parseFloat(marketStats.low_24h),
+              volume24h: volume,
+              marketCap: estimatedMarketCap,
               latestNews: {
-                title: latestNews.title,
+                title: mockNews.title,
               },
-              newsMinutesAgo: latestNews.minutesAgo,
-              newsUrl: latestNews.url,
-              description: `${
-                coinInfo.FullName
-              } is a digital asset with a market cap of ${(
-                data.MKTCAP / 1e9
-              ).toFixed(2)}B.`,
-              // Additional data
-              supply: data.SUPPLY,
-              totalVolume24h: data.TOTALVOLUME24H,
-              openDay: data.OPENDAY,
-              changeDay: data.CHANGEDAY,
-            });
+              newsMinutesAgo: mockNews.minutesAgo,
+              newsUrl: mockNews.url,
+              description: metadata.description,
+              productId: product.id,
+              displayName: product.display_name, // Keep original display name from Coinbase
+            };
+          } catch (error) {
+            console.error(`Failed to enrich ${product.id}:`, error.message);
+            return null;
           }
+        });
+
+        const batchResults = await Promise.all(batchPromises);
+        cryptoData.push(...batchResults.filter((p) => p !== null));
+
+        // Add delay between batches to avoid rate limits
+        if (i + batchSize < usdProducts.length) {
+          await delay(2000); // Reduced delay for faster loading
         }
       }
 
-      setStocks(cryptoData);
+      // Sort by 24h percentage change (highest to lowest)
+      const sortedCryptoData = cryptoData.sort(
+        (a, b) => b.changePercent24h - a.changePercent24h
+      );
+
+      // Add rank based on sorted position
+      sortedCryptoData.forEach((crypto, index) => {
+        crypto.rank = index + 1;
+      });
+
+      setStocks(sortedCryptoData);
       setLastUpdate(new Date());
-      console.log(`Successfully loaded ${cryptoData.length} cryptocurrencies`);
+      console.log(
+        `Successfully loaded ${sortedCryptoData.length} cryptocurrencies`
+      );
     } catch (err) {
       console.error("Error fetching crypto data:", err);
       setError(err.message || "Failed to fetch cryptocurrency data");
@@ -579,6 +458,24 @@ export default function CryptoTab() {
           newsMinutesAgo: 12,
           newsUrl: "https://www.coindesk.com/search?q=Bitcoin",
           description: "Bitcoin is a decentralized digital currency.",
+        },
+        {
+          ticker: "ETH",
+          name: "Ethereum",
+          rank: 2,
+          currentPrice: 2234.56,
+          changePercent24h: 2.15,
+          high24h: 2280.0,
+          low24h: 2180.0,
+          volume24h: 15678900000,
+          marketCap: 268000000000,
+          latestNews: {
+            title: "Ethereum Layer 2 Solutions See Explosive Growth",
+          },
+          newsMinutesAgo: 25,
+          newsUrl: "https://www.coindesk.com/search?q=Ethereum",
+          description:
+            "Ethereum is a decentralized platform for smart contracts.",
         },
       ]);
     } finally {
@@ -637,18 +534,31 @@ export default function CryptoTab() {
 
   return (
     <div className="space-y-6">
+      {/* Custom scrollbar styles */}
+      <style jsx>{`
+        .crypto-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .crypto-scrollbar::-webkit-scrollbar-track {
+          background: #1f2937;
+          border-radius: 4px;
+        }
+        .crypto-scrollbar::-webkit-scrollbar-thumb {
+          background: #4b5563;
+          border-radius: 4px;
+        }
+        .crypto-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #6b7280;
+        }
+      `}</style>
       {/* API Key Notice */}
       {!API_KEY && (
-        <div className="mb-4 p-4 bg-red-900/20 border border-red-700/30 rounded-lg flex items-start space-x-3">
-          <AlertCircle className="w-5 h-5 text-red-400 mt-0.5" />
-          <div className="text-sm text-red-300">
-            <p className="font-medium mb-1">CoinDesk API Key Missing</p>
-            <p className="text-red-400/80">
-              Add{" "}
-              <code className="bg-gray-800 px-1 rounded">
-                VITE_COINDESK_API_KEY=your_key
-              </code>{" "}
-              to your .env file
+        <div className="mb-4 p-4 bg-yellow-900/20 border border-yellow-700/30 rounded-lg flex items-start space-x-3">
+          <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
+          <div className="text-sm text-yellow-300">
+            <p className="font-medium mb-1">No API Key Required</p>
+            <p className="text-yellow-400/80">
+              Using Coinbase Exchange public API (no authentication needed)
             </p>
           </div>
         </div>
@@ -662,7 +572,7 @@ export default function CryptoTab() {
             Cryptocurrency Market
           </h2>
           <p className="text-gray-400 text-sm">
-            Real-time crypto prices with AI-powered 8-hour predictions
+            Real-time crypto prices from Coinbase sorted by 24h gains
           </p>
         </div>
 
@@ -687,80 +597,93 @@ export default function CryptoTab() {
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-400 text-sm">Total Cryptos</p>
-              <p className="text-2xl font-bold text-white">{stocks.length}</p>
-            </div>
-            <Bitcoin className="w-8 h-8 text-yellow-400 opacity-50" />
-          </div>
-        </div>
-
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-400 text-sm">Gainers</p>
-              <p className="text-2xl font-bold text-green-400">
-                {stocks.filter((s) => s.changePercent24h > 0).length}
-              </p>
-            </div>
-            <TrendingUp className="w-8 h-8 text-green-400 opacity-50" />
-          </div>
-        </div>
-
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-400 text-sm">Losers</p>
-              <p className="text-2xl font-bold text-red-400">
-                {stocks.filter((s) => s.changePercent24h < 0).length}
-              </p>
-            </div>
-            <TrendingDown className="w-8 h-8 text-red-400 opacity-50" />
-          </div>
-        </div>
-
-        <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-400 text-sm">AI Analyzed</p>
-              <p className="text-2xl font-bold text-purple-400">
-                {Object.keys(analyses).length}
-              </p>
-            </div>
-            <Brain className="w-8 h-8 text-purple-400 opacity-50" />
-          </div>
+      {/* Stock Grid - Scrollable Container */}
+      <div
+        className="crypto-scrollbar relative h-[800px] overflow-y-auto overflow-x-hidden pr-2"
+        style={{
+          scrollbarWidth: "thin",
+          scrollbarColor: "#4B5563 #1F2937",
+        }}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {stocks.map((stock) => (
+            <StockCard
+              key={stock.ticker}
+              stock={stock}
+              onAnalyze={handleAnalyze}
+              hasAnalysis={!!analyses[stock.ticker]}
+              analysisResult={analyses[stock.ticker]}
+            />
+          ))}
         </div>
       </div>
 
-      {/* Stocks Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {stocks.map((stock) => (
-          <StockCard
-            key={stock.ticker}
-            stock={stock}
-            onAnalyze={handleAnalyze}
-            hasAnalysis={!!analyses[stock.ticker]}
-            analysisResult={analyses[stock.ticker]}
-          />
-        ))}
+      {/* Crypto News Section */}
+      <div className="mt-8">
+        <CryptoNews />
       </div>
 
-      {/* AI Analysis Modal */}
+      {/* Analysis Modal */}
       {activeAnalysis && (
-        <AIWorker
-          stock={activeAnalysis}
-          onAnalysisComplete={handleAnalysisComplete}
-          onClose={() => setActiveAnalysis(null)}
-          isActive={true}
-        />
-      )}
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setActiveAnalysis(null)}
+        >
+          <div
+            className="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-white flex items-center">
+                <Brain className="w-5 h-5 mr-2 text-purple-400" />
+                AI Analysis - {activeAnalysis.ticker}
+              </h3>
+              <button
+                onClick={() => setActiveAnalysis(null)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-      {/* CoinDesk News Section */}
-      <CryptoNews />
+            <div className="space-y-4">
+              <div className="p-4 bg-gray-800/50 rounded-lg">
+                <p className="text-gray-300 mb-2">
+                  Analyzing {activeAnalysis.name} ({activeAnalysis.ticker})...
+                </p>
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
+                  <span className="text-sm text-gray-400">
+                    Generating 8-hour prediction
+                  </span>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <p className="text-xs text-gray-500">
+                  This is a demo. Implement your AI analysis here.
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  // Simulate analysis completion
+                  setTimeout(() => {
+                    handleAnalysisComplete(activeAnalysis.ticker, {
+                      signal: Math.random() > 0.5 ? "buy" : "hold",
+                      next8Hours: (Math.random() - 0.5) * 10,
+                      buyPercentage: Math.floor(Math.random() * 40) + 40,
+                    });
+                  }, 2000);
+                }}
+                className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+              >
+                Run Analysis
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

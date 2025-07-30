@@ -269,53 +269,8 @@ export default function CryptoNews() {
         </div>
 
         {/* Source Filter */}
-        <div className="flex gap-2 mb-4">
-          <button
-            onClick={() => setSelectedFeed("all")}
-            className={`filter-button ${
-              selectedFeed === "all" ? "active" : ""
-            }`}
-          >
-            All Sources
-          </button>
-          {COINDESK_API_KEY && (
-            <button
-              onClick={() => setSelectedFeed("coindesk")}
-              className={`filter-button ${
-                selectedFeed === "coindesk" ? "active" : ""
-              }`}
-            >
-              CoinDesk
-            </button>
-          )}
-          <button
-            onClick={() => setSelectedFeed("cryptocompare")}
-            className={`filter-button ${
-              selectedFeed === "cryptocompare" ? "active" : ""
-            }`}
-          >
-            CryptoCompare
-          </button>
-        </div>
 
         {/* Category Filters */}
-        <div className="flex flex-wrap gap-2">
-          {categories.map((category) => {
-            const Icon = category.icon;
-            return (
-              <button
-                key={category.value}
-                onClick={() => setSelectedCategory(category.value)}
-                className={`filter-button ${
-                  selectedCategory === category.value ? "active" : ""
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {category.label}
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       {/* Error Message */}

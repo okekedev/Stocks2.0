@@ -12,6 +12,9 @@
   "dependencies": {
     "@azure/msal-browser": "^3.28.1",
     "@azure/msal-react": "^2.2.0",
+    "axios": "^1.11.0",
+    "crypto": "^1.0.1",
+    "dotenv": "^17.2.1",
     "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
