@@ -1,5 +1,5 @@
-// src/components/CryptoTab.jsx - Complete file with SearchBar
-import React, { useState, useEffect } from "react";
+// src/components/CryptoTab.jsx - WebSocket Implementation
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Bitcoin,
   TrendingUp,
@@ -14,20 +14,17 @@ import {
   AlertCircle,
   X,
   Newspaper,
-  Search,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 import CryptoNews from "./CryptoNews";
-import { SearchBar } from "./SearchBar";
 
-// Coinbase API Configuration
-const EXCHANGE_BASE_URL = "https://api.exchange.coinbase.com";
-const V3_BASE_URL = "https://api.coinbase.com";
-const API_KEY = import.meta.env.VITE_COINBASE_API_KEY;
+// Coinbase WebSocket Configuration
+const WEBSOCKET_URL = "wss://ws-feed.exchange.coinbase.com";
+const RECONNECT_DELAY = 5000; // 5 seconds
+const MAX_RECONNECT_ATTEMPTS = 5;
 
-// Helper function to add delay
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// Calculate percentage change
+// Helper function to calculate percentage change
 function calculatePercentageChange(current, previous) {
   if (!current || !previous || previous === "0") return 0;
   const change =
@@ -35,75 +32,108 @@ function calculatePercentageChange(current, previous) {
   return change;
 }
 
-// Fetch all products from Exchange API
-async function getExchangeProducts() {
-  try {
-    const response = await fetch(`${EXCHANGE_BASE_URL}/products`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Exchange API Error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching Exchange products:", error.message);
-    throw error;
-  }
-}
-
-// Fetch market stats (24hr ticker) from Exchange API
-async function getMarketStats(productId) {
-  try {
-    const [tickerResponse, statsResponse] = await Promise.all([
-      fetch(`${EXCHANGE_BASE_URL}/products/${productId}/ticker`),
-      fetch(`${EXCHANGE_BASE_URL}/products/${productId}/stats`),
-    ]);
-
-    if (!tickerResponse.ok || !statsResponse.ok) {
-      return null;
-    }
-
-    const ticker = await tickerResponse.json();
-    const stats = await statsResponse.json();
-
-    return {
-      price: ticker.price,
-      volume_24h: stats.volume,
-      high_24h: stats.high,
-      low_24h: stats.low,
-      open_24h: stats.open,
-      last_24h: stats.last,
-    };
-  } catch (error) {
-    return null;
-  }
-}
-
 // Get crypto metadata (name, description, etc.)
-function getCryptoMetadata(baseCurrency, displayName) {
-  const name = displayName || baseCurrency;
-
-  const descriptions = {
-    BTC: "The world's first cryptocurrency, Bitcoin is a decentralized digital currency.",
-    ETH: "A decentralized platform that runs smart contracts and decentralized applications.",
-    SOL: "A high-performance blockchain supporting builders around the world.",
-    USDC: "A digital stablecoin that is pegged to the United States dollar.",
-    USDT: "A stablecoin that mirrors the price of the U.S. dollar.",
-    XRP: "Digital payment protocol and cryptocurrency for financial transactions.",
-    ADA: "A proof-of-stake blockchain platform founded on peer-reviewed research.",
-    DOGE: "A cryptocurrency featuring a likeness of the Shiba Inu dog from the 'Doge' meme.",
-    AVAX: "A layer one blockchain that functions as a platform for decentralized applications.",
-    LINK: "A decentralized oracle network that provides real-world data to smart contracts.",
+function getCryptoMetadata(baseCurrency) {
+  const metadata = {
+    BTC: {
+      name: "Bitcoin",
+      description:
+        "The world's first cryptocurrency, Bitcoin is a decentralized digital currency.",
+    },
+    ETH: {
+      name: "Ethereum",
+      description:
+        "A decentralized platform that runs smart contracts and decentralized applications.",
+    },
+    SOL: {
+      name: "Solana",
+      description:
+        "A high-performance blockchain supporting builders around the world.",
+    },
+    USDC: {
+      name: "USD Coin",
+      description:
+        "A digital stablecoin that is pegged to the United States dollar.",
+    },
+    USDT: {
+      name: "Tether",
+      description: "A stablecoin that mirrors the price of the U.S. dollar.",
+    },
+    XRP: {
+      name: "XRP",
+      description:
+        "Digital payment protocol and cryptocurrency for financial transactions.",
+    },
+    ADA: {
+      name: "Cardano",
+      description:
+        "A proof-of-stake blockchain platform founded on peer-reviewed research.",
+    },
+    DOGE: {
+      name: "Dogecoin",
+      description:
+        "A cryptocurrency featuring a likeness of the Shiba Inu dog from the 'Doge' meme.",
+    },
+    AVAX: {
+      name: "Avalanche",
+      description:
+        "A layer one blockchain that functions as a platform for decentralized applications.",
+    },
+    LINK: {
+      name: "Chainlink",
+      description:
+        "A decentralized oracle network that provides real-world data to smart contracts.",
+    },
+    MATIC: {
+      name: "Polygon",
+      description: "A decentralized Ethereum scaling platform.",
+    },
+    DOT: {
+      name: "Polkadot",
+      description: "An open-source sharded multichain protocol.",
+    },
+    UNI: {
+      name: "Uniswap",
+      description: "A decentralized cryptocurrency exchange.",
+    },
+    ATOM: {
+      name: "Cosmos",
+      description:
+        "A decentralized network of independent parallel blockchains.",
+    },
+    LTC: {
+      name: "Litecoin",
+      description: "A peer-to-peer cryptocurrency based on Bitcoin.",
+    },
+    BCH: {
+      name: "Bitcoin Cash",
+      description: "A peer-to-peer electronic cash system.",
+    },
+    ALGO: {
+      name: "Algorand",
+      description: "A carbon-negative, layer-1 blockchain.",
+    },
+    XLM: {
+      name: "Stellar",
+      description: "An open network for storing and moving money.",
+    },
+    VET: {
+      name: "VeChain",
+      description: "A blockchain platform for supply chain management.",
+    },
+    ICP: {
+      name: "Internet Computer",
+      description:
+        "A blockchain that enables smart contracts to run at web speed.",
+    },
   };
 
-  return {
-    name: name,
-    description: descriptions[baseCurrency] || `${name} - Trading on Coinbase`,
-  };
+  return (
+    metadata[baseCurrency] || {
+      name: baseCurrency,
+      description: `${baseCurrency} cryptocurrency trading on Coinbase.`,
+    }
+  );
 }
 
 // Generate mock news for demo
@@ -169,139 +199,124 @@ function StockCard({ stock, onAnalyze, hasAnalysis, analysisResult }) {
             ) : (
               <TrendingDown className="w-4 h-4 mr-1" />
             )}
-            {Math.abs(stock.changePercent24h || 0).toFixed(2)}%
+            {stock.changePercent24h >= 0 ? "+" : ""}
+            {stock.changePercent24h?.toFixed(2)}%
           </div>
         </div>
       </div>
 
-      {/* Market Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
         <div>
-          <div className="text-xs text-gray-500 uppercase">24h High</div>
-          <div className="text-sm font-semibold text-gray-300">
+          <span className="text-gray-500">24h High</span>
+          <div className="text-white font-medium">
             ${stock.high24h?.toFixed(2) || "0.00"}
           </div>
         </div>
         <div>
-          <div className="text-xs text-gray-500 uppercase">24h Low</div>
-          <div className="text-sm font-semibold text-gray-300">
+          <span className="text-gray-500">24h Low</span>
+          <div className="text-white font-medium">
             ${stock.low24h?.toFixed(2) || "0.00"}
           </div>
         </div>
         <div>
-          <div className="text-xs text-gray-500 uppercase">Volume</div>
-          <div className="text-sm font-semibold text-gray-300">
-            $
-            {stock.volume24h >= 1e9
-              ? `${(stock.volume24h / 1e9).toFixed(2)}B`
-              : stock.volume24h >= 1e6
-              ? `${(stock.volume24h / 1e6).toFixed(2)}M`
-              : stock.volume24h.toLocaleString()}
+          <span className="text-gray-500">Volume (24h)</span>
+          <div className="text-white font-medium">
+            ${((stock.volume24h || 0) / 1e9).toFixed(2)}B
+          </div>
+        </div>
+        <div>
+          <span className="text-gray-500">Market Cap</span>
+          <div className="text-white font-medium">
+            ${((stock.marketCap || 0) / 1e9).toFixed(2)}B
           </div>
         </div>
       </div>
 
-      {/* Analysis Section */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => onAnalyze(stock)}
-          disabled={hasAnalysis}
-          className={`
-            px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2
-            ${
-              hasAnalysis
-                ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transform hover:scale-105"
-            }`}
-        >
-          <Brain className="w-4 h-4" />
-          <span>{hasAnalysis ? "Analyzed" : "Predict 8H"}</span>
-        </button>
-
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="p-2 bg-gray-700/50 hover:bg-gray-600/50 rounded-lg transition-colors"
-        >
-          {expanded ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
-        </button>
-      </div>
-
-      {/* Expanded Details */}
-      {expanded && (
-        <div className="mt-4 pt-4 border-t border-gray-700 space-y-3">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-gray-500">Market Cap:</span>
-              <span className="ml-2 text-gray-300">
-                $
-                {stock.marketCap >= 1e9
-                  ? `${(stock.marketCap / 1e9).toFixed(2)}B`
-                  : `${(stock.marketCap / 1e6).toFixed(2)}M`}
-              </span>
+      <div className="border-t border-gray-700/50 pt-4">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center text-sm text-gray-400 mb-2">
+              <Newspaper className="w-3 h-3 mr-1" />
+              <span>{stock.newsMinutesAgo}m ago</span>
             </div>
-            <div>
-              <span className="text-gray-500">24h Range:</span>
-              <span className="ml-2 text-gray-300">
-                ${stock.low24h?.toFixed(2)} - ${stock.high24h?.toFixed(2)}
-              </span>
-            </div>
-          </div>
-
-          {/* Latest News */}
-          {stock.latestNews && (
-            <div className="bg-gray-800/30 rounded-lg p-3">
-              <div className="flex items-center space-x-2 mb-2">
-                <Newspaper className="w-4 h-4 text-blue-400" />
-                <span className="text-sm font-medium text-gray-300">
-                  Latest News
-                </span>
-                <span className="text-xs text-gray-500">
-                  {stock.newsMinutesAgo}m ago
-                </span>
-              </div>
-              <p className="text-sm text-gray-400 line-clamp-2">
-                {stock.latestNews.title}
-              </p>
-            </div>
-          )}
-
-          {stock.description && (
-            <p className="text-sm text-gray-400 leading-relaxed">
-              {stock.description}
+            <p className="text-sm text-gray-300 line-clamp-2">
+              {stock.latestNews?.title}
             </p>
-          )}
-
+          </div>
           <a
             href={stock.newsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-1 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+            className="ml-4 p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
           >
-            <span>View More News</span>
-            <ExternalLink className="w-3 h-3" />
+            <ExternalLink className="w-4 h-4 text-gray-400" />
           </a>
         </div>
-      )}
+      </div>
 
-      {/* Analysis Results */}
-      {hasAnalysis && analysisResult && (
-        <div className="mt-4 pt-4 border-t border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-xs text-gray-500 uppercase">AI Signal</div>
+      <div className="mt-4 space-y-3">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full py-2 bg-gray-700/30 hover:bg-gray-700/50 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2"
+        >
+          <span className="text-sm text-gray-300">
+            {expanded ? "Hide Details" : "Show Details"}
+          </span>
+          {expanded ? (
+            <ChevronUp className="w-4 h-4 text-gray-400" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+          )}
+        </button>
+
+        {expanded && (
+          <div className="text-sm text-gray-400 pt-2">{stock.description}</div>
+        )}
+
+        <button
+          onClick={() => onAnalyze(stock)}
+          disabled={hasAnalysis}
+          className={`w-full py-3 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 ${
+            hasAnalysis
+              ? "bg-gray-700/30 text-gray-500 cursor-not-allowed"
+              : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+          }`}
+        >
+          <Brain className="w-4 h-4" />
+          <span>{hasAnalysis ? "Analysis Complete" : "Analyze"}</span>
+        </button>
+      </div>
+
+      {analysisResult && (
+        <div className="mt-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700/50">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium text-gray-300">
+              AI Analysis
+            </span>
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-medium ${getSignalColor(
+                analysisResult.signal
+              )}`}
+            >
+              {analysisResult.signal?.toUpperCase()}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="text-center p-2 bg-gray-700/30 rounded">
               <div
-                className={`text-sm font-bold ${getSignalColor(
-                  analysisResult.signal
-                )} px-2 py-1 rounded inline-block`}
+                className={`text-lg font-bold ${
+                  analysisResult.confidence >= 70
+                    ? "text-green-400"
+                    : analysisResult.confidence >= 40
+                    ? "text-yellow-400"
+                    : "text-red-400"
+                }`}
               >
-                {analysisResult.signal?.toUpperCase()}
+                {analysisResult.confidence}%
               </div>
+              <div className="text-sm text-gray-400">Confidence</div>
             </div>
-            <div className="text-right">
+            <div className="text-center p-2 bg-gray-700/30 rounded">
               <div
                 className={`text-lg font-bold ${
                   analysisResult.next8Hours > 0
@@ -321,161 +336,237 @@ function StockCard({ stock, onAnalyze, hasAnalysis, analysisResult }) {
   );
 }
 
-// Main Crypto Tab Component
+// Main Crypto Tab Component with WebSocket
 export default function CryptoTab() {
-  const [stocks, setStocks] = useState([]);
+  const [cryptoData, setCryptoData] = useState(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [connectionStatus, setConnectionStatus] = useState("disconnected");
   const [activeAnalysis, setActiveAnalysis] = useState(null);
   const [analyses, setAnalyses] = useState({});
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
-  // Fetch crypto data from Coinbase
-  const fetchCryptoData = async () => {
-    try {
-      setRefreshing(true);
-      setError(null);
+  const wsRef = useRef(null);
+  const reconnectAttempts = useRef(0);
+  const reconnectTimeoutRef = useRef(null);
+  const subscriptionRef = useRef(new Set());
 
-      console.log("Fetching cryptocurrency data from Coinbase...");
+  // Default crypto symbols to subscribe to
+  const DEFAULT_SYMBOLS = [
+    "BTC",
+    "ETH",
+    "SOL",
+    "USDC",
+    "XRP",
+    "ADA",
+    "DOGE",
+    "AVAX",
+    "LINK",
+    "MATIC",
+    "DOT",
+    "UNI",
+    "ATOM",
+    "LTC",
+    "BCH",
+    "ALGO",
+    "XLM",
+    "VET",
+    "ICP",
+    "SHIB",
+    "CRO",
+    "NEAR",
+    "FIL",
+    "APT",
+    "ARB",
+    "OP",
+    "IMX",
+    "GRT",
+    "SAND",
+    "MANA",
+    "AXS",
+    "AAVE",
+  ];
 
-      // Step 1: Get all products
-      const exchangeProducts = await getExchangeProducts();
-      console.log(`Found ${exchangeProducts.length} products`);
+  // Initialize 24h data for each crypto
+  const init24hData = useCallback((symbol) => {
+    const metadata = getCryptoMetadata(symbol);
+    const mockNews = generateMockNews(symbol);
 
-      // Filter for active USD products
-      const usdProducts = exchangeProducts.filter(
-        (p) => p.quote_currency === "USD" && p.status === "online"
-      );
-
-      console.log(
-        `Fetching market data for ${usdProducts.length} USD pairs...`
-      );
-
-      // Step 2: Enrich with market data
-      const cryptoData = [];
-      const batchSize = 5;
-
-      for (let i = 0; i < usdProducts.length; i += batchSize) {
-        const batch = usdProducts.slice(i, i + batchSize);
-
-        const batchPromises = batch.map(async (product) => {
-          try {
-            const stats = await getMarketStats(product.id);
-            if (!stats) return null;
-
-            const metadata = getCryptoMetadata(
-              product.base_currency,
-              product.display_name
-            );
-            const mockNews = generateMockNews(product.base_currency);
-
-            const price = parseFloat(stats.price);
-            const open24h = parseFloat(stats.open_24h);
-            const changePercent = calculatePercentageChange(price, open24h);
-
-            return {
-              ticker: product.base_currency,
-              name: metadata.name,
-              currentPrice: price,
-              changePercent24h: changePercent,
-              high24h: parseFloat(stats.high_24h),
-              low24h: parseFloat(stats.low_24h),
-              volume24h: parseFloat(stats.volume_24h) * price,
-              marketCap: price * 1000000, // Mock market cap
-              latestNews: mockNews,
-              newsMinutesAgo: mockNews.minutesAgo,
-              newsUrl: mockNews.url,
-              description: metadata.description,
-            };
-          } catch (error) {
-            console.error(`Failed to enrich ${product.id}:`, error.message);
-            return null;
-          }
-        });
-
-        const batchResults = await Promise.all(batchPromises);
-        cryptoData.push(...batchResults.filter((p) => p !== null));
-
-        // Add delay between batches to avoid rate limits
-        if (i + batchSize < usdProducts.length) {
-          await delay(2000);
-        }
-      }
-
-      // Sort by 24h percentage change (highest to lowest)
-      const sortedCryptoData = cryptoData.sort(
-        (a, b) => b.changePercent24h - a.changePercent24h
-      );
-
-      // Add rank based on sorted position
-      sortedCryptoData.forEach((crypto, index) => {
-        crypto.rank = index + 1;
-      });
-
-      setStocks(sortedCryptoData);
-      setLastUpdate(new Date());
-      console.log(
-        `Successfully loaded ${sortedCryptoData.length} cryptocurrencies`
-      );
-    } catch (err) {
-      console.error("Error fetching crypto data:", err);
-      setError(err.message || "Failed to fetch cryptocurrency data");
-
-      // Set some fallback data for demo purposes
-      setStocks([
-        {
-          ticker: "BTC",
-          name: "Bitcoin",
-          rank: 1,
-          currentPrice: 42567.89,
-          changePercent24h: 3.45,
-          high24h: 43200.0,
-          low24h: 41000.0,
-          volume24h: 28945678900,
-          marketCap: 834567890000,
-          latestNews: {
-            title:
-              "Bitcoin ETF Sees Record Inflows as Institutional Adoption Grows",
-          },
-          newsMinutesAgo: 12,
-          newsUrl: "https://www.coindesk.com/search?q=Bitcoin",
-          description: "Bitcoin is a decentralized digital currency.",
-        },
-        {
-          ticker: "ETH",
-          name: "Ethereum",
-          rank: 2,
-          currentPrice: 2234.56,
-          changePercent24h: 2.15,
-          high24h: 2280.0,
-          low24h: 2180.0,
-          volume24h: 15678900000,
-          marketCap: 268000000000,
-          latestNews: {
-            title: "Ethereum Layer 2 Solutions See Explosive Growth",
-          },
-          newsMinutesAgo: 25,
-          newsUrl: "https://www.coindesk.com/search?q=Ethereum",
-          description:
-            "Ethereum is a decentralized platform for smart contracts.",
-        },
-      ]);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  // Fetch crypto data on mount
-  useEffect(() => {
-    fetchCryptoData();
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchCryptoData, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+    return {
+      ticker: symbol,
+      name: metadata.name,
+      description: metadata.description,
+      currentPrice: 0,
+      changePercent24h: 0,
+      high24h: 0,
+      low24h: 0,
+      volume24h: 0,
+      marketCap: 0,
+      open24h: 0,
+      latestNews: { title: mockNews.title },
+      newsMinutesAgo: mockNews.minutesAgo,
+      newsUrl: mockNews.url,
+      lastUpdate: Date.now(),
+    };
   }, []);
+
+  // Connect to WebSocket
+  const connectWebSocket = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      return;
+    }
+
+    setConnectionStatus("connecting");
+    setError(null);
+
+    try {
+      wsRef.current = new WebSocket(WEBSOCKET_URL);
+
+      wsRef.current.onopen = () => {
+        console.log("WebSocket connected");
+        setConnectionStatus("connected");
+        reconnectAttempts.current = 0;
+        setLoading(false);
+
+        // Subscribe to ticker channels for all symbols
+        const productIds = DEFAULT_SYMBOLS.map((symbol) => `${symbol}-USD`);
+
+        const subscribeMessage = {
+          type: "subscribe",
+          product_ids: productIds,
+          channels: ["ticker", "heartbeat"],
+        };
+
+        wsRef.current.send(JSON.stringify(subscribeMessage));
+        console.log("Subscribed to:", productIds);
+      };
+
+      wsRef.current.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "ticker") {
+          // Extract symbol from product_id (e.g., "BTC-USD" -> "BTC")
+          const symbol = data.product_id.split("-")[0];
+
+          setCryptoData((prev) => {
+            const newData = new Map(prev);
+            const existing = newData.get(symbol) || init24hData(symbol);
+
+            // Calculate 24h change if we have open price
+            const currentPrice = parseFloat(data.price);
+            const open24h =
+              existing.open24h || parseFloat(data.open_24h) || currentPrice;
+            const changePercent24h = calculatePercentageChange(
+              currentPrice,
+              open24h
+            );
+
+            // Update with new ticker data
+            newData.set(symbol, {
+              ...existing,
+              currentPrice,
+              changePercent24h,
+              high24h: parseFloat(data.high_24h) || existing.high24h,
+              low24h: parseFloat(data.low_24h) || existing.low24h,
+              volume24h: parseFloat(data.volume_24h) || existing.volume24h,
+              open24h: open24h,
+              marketCap: (parseFloat(data.volume_24h) || 0) * 100, // Rough estimate
+              lastUpdate: Date.now(),
+            });
+
+            return newData;
+          });
+
+          setLastUpdate(new Date());
+        } else if (data.type === "heartbeat") {
+          // Heartbeat received - connection is alive
+        } else if (data.type === "error") {
+          console.error("WebSocket error:", data.message);
+          setError(data.message);
+        }
+      };
+
+      wsRef.current.onerror = (event) => {
+        console.error("WebSocket error:", event);
+        setConnectionStatus("error");
+        setError("WebSocket connection error");
+      };
+
+      wsRef.current.onclose = () => {
+        console.log("WebSocket disconnected");
+        setConnectionStatus("disconnected");
+
+        // Attempt to reconnect
+        if (reconnectAttempts.current < MAX_RECONNECT_ATTEMPTS) {
+          reconnectAttempts.current++;
+          console.log(`Reconnecting... Attempt ${reconnectAttempts.current}`);
+
+          reconnectTimeoutRef.current = setTimeout(() => {
+            connectWebSocket();
+          }, RECONNECT_DELAY);
+        } else {
+          setError(
+            "Unable to connect to Coinbase WebSocket after multiple attempts"
+          );
+        }
+      };
+    } catch (err) {
+      console.error("Failed to create WebSocket:", err);
+      setError("Failed to connect to Coinbase WebSocket");
+      setConnectionStatus("error");
+    }
+  }, [init24hData]);
+
+  // Disconnect WebSocket
+  const disconnectWebSocket = useCallback(() => {
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+  }, []);
+
+  // Subscribe to additional symbol
+  const subscribeToSymbol = useCallback(
+    (symbol) => {
+      if (
+        wsRef.current?.readyState === WebSocket.OPEN &&
+        !subscriptionRef.current.has(symbol)
+      ) {
+        const subscribeMessage = {
+          type: "subscribe",
+          product_ids: [`${symbol}-USD`],
+          channels: ["ticker"],
+        };
+        wsRef.current.send(JSON.stringify(subscribeMessage));
+        subscriptionRef.current.add(symbol);
+
+        // Initialize data for new symbol
+        setCryptoData((prev) => {
+          const newData = new Map(prev);
+          if (!newData.has(symbol)) {
+            newData.set(symbol, init24hData(symbol));
+          }
+          return newData;
+        });
+      }
+    },
+    [init24hData]
+  );
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    connectWebSocket();
+
+    return () => {
+      disconnectWebSocket();
+    };
+  }, [connectWebSocket, disconnectWebSocket]);
 
   const handleAnalyze = (stock) => {
     setActiveAnalysis(stock);
@@ -489,30 +580,25 @@ export default function CryptoTab() {
     setActiveAnalysis(null);
   };
 
-  if (loading) {
+  // Convert Map to sorted array for display
+  const sortedCryptoData = Array.from(cryptoData.values())
+    .filter((crypto) => crypto.currentPrice > 0) // Only show cryptos with price data
+    .sort((a, b) => b.changePercent24h - a.changePercent24h);
+
+  // Filter by search term
+  const filteredCryptoData = sortedCryptoData.filter(
+    (crypto) =>
+      crypto.ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      crypto.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (loading && cryptoData.size === 0) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
-        <span className="ml-3 text-gray-400">Loading crypto data...</span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="ultra-glass p-6">
-        <div className="flex items-center justify-center py-12">
-          <AlertCircle className="w-8 h-8 text-red-400 mr-3" />
-          <div>
-            <span className="text-red-400">{error}</span>
-            <button
-              onClick={fetchCryptoData}
-              className="ml-4 px-4 py-2 bg-red-900/20 hover:bg-red-900/30 text-red-400 rounded-lg transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
+        <span className="ml-3 text-gray-400">
+          Connecting to Coinbase WebSocket...
+        </span>
       </div>
     );
   }
@@ -537,66 +623,128 @@ export default function CryptoTab() {
         }
       `}</style>
 
-      {/* API Key Notice */}
-      {!API_KEY && (
-        <div className="mb-4 p-4 bg-yellow-900/20 border border-yellow-700/30 rounded-lg flex items-start space-x-3">
-          <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
-          <div className="text-sm text-yellow-300">
-            <p className="font-medium mb-1">No API Key Required</p>
-            <p className="text-yellow-400/80">
-              Using Coinbase Exchange public API (no authentication needed)
-            </p>
+      {/* Connection Status */}
+      <div
+        className={`mb-4 p-4 rounded-lg flex items-start space-x-3 ${
+          connectionStatus === "connected"
+            ? "bg-green-900/20 border border-green-700/30"
+            : connectionStatus === "connecting"
+            ? "bg-yellow-900/20 border border-yellow-700/30"
+            : "bg-red-900/20 border border-red-700/30"
+        }`}
+      >
+        {connectionStatus === "connected" ? (
+          <Wifi className="w-5 h-5 text-green-400 mt-0.5" />
+        ) : (
+          <WifiOff className="w-5 h-5 text-red-400 mt-0.5" />
+        )}
+        <div className="text-sm">
+          <p
+            className={`font-medium mb-1 ${
+              connectionStatus === "connected"
+                ? "text-green-300"
+                : "text-red-300"
+            }`}
+          >
+            {connectionStatus === "connected"
+              ? "Connected to Coinbase WebSocket"
+              : connectionStatus === "connecting"
+              ? "Connecting to Coinbase WebSocket..."
+              : "Disconnected from Coinbase WebSocket"}
+          </p>
+          <p
+            className={
+              connectionStatus === "connected"
+                ? "text-green-400/80"
+                : "text-red-400/80"
+            }
+          >
+            Real-time price updates{" "}
+            {connectionStatus === "connected" ? "active" : "inactive"}
+          </p>
+        </div>
+      </div>
+
+      {/* Header Section */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-1 flex items-center">
+            <Bitcoin className="w-7 h-7 mr-2 text-yellow-400" />
+            Cryptocurrency Market
+          </h2>
+          <p className="text-gray-400 text-sm">
+            Real-time crypto prices from Coinbase WebSocket
+          </p>
+        </div>
+
+        <div className="flex items-center space-x-4">
+          {lastUpdate && (
+            <div className="text-sm text-gray-400">
+              <Clock className="w-4 h-4 inline mr-1" />
+              Last updated: {lastUpdate.toLocaleTimeString()}
+            </div>
+          )}
+
+          <button
+            onClick={() => {
+              disconnectWebSocket();
+              setTimeout(connectWebSocket, 100);
+            }}
+            className="px-4 py-2 bg-gray-700/50 hover:bg-gray-600/50 rounded-lg transition-all duration-300 flex items-center space-x-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>Reconnect</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onFocus={() => setIsSearchFocused(true)}
+          onBlur={() => setIsSearchFocused(false)}
+          placeholder="Search cryptocurrencies..."
+          className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 transition-colors"
+        />
+        {searchTerm && (
+          <button
+            onClick={() => setSearchTerm("")}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+
+      {/* Add new symbol */}
+      {isSearchFocused &&
+        searchTerm &&
+        !cryptoData.has(searchTerm.toUpperCase()) && (
+          <div className="mb-4 p-3 bg-gray-800/50 rounded-lg">
+            <button
+              onClick={() => {
+                subscribeToSymbol(searchTerm.toUpperCase());
+                setSearchTerm("");
+              }}
+              className="text-sm text-blue-400 hover:text-blue-300"
+            >
+              + Add {searchTerm.toUpperCase()} to watchlist
+            </button>
           </div>
+        )}
+
+      {/* Error Display */}
+      {error && (
+        <div className="flex items-center justify-center py-4">
+          <AlertCircle className="w-6 h-6 text-red-400 mr-2" />
+          <span className="text-red-400">{error}</span>
         </div>
       )}
 
-      {/* Header Section with Search */}
-      <div className="flex flex-col space-y-4 mb-6">
-        {/* First Row: Title and Refresh */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-1 flex items-center">
-              <Bitcoin className="w-7 h-7 mr-2 text-yellow-400" />
-              Cryptocurrency Market
-            </h2>
-            <p className="text-gray-400 text-sm">
-              Real-time crypto prices from Coinbase sorted by 24h gains
-            </p>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            {lastUpdate && (
-              <div className="text-sm text-gray-400">
-                <Clock className="w-4 h-4 inline mr-1" />
-                Last updated: {lastUpdate.toLocaleTimeString()}
-              </div>
-            )}
-
-            <button
-              onClick={fetchCryptoData}
-              disabled={refreshing}
-              className="px-4 py-2 bg-gray-700/50 hover:bg-gray-600/50 rounded-lg transition-all duration-300 flex items-center space-x-2"
-            >
-              <RefreshCw
-                className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
-              />
-              <span>Refresh</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Second Row: Search Bar */}
-        <SearchBar
-          value={searchTerm}
-          onChange={setSearchTerm}
-          placeholder="Search cryptocurrencies by ticker or name..."
-          onFocus={() => setIsSearchFocused(true)}
-          onBlur={() => setIsSearchFocused(false)}
-          className="max-w-md"
-        />
-      </div>
-
-      {/* Stock Grid - Scrollable Container */}
+      {/* Crypto Grid - Scrollable Container */}
       <div
         className="crypto-scrollbar relative h-[800px] overflow-y-auto overflow-x-hidden pr-2"
         style={{
@@ -605,77 +753,37 @@ export default function CryptoTab() {
         }}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {stocks
-            .filter((stock) => {
-              if (!searchTerm) return true;
-              const search = searchTerm.toLowerCase();
-              return (
-                stock.ticker.toLowerCase().includes(search) ||
-                stock.name.toLowerCase().includes(search)
-              );
-            })
-            .map((stock) => (
-              <StockCard
-                key={stock.ticker}
-                stock={stock}
-                onAnalyze={handleAnalyze}
-                hasAnalysis={!!analyses[stock.ticker]}
-                analysisResult={analyses[stock.ticker]}
-              />
-            ))}
+          {filteredCryptoData.map((crypto, index) => (
+            <StockCard
+              key={crypto.ticker}
+              stock={{ ...crypto, rank: index + 1 }}
+              onAnalyze={handleAnalyze}
+              hasAnalysis={!!analyses[crypto.ticker]}
+              analysisResult={analyses[crypto.ticker]}
+            />
+          ))}
         </div>
 
-        {/* No Results Message */}
-        {stocks.filter((stock) => {
-          if (!searchTerm) return true;
-          const search = searchTerm.toLowerCase();
-          return (
-            stock.ticker.toLowerCase().includes(search) ||
-            stock.name.toLowerCase().includes(search)
-          );
-        }).length === 0 &&
-          searchTerm && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Search className="w-12 h-12 text-gray-500 mb-3" />
-              <p className="text-gray-400 text-lg">
-                No cryptocurrencies found matching "{searchTerm}"
-              </p>
-              <button
-                onClick={() => setSearchTerm("")}
-                className="mt-3 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                Clear search
-              </button>
-            </div>
-          )}
+        {filteredCryptoData.length === 0 && (
+          <div className="text-center py-12 text-gray-500">
+            {searchTerm
+              ? "No cryptocurrencies found matching your search."
+              : "Waiting for price data..."}
+          </div>
+        )}
       </div>
 
       {/* Analysis Modal */}
       {activeAnalysis && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-            <div className="p-6 border-b border-gray-700 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">
-                AI Analysis: {activeAnalysis.ticker}
-              </h2>
-              <button
-                onClick={() => setActiveAnalysis(null)}
-                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6">
-              <p className="text-gray-400">
-                AI analysis integration coming soon...
-              </p>
-            </div>
-          </div>
-        </div>
+        <CryptoNews
+          crypto={activeAnalysis}
+          onClose={() => setActiveAnalysis(null)}
+          onAnalysisComplete={handleAnalysisComplete}
+        />
       )}
 
-      {/* Crypto News Component */}
-      <CryptoNews searchTerm="{searchTerm}" />
+      {/* News Component if needed */}
+      <CryptoNews />
     </div>
   );
 }
