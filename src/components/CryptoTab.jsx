@@ -1,4 +1,4 @@
-// src/components/CryptoTab.jsx - Updated with Coinbase API
+// src/components/CryptoTab.jsx - Complete file with SearchBar
 import React, { useState, useEffect } from "react";
 import {
   Bitcoin,
@@ -14,9 +14,10 @@ import {
   AlertCircle,
   X,
   Newspaper,
+  Search,
 } from "lucide-react";
-import CryptoNews from "./CryptoNews"; // Import the news component
-// Removed AnalysisModal import - will create inline modal
+import CryptoNews from "./CryptoNews";
+import { SearchBar } from "./SearchBar";
 
 // Coinbase API Configuration
 const EXCHANGE_BASE_URL = "https://api.exchange.coinbase.com";
@@ -84,10 +85,8 @@ async function getMarketStats(productId) {
 
 // Get crypto metadata (name, description, etc.)
 function getCryptoMetadata(baseCurrency, displayName) {
-  // Use display name from Coinbase if available, otherwise use ticker
   const name = displayName || baseCurrency;
 
-  // Basic descriptions for popular cryptos, fallback to generic
   const descriptions = {
     BTC: "The world's first cryptocurrency, Bitcoin is a decentralized digital currency.",
     ETH: "A decentralized platform that runs smart contracts and decentralized applications.",
@@ -351,59 +350,45 @@ export default function CryptoTab() {
         (p) => p.quote_currency === "USD" && p.status === "online"
       );
 
-      // We'll need to fetch market data for all products to sort by price change
       console.log(
         `Fetching market data for ${usdProducts.length} USD pairs...`
       );
 
       // Step 2: Enrich with market data
       const cryptoData = [];
-      const batchSize = 5; // Increased batch size for faster loading
+      const batchSize = 5;
 
       for (let i = 0; i < usdProducts.length; i += batchSize) {
         const batch = usdProducts.slice(i, i + batchSize);
-        console.log(
-          `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(
-            usdProducts.length / batchSize
-          )}...`
-        );
 
         const batchPromises = batch.map(async (product) => {
           try {
-            const marketStats = await getMarketStats(product.id);
+            const stats = await getMarketStats(product.id);
+            if (!stats) return null;
 
             const metadata = getCryptoMetadata(
               product.base_currency,
               product.display_name
             );
             const mockNews = generateMockNews(product.base_currency);
-            const changePercent = calculatePercentageChange(
-              marketStats.price,
-              marketStats.open_24h
-            );
 
-            // Calculate approximate market cap (simplified)
-            const price = parseFloat(marketStats.price);
-            const volume = parseFloat(marketStats.volume_24h);
-            const estimatedMarketCap = volume * 100; // Very rough estimate
+            const price = parseFloat(stats.price);
+            const open24h = parseFloat(stats.open_24h);
+            const changePercent = calculatePercentageChange(price, open24h);
 
             return {
               ticker: product.base_currency,
               name: metadata.name,
               currentPrice: price,
               changePercent24h: changePercent,
-              high24h: parseFloat(marketStats.high_24h),
-              low24h: parseFloat(marketStats.low_24h),
-              volume24h: volume,
-              marketCap: estimatedMarketCap,
-              latestNews: {
-                title: mockNews.title,
-              },
+              high24h: parseFloat(stats.high_24h),
+              low24h: parseFloat(stats.low_24h),
+              volume24h: parseFloat(stats.volume_24h) * price,
+              marketCap: price * 1000000, // Mock market cap
+              latestNews: mockNews,
               newsMinutesAgo: mockNews.minutesAgo,
               newsUrl: mockNews.url,
               description: metadata.description,
-              productId: product.id,
-              displayName: product.display_name, // Keep original display name from Coinbase
             };
           } catch (error) {
             console.error(`Failed to enrich ${product.id}:`, error.message);
@@ -416,7 +401,7 @@ export default function CryptoTab() {
 
         // Add delay between batches to avoid rate limits
         if (i + batchSize < usdProducts.length) {
-          await delay(2000); // Reduced delay for faster loading
+          await delay(2000);
         }
       }
 
@@ -551,6 +536,7 @@ export default function CryptoTab() {
           background: #6b7280;
         }
       `}</style>
+
       {/* API Key Notice */}
       {!API_KEY && (
         <div className="mb-4 p-4 bg-yellow-900/20 border border-yellow-700/30 rounded-lg flex items-start space-x-3">
@@ -564,37 +550,50 @@ export default function CryptoTab() {
         </div>
       )}
 
-      {/* Header Section */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-1 flex items-center">
-            <Bitcoin className="w-7 h-7 mr-2 text-yellow-400" />
-            Cryptocurrency Market
-          </h2>
-          <p className="text-gray-400 text-sm">
-            Real-time crypto prices from Coinbase sorted by 24h gains
-          </p>
+      {/* Header Section with Search */}
+      <div className="flex flex-col space-y-4 mb-6">
+        {/* First Row: Title and Refresh */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-1 flex items-center">
+              <Bitcoin className="w-7 h-7 mr-2 text-yellow-400" />
+              Cryptocurrency Market
+            </h2>
+            <p className="text-gray-400 text-sm">
+              Real-time crypto prices from Coinbase sorted by 24h gains
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {lastUpdate && (
+              <div className="text-sm text-gray-400">
+                <Clock className="w-4 h-4 inline mr-1" />
+                Last updated: {lastUpdate.toLocaleTimeString()}
+              </div>
+            )}
+
+            <button
+              onClick={fetchCryptoData}
+              disabled={refreshing}
+              className="px-4 py-2 bg-gray-700/50 hover:bg-gray-600/50 rounded-lg transition-all duration-300 flex items-center space-x-2"
+            >
+              <RefreshCw
+                className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
+              />
+              <span>Refresh</span>
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-4">
-          {lastUpdate && (
-            <div className="text-sm text-gray-400">
-              <Clock className="w-4 h-4 inline mr-1" />
-              Last updated: {lastUpdate.toLocaleTimeString()}
-            </div>
-          )}
-
-          <button
-            onClick={fetchCryptoData}
-            disabled={refreshing}
-            className="px-4 py-2 bg-gray-700/50 hover:bg-gray-600/50 rounded-lg transition-all duration-300 flex items-center space-x-2"
-          >
-            <RefreshCw
-              className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
-            />
-            <span>Refresh</span>
-          </button>
-        </div>
+        {/* Second Row: Search Bar */}
+        <SearchBar
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Search cryptocurrencies by ticker or name..."
+          onFocus={() => setIsSearchFocused(true)}
+          onBlur={() => setIsSearchFocused(false)}
+          className="max-w-md"
+        />
       </div>
 
       {/* Stock Grid - Scrollable Container */}
@@ -606,84 +605,77 @@ export default function CryptoTab() {
         }}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {stocks.map((stock) => (
-            <StockCard
-              key={stock.ticker}
-              stock={stock}
-              onAnalyze={handleAnalyze}
-              hasAnalysis={!!analyses[stock.ticker]}
-              analysisResult={analyses[stock.ticker]}
-            />
-          ))}
+          {stocks
+            .filter((stock) => {
+              if (!searchTerm) return true;
+              const search = searchTerm.toLowerCase();
+              return (
+                stock.ticker.toLowerCase().includes(search) ||
+                stock.name.toLowerCase().includes(search)
+              );
+            })
+            .map((stock) => (
+              <StockCard
+                key={stock.ticker}
+                stock={stock}
+                onAnalyze={handleAnalyze}
+                hasAnalysis={!!analyses[stock.ticker]}
+                analysisResult={analyses[stock.ticker]}
+              />
+            ))}
         </div>
-      </div>
 
-      {/* Crypto News Section */}
-      <div className="mt-8">
-        <CryptoNews />
+        {/* No Results Message */}
+        {stocks.filter((stock) => {
+          if (!searchTerm) return true;
+          const search = searchTerm.toLowerCase();
+          return (
+            stock.ticker.toLowerCase().includes(search) ||
+            stock.name.toLowerCase().includes(search)
+          );
+        }).length === 0 &&
+          searchTerm && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Search className="w-12 h-12 text-gray-500 mb-3" />
+              <p className="text-gray-400 text-lg">
+                No cryptocurrencies found matching "{searchTerm}"
+              </p>
+              <button
+                onClick={() => setSearchTerm("")}
+                className="mt-3 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Clear search
+              </button>
+            </div>
+          )}
       </div>
 
       {/* Analysis Modal */}
       {activeAnalysis && (
-        <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => setActiveAnalysis(null)}
-        >
-          <div
-            className="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-white flex items-center">
-                <Brain className="w-5 h-5 mr-2 text-purple-400" />
-                AI Analysis - {activeAnalysis.ticker}
-              </h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-700 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">
+                AI Analysis: {activeAnalysis.ticker}
+              </h2>
               <button
                 onClick={() => setActiveAnalysis(null)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-
-            <div className="space-y-4">
-              <div className="p-4 bg-gray-800/50 rounded-lg">
-                <p className="text-gray-300 mb-2">
-                  Analyzing {activeAnalysis.name} ({activeAnalysis.ticker})...
-                </p>
-                <div className="flex items-center space-x-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
-                  <span className="text-sm text-gray-400">
-                    Generating 8-hour prediction
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-center">
-                <p className="text-xs text-gray-500">
-                  This is a demo. Implement your AI analysis here.
-                </p>
-              </div>
-
-              <button
-                onClick={() => {
-                  // Simulate analysis completion
-                  setTimeout(() => {
-                    handleAnalysisComplete(activeAnalysis.ticker, {
-                      signal: Math.random() > 0.5 ? "buy" : "hold",
-                      next8Hours: (Math.random() - 0.5) * 10,
-                      buyPercentage: Math.floor(Math.random() * 40) + 40,
-                    });
-                  }, 2000);
-                }}
-                className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-              >
-                Run Analysis
-              </button>
+            <div className="p-6">
+              <p className="text-gray-400">
+                AI analysis integration coming soon...
+              </p>
             </div>
           </div>
         </div>
       )}
+
+      {/* Crypto News Component */}
+      <CryptoNews searchTerm="{searchTerm}" />
     </div>
   );
 }
